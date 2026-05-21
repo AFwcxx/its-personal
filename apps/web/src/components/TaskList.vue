@@ -4,7 +4,7 @@ import Sortable from "sortablejs";
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import TaskRow from "./TaskRow.vue";
 
-const props = defineProps<{ tasks: Task[]; reorderable?: boolean }>();
+const props = defineProps<{ tasks: Task[]; reorderable?: boolean; readonly?: boolean }>();
 const emit = defineEmits<{ reorder: [tasks: Task[]] }>();
 
 const listEl = ref<HTMLElement | null>(null);
@@ -54,9 +54,9 @@ onBeforeUnmount(destroySortable);
 <template>
   <div ref="listEl" class="task-list">
     <div v-for="task in rootTasks" :key="task.id" class="task-group">
-      <TaskRow :task="task" :draggable="Boolean(reorderable)" />
+      <TaskRow :task="task" :draggable="Boolean(reorderable)" :readonly="Boolean(readonly)" />
       <div v-if="childrenFor(task).length > 0" class="subtask-list">
-        <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" />
+        <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" :readonly="Boolean(readonly)" />
       </div>
     </div>
     <p v-if="tasks.length === 0" class="muted">No tasks.</p>

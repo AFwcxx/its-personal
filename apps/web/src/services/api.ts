@@ -47,3 +47,15 @@ export async function uploadAttachment(taskId: string, file: File): Promise<Atta
   if (!response.ok) throw new Error(await response.text());
   return response.json() as Promise<Attachment>;
 }
+
+export async function openAttachment(id: string): Promise<void> {
+  const opened = window.open("", "_blank");
+  const response = await fetch(`/api/attachments/${id}`, { headers: useSessionStore().authHeaders() });
+  if (!response.ok) throw new Error(await response.text());
+  const blobUrl = URL.createObjectURL(await response.blob());
+  if (opened) {
+    opened.location.href = blobUrl;
+  } else {
+    window.location.href = blobUrl;
+  }
+}

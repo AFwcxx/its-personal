@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canCompleteTask, completedPlannerTasksForDate, overdueTasks, plannerTasksForDate, sortPlannerItems, visibleArchiveItems } from "../src/taskRules.js";
+import { canCompleteTask, completedPlannerTasksForDate, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, visibleArchiveItems } from "../src/taskRules.js";
 import type { Task } from "../src/types.js";
 
 const base = (task: Partial<Task>): Task => ({
@@ -42,6 +42,12 @@ describe("task rules", () => {
     const child = base({ id: "child", parentId: "future", dueDate: "2026-05-22", completedAt: "2026-05-21T01:10:00.000Z" });
     const today = base({ id: "today", dueDate: "2026-05-21", completedAt: "2026-05-21T01:20:00.000Z" });
     expect(completedPlannerTasksForDate([future, child, today], "2026-05-22").map((task) => task.id)).toEqual(["future", "child"]);
+  });
+
+  it("projects open recurring tasks into future schedule dates", () => {
+    const weekly = base({ id: "weekly", dueDate: "2026-05-21", recurrence: { type: "weekly" } });
+    expect(scheduledTasksForDate([weekly], "2026-05-28")).toEqual([{ ...weekly, dueDate: "2026-05-28" }]);
+    expect(scheduledTasksForDate([weekly], "2026-06-04")).toEqual([{ ...weekly, dueDate: "2026-06-04" }]);
   });
 
   it("sorts pinned above unpinned then manual order", () => {
