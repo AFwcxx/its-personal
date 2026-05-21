@@ -94,6 +94,10 @@ function tagStyle(tagId: string) {
   return { "--tag-color": tagsById.value.get(tagId)?.color ?? "#6b7280" };
 }
 
+function removeTagChip(event: MouseEvent, removeCallback: (event: Event, item?: unknown) => void) {
+  removeCallback(event);
+}
+
 async function updateRecurrence(type: Recurrence["type"]) {
   if (!task.value) return;
   const recurrence: Recurrence = type === "every_n_days"
@@ -220,7 +224,7 @@ async function confirmRemove() {
           <template #chip="{ value, removeCallback }">
             <span class="task-tag tag-multiselect-chip" :style="tagStyle(value)">
               <span>{{ tagsById.get(value)?.name ?? value }}</span>
-              <button class="tag-chip-remove" type="button" aria-label="Remove tag" @click.stop="removeCallback">
+              <button class="tag-chip-remove" type="button" aria-label="Remove tag" @click.stop="removeTagChip($event, removeCallback)">
                 <X :size="14" />
               </button>
             </span>

@@ -5,9 +5,40 @@ const idleTimeoutKey = "its-personal-idle-timeout-seconds";
 const lastActivityKey = "its-personal-last-activity-at";
 const deviceKey = "its-personal-device-id";
 const themeKey = "its-personal-theme";
+const systemThemeQuery = "(prefers-color-scheme: dark)";
 const heartbeatMs = 5 * 60 * 1000;
 
 let activityTrackingStarted = false;
+let activeSystemThemeQuery: MediaQueryList | null = null;
+
+type ThemePreference = "system" | "light" | "dark";
+
+function readThemePreference(): ThemePreference {
+  const theme = localStorage.getItem(themeKey);
+  return theme === "light" || theme === "dark" || theme === "system" ? theme : "system";
+}
+
+function resolveTheme(theme: ThemePreference): "light" | "dark" {
+  if (theme === "light" || theme === "dark") return theme;
+  return window.matchMedia(systemThemeQuery).matches ? "dark" : "light";
+}
+
+function applyTheme(theme: ThemePreference) {
+  document.documentElement.dataset.theme = resolveTheme(theme);
+}
+
+export function initializeTheme() {
+  applyTheme(readThemePreference());
+
+  const query = window.matchMedia(systemThemeQuery);
+  if (activeSystemThemeQuery === query) return;
+  activeSystemThemeQuery = query;
+
+  query.addEventListener("change", () => {
+    const theme = readThemePreference();
+    if (theme === "system") applyTheme(theme);
+  });
+}
 
 export const useSessionStore = defineStore("session", {
   state: () => ({
@@ -16,7 +47,7 @@ export const useSessionStore = defineStore("session", {
     lastActivityAt: Number(sessionStorage.getItem(lastActivityKey) ?? 0),
     lastHeartbeatAt: 0,
     deviceId: localStorage.getItem(deviceKey) ?? crypto.randomUUID(),
-    theme: localStorage.getItem(themeKey) ?? "system",
+    theme: readThemePreference(),
     error: "",
     offline: false
   }),
@@ -92,11 +123,10 @@ export const useSessionStore = defineStore("session", {
         if (this.token && !this.isUnlocked) this.lockLocal();
       }, 30_000);
     },
-    setTheme(theme: "system" | "light" | "dark") {
+    setTheme(theme: ThemePreference) {
       this.theme = theme;
       localStorage.setItem(themeKey, theme);
-      const resolvedTheme = theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : theme;
-      document.documentElement.dataset.theme = resolvedTheme === "system" ? "light" : resolvedTheme;
+      applyTheme(theme);
     },
     async lock() {
       const token = this.token;

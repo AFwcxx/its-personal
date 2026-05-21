@@ -4,15 +4,13 @@ import Aura from "@primeuix/themes/aura";
 import { createApp } from "vue";
 import App from "./App.vue";
 import { router } from "./router.js";
+import { initializeTheme } from "./stores/session.js";
 import "primeicons/primeicons.css";
 import "./styles/theme.css";
 import "./styles/layout.css";
 
 const PrimeVue = PrimeVueConfig.default;
-const storedTheme = localStorage.getItem("its-personal-theme");
-const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-const theme = storedTheme === "dark" || storedTheme === "light" ? storedTheme : prefersDark ? "dark" : "light";
-document.documentElement.dataset.theme = theme;
+initializeTheme();
 
 createApp(App)
   .use(createPinia())
