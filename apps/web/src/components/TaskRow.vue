@@ -25,7 +25,7 @@ async function toggleCompleted() {
 
 <template>
   <div class="task-row" @click="planner.selectedTaskId = task.id">
-    <Button v-if="draggable" class="drag-handle" title="Drag handle" aria-label="Drag handle" severity="secondary" text @click.stop>
+    <Button v-if="draggable" class="drag-handle task-row-icon-button" title="Drag handle" aria-label="Drag handle" severity="secondary" text @click.stop>
       <GripVertical :size="18" />
     </Button>
     <span v-else class="task-row-spacer" aria-hidden="true" />
@@ -37,10 +37,10 @@ async function toggleCompleted() {
       </div>
     </div>
     <div v-if="!readonly" class="row-actions">
-      <Button v-if="!hidePin" title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
+      <Button v-if="!hidePin" class="task-row-icon-button" title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
         <Pin :size="16" :fill="task.pinned ? 'currentColor' : 'none'" />
       </Button>
-      <Button title="Complete" aria-label="Complete" severity="secondary" text @click.stop="toggleCompleted">
+      <Button class="task-row-icon-button" title="Complete" aria-label="Complete" severity="secondary" text @click.stop="toggleCompleted">
         <SquareCheck v-if="task.completedAt" :size="18" />
         <Square v-else :size="18" />
       </Button>
