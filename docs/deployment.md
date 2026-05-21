@@ -4,6 +4,7 @@
 
 1. Copy `.env.example` to `.env`.
 2. Set `APP_PASSWORD` and `SESSION_SECRET`.
+   If either value contains `$`, escape each `$` as `$$` because Docker Compose interpolates environment files.
 3. Start the app:
 
 ```bash

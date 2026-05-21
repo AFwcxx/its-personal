@@ -49,6 +49,9 @@ Date: 2026-05-21
 - 2026-05-21: Installed Playwright Chromium and verified `npm run e2e` passes for desktop and mobile smoke projects.
 - 2026-05-21: Changed Docker Compose published address to `127.0.0.1:3002` while keeping app container port `3000`.
 - 2026-05-21: Recreated Compose container and verified `GET http://127.0.0.1:3002/api/health` returns `{"ok":true}`.
+- 2026-05-21: Investigated unlock failure from `logs/docker-compose-logs_260521-111629.log`; Docker Compose interpreted `$` in `.env` `SESSION_SECRET` as variable interpolation, causing app startup failure.
+- 2026-05-21: Escaped `$` in local `.env`, documented the rule in deployment docs, and made the unlock screen show `Server unavailable` when the API cannot be reached.
+- 2026-05-21: Rebuilt/restarted Docker Compose and verified `GET http://127.0.0.1:3002/api/health` returns `{"ok":true}` and unlock returns HTTP 200 with a session token.
 
 ## Next Actions
 
