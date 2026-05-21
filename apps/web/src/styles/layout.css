@@ -75,6 +75,24 @@
   background: color-mix(in srgb, var(--active) 40%, var(--surface));
 }
 
+.tag-row {
+  display: grid;
+  grid-template-columns: 44px 44px minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 54px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 0.35rem;
+}
+
+.color-input {
+  width: 44px;
+  min-width: 44px;
+  padding: 0.25rem;
+}
+
 .muted {
   color: var(--muted);
 }
