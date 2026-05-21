@@ -7,8 +7,8 @@ import TaskDetailPanel from "./TaskDetailPanel.vue";
 
 const navItems = [
   { to: "/planner", label: "Planner" },
-  { to: "/all", label: "All Tasks" },
   { to: "/schedule", label: "Schedule" },
+  { to: "/all", label: "All Tasks" },
   { to: "/archive", label: "Archive" },
   { to: "/tags", label: "Tags" }
 ];

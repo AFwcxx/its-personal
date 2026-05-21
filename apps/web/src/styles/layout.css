@@ -589,6 +589,8 @@
   .app-shell,
   .app-shell.has-detail {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    align-content: start;
   }
 
   .sidebar {
