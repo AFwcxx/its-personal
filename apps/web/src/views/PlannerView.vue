@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { completedPlannerTasksForDate, type Task } from "@its-personal/shared";
+import { completedPlannerTasksForDate, sortPlannerItems, type Task } from "@its-personal/shared";
 import Button from "primevue/button";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
@@ -44,11 +44,28 @@ function completedGroupTasks(predicate: (task: Task) => boolean) {
   return [...groups, ...children];
 }
 
+function groupTasksByDueDate(tasks: Task[]) {
+  const grouped = new Map<string, Task[]>();
+  for (const task of tasks) {
+    const key = task.dueDate ?? "No date";
+    grouped.set(key, [...(grouped.get(key) ?? []), task]);
+  }
+  return [...grouped.entries()]
+    .sort(([a], [b]) => {
+      if (a === "No date") return 1;
+      if (b === "No date") return -1;
+      return b.localeCompare(a);
+    })
+    .map(([date, items]) => ({ date, tasks: sortPlannerItems(items) }));
+}
+
 const visibleTasks = computed(() => {
   const tasks = tab.value === "overdue" ? planner.overdue() : planner.tasksFor(planner.dateForTab(tab.value));
   const q = search.value.toLowerCase();
   return tasks.filter((task) => task.title.toLowerCase().includes(q));
 });
+
+const visibleGroups = computed(() => groupTasksByDueDate(visibleTasks.value));
 
 const completedTasks = computed(() => {
   const q = search.value.toLowerCase();
@@ -57,6 +74,8 @@ const completedTasks = computed(() => {
     : completedPlannerTasksForDate(planner.tasks, planner.dateForTab(tab.value));
   return tasks.filter((task) => task.title.toLowerCase().includes(q));
 });
+
+const completedGroups = computed(() => groupTasksByDueDate(completedTasks.value));
 
 const canCreateTask = computed(() => tab.value !== "overdue");
 const canReorder = computed(() => ["overdue", "today", "tomorrow", "day-after"].includes(tab.value));
@@ -103,14 +122,26 @@ async function reorder(tasks: Task[]) {
         </div>
       </template>
     </Card>
-    <TaskList :tasks="visibleTasks" :reorderable="canReorder" @reorder="reorder" />
+    <template v-if="tab === 'overdue'">
+      <section v-for="group in visibleGroups" :key="group.date" class="date-group">
+        <h3 class="date-heading">Date: {{ group.date }}</h3>
+        <TaskList :tasks="group.tasks" :reorderable="canReorder" @reorder="reorder" />
+      </section>
+    </template>
+    <TaskList v-else :tasks="visibleTasks" :reorderable="canReorder" @reorder="reorder" />
     <section class="completed-section">
       <button class="completed-toggle" type="button" @click="toggleCompleted">
         <span>Completed</span>
         <span class="muted">{{ completedTasks.length }}</span>
         <span aria-hidden="true">{{ completedExpanded ? "▾" : "▸" }}</span>
       </button>
-      <TaskList v-if="completedExpanded" :tasks="completedTasks" />
+      <template v-if="completedExpanded && tab === 'overdue'">
+        <section v-for="group in completedGroups" :key="group.date" class="date-group">
+          <h3 class="date-heading">Date: {{ group.date }}</h3>
+          <TaskList :tasks="group.tasks" />
+        </section>
+      </template>
+      <TaskList v-else-if="completedExpanded" :tasks="completedTasks" />
     </section>
   </AppShell>
 </template>
