@@ -105,7 +105,7 @@ async function openTaskAttachment(id: string) {
   <aside v-if="task" class="detail">
     <div class="toolbar">
       <h2>{{ task.title }}</h2>
-      <Button aria-label="Close" severity="secondary" text @click="planner.selectedTaskId = null"><X :size="18" /></Button>
+      <Button class="detail-close-button" aria-label="Close" severity="secondary" text @click="planner.selectedTaskId = null"><X :size="18" /></Button>
     </div>
     <div class="field-stack">
       <label>Title<Textarea v-model="title" rows="2" auto-resize /></label>

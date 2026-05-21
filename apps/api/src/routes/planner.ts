@@ -45,7 +45,7 @@ export function plannerRouter(db: Db): Router {
       title: patch.title ?? current.title,
       parentId: patch.parentId ?? current.parentId,
       dueDate: patch.dueDate ?? current.dueDate,
-      completedAt: patch.completedAt ?? current.completedAt,
+      completedAt: patch.completedAt !== undefined ? patch.completedAt : current.completedAt,
       pinned: patch.pinned ?? current.pinned,
       tagId: patch.tagId ?? current.tagId,
       tagIds: patch.tagIds ?? (patch.tagId !== undefined ? (patch.tagId ? [patch.tagId] : []) : current.tagIds),
