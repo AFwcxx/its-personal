@@ -52,6 +52,16 @@
   border-radius: 10px;
 }
 
+.sidebar .app-version .p-button {
+  align-items: center;
+  border-radius: 50%;
+  flex: 0 0 44px;
+  height: 44px;
+  justify-content: center;
+  min-width: 44px;
+  padding: 0;
+}
+
 .sidebar .p-button.active,
 .tabs .p-button.active,
 .calendar .p-button.active {
