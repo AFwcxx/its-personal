@@ -1,7 +1,10 @@
 import { mount } from "@vue/test-utils";
+import { createPinia, setActivePinia } from "pinia";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
 import TaskList from "../components/TaskList.vue";
+import TaskRow from "../components/TaskRow.vue";
+import { usePlannerStore } from "../stores/planner.js";
 
 const sortable = vi.hoisted(() => ({
   create: vi.fn(),
@@ -11,6 +14,15 @@ const sortable = vi.hoisted(() => ({
 
 vi.mock("sortablejs", () => ({
   default: { create: sortable.create }
+}));
+
+vi.mock("../services/api.js", () => ({
+  loadSnapshot: vi.fn(async () => ({ tasks: [], tags: [], links: [], attachments: [] })),
+  cachedSnapshot: vi.fn(() => null),
+  plannerApi: {
+    completeTask: vi.fn(),
+    updateTask: vi.fn()
+  }
 }));
 
 const task = (patch: Partial<Task>): Task => ({
@@ -32,6 +44,7 @@ const task = (patch: Partial<Task>): Task => ({
 
 describe("TaskList", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     sortable.options = null;
     sortable.create.mockReset();
     sortable.sort.mockReset();
@@ -59,5 +72,30 @@ describe("TaskList", () => {
     const emittedTasks = wrapper.emitted("reorder")?.[0]?.[0] as Task[] | undefined;
     expect(emittedTasks?.map((item) => item.id)).toEqual(["pinned", "unpinned"]);
     expect(sortable.sort).toHaveBeenCalledWith(["pinned", "unpinned"]);
+  });
+
+  it("highlights only the row whose task detail menu is open", () => {
+    const planner = usePlannerStore();
+    planner.selectedTaskId = "open-task";
+
+    const openTask = mount(TaskRow, {
+      props: { task: task({ id: "open-task" }) },
+      global: {
+        stubs: {
+          Button: { template: "<button><slot /></button>" }
+        }
+      }
+    });
+    const otherTask = mount(TaskRow, {
+      props: { task: task({ id: "other-task" }) },
+      global: {
+        stubs: {
+          Button: { template: "<button><slot /></button>" }
+        }
+      }
+    });
+
+    expect(openTask.find(".task-row").classes()).toContain("task-row-active");
+    expect(otherTask.find(".task-row").classes()).not.toContain("task-row-active");
   });
 });
