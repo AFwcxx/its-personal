@@ -7,6 +7,7 @@ import { usePlannerStore } from "../stores/planner.js";
 
 const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean; hidePin?: boolean }>();
 const planner = usePlannerStore();
+const isSelected = computed(() => planner.selectedTaskId === props.task.id);
 const tags = computed(() => {
   const ids = props.task.tagIds ?? (props.task.tagId ? [props.task.tagId] : []);
   return ids
@@ -24,7 +25,7 @@ async function toggleCompleted() {
 </script>
 
 <template>
-  <div class="task-row" @click="planner.selectedTaskId = task.id">
+  <div class="task-row" :class="{ 'task-row-active': isSelected }" @click="planner.selectedTaskId = task.id">
     <Button v-if="draggable" class="drag-handle task-row-icon-button" title="Drag handle" aria-label="Drag handle" severity="secondary" text @click.stop>
       <GripVertical :size="18" />
     </Button>

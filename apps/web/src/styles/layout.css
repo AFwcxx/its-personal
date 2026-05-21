@@ -232,6 +232,11 @@
   cursor: pointer;
 }
 
+.task-row-active {
+  border-color: color-mix(in srgb, var(--active) 70%, var(--text));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--active) 70%, var(--text));
+}
+
 .task-row:hover .p-button,
 .task-row:hover button,
 .task-row:hover .drag-handle {
