@@ -34,6 +34,7 @@ Status: Not started
 ## Progress Log
 
 - 2026-05-21: Milestone created after Milestone 1 completion to document remaining single-device workflow work.
+- 2026-05-21: Added tag color creation/editing to Manage Tags, with persisted hex color validation.
 
 ## Next Actions
 

@@ -25,9 +25,11 @@ export const taskPatchSchema = taskInputSchema.partial().extend({
   deletedAt: z.string().datetime().nullable().optional()
 });
 
+const tagColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+
 export const tagInputSchema = z.object({
   name: z.string().min(1).max(80),
-  color: z.string().nullable().optional()
+  color: tagColorSchema.nullable().optional()
 });
 
 export const linkInputSchema = z.object({
