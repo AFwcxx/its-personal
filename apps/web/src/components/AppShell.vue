@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Button from "primevue/button";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { usePlannerStore } from "../stores/planner.js";
 import TaskDetailPanel from "./TaskDetailPanel.vue";
@@ -15,10 +15,11 @@ const navItems = [
 
 const planner = usePlannerStore();
 const hasDetail = computed(() => planner.selectedTask !== null);
+const detailLeaving = ref(false);
 </script>
 
 <template>
-  <div class="app-shell" :class="{ 'has-detail': hasDetail }">
+  <div class="app-shell" :class="{ 'has-detail': hasDetail || detailLeaving }">
     <aside class="sidebar">
       <h1>Its Personal</h1>
       <nav>
@@ -31,6 +32,8 @@ const hasDetail = computed(() => planner.selectedTask !== null);
     <main class="main">
       <slot />
     </main>
-    <TaskDetailPanel />
+    <Transition name="detail-panel" @before-leave="detailLeaving = true" @after-leave="detailLeaving = false">
+      <TaskDetailPanel v-if="hasDetail" />
+    </Transition>
   </div>
 </template>
