@@ -95,7 +95,8 @@ export const useSessionStore = defineStore("session", {
     setTheme(theme: "system" | "light" | "dark") {
       this.theme = theme;
       localStorage.setItem(themeKey, theme);
-      document.documentElement.dataset.theme = theme;
+      const resolvedTheme = theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : theme;
+      document.documentElement.dataset.theme = resolvedTheme === "system" ? "light" : resolvedTheme;
     },
     async lock() {
       const token = this.token;

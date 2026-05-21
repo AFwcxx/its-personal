@@ -82,7 +82,6 @@ function pickerColor(value: string | null) {
       </p>
       <p v-else>This tag is not assigned to any task. It will be deleted.</p>
       <div class="dialog-actions">
-        <Button label="Cancel" severity="secondary" @click="tagPendingRemoval = null" />
         <Button label="Confirm" severity="danger" @click="confirmRemove" />
       </div>
     </Dialog>

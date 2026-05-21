@@ -49,7 +49,7 @@
   min-height: 44px;
   border: 1px solid var(--border);
   color: var(--text);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
 }
 
 .sidebar .app-version .p-button {
@@ -66,6 +66,7 @@
 .tabs .p-button.active,
 .calendar .p-button.active {
   background: var(--active);
+  border-color: var(--active-border) !important;
   color: var(--text);
 }
 
@@ -164,7 +165,7 @@
 
 .task-create-card.p-card {
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--surface);
   color: var(--text);
   box-shadow: var(--control-shadow);
@@ -222,7 +223,7 @@
   align-items: center;
   min-height: 48px;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--surface);
   padding: 0.35rem;
   cursor: default;
@@ -246,7 +247,7 @@
   align-items: center;
   min-height: 54px;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--surface);
   padding: 0.35rem;
 }
@@ -264,11 +265,13 @@
 
 .task-row:hover {
   cursor: pointer;
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: var(--surface-raised);
 }
 
 .task-row-active {
-  border-color: color-mix(in srgb, var(--active) 70%, var(--text));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--active) 70%, var(--text));
+  border-color: var(--active-border);
+  box-shadow: inset 3px 0 0 var(--accent), 0 0 0 1px color-mix(in srgb, var(--accent-alt) 24%, transparent);
 }
 
 .task-row:hover .p-button,
@@ -293,7 +296,7 @@
 
 .task-row-icon-button.p-button.p-button-text:enabled:hover {
   border: 0 !important;
-  background: var(--panel) !important;
+  background: var(--surface-raised) !important;
 }
 
 .sortable-ghost {
@@ -309,10 +312,10 @@
 }
 
 .task-tag {
-  border: 1px solid color-mix(in srgb, var(--tag-color) 70%, var(--border));
+  border: 1px solid color-mix(in srgb, var(--tag-color) 48%, var(--border));
   border-radius: 999px;
   color: var(--text);
-  background: color-mix(in srgb, var(--tag-color) 35%, transparent);
+  background: color-mix(in srgb, var(--tag-color) 18%, var(--surface));
   font-size: 0.82rem;
   line-height: 1.15;
   max-width: 100%;
@@ -329,7 +332,7 @@
   align-items: center;
   min-height: 54px;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: var(--radius-panel);
   background: var(--surface);
   padding: 0.35rem;
 }
@@ -342,20 +345,20 @@
 
 .p-button {
   min-height: 44px;
-  border-radius: 999px !important;
-  padding-inline: 1.1rem;
+  border-radius: var(--radius-control) !important;
+  padding-inline: 1rem;
 }
 
 .p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text) {
-  border: 1px solid var(--text) !important;
-  background: var(--text) !important;
-  color: var(--bg) !important;
+  border: 1px solid var(--accent-strong) !important;
+  background: var(--accent-strong) !important;
+  color: #ffffff !important;
 }
 
 .p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text):enabled:hover {
-  border-color: var(--text) !important;
-  background: color-mix(in srgb, var(--text) 86%, var(--bg)) !important;
-  color: var(--bg) !important;
+  border-color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent-strong) 86%, var(--accent-alt)) !important;
+  color: #ffffff !important;
 }
 
 .p-button.p-button-secondary,
@@ -367,9 +370,14 @@
 
 .p-button.p-button-secondary:enabled:hover,
 .p-button.p-button-text:enabled:hover {
-  border-color: var(--border) !important;
-  background: var(--panel) !important;
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border)) !important;
+  background: var(--surface-raised) !important;
   color: var(--text) !important;
+}
+
+.p-button:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px var(--focus-ring) !important;
 }
 
 .p-button:has(svg),
@@ -382,7 +390,7 @@
 .p-dialog {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 18px !important;
+  border-radius: var(--radius-panel) !important;
   box-shadow: var(--shadow) !important;
   color: var(--text) !important;
   overflow: hidden;
@@ -414,7 +422,7 @@
 .p-dialog-close-button {
   background: var(--panel) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 999px !important;
+  border-radius: var(--radius-control) !important;
   color: var(--text) !important;
   height: 44px !important;
   min-width: 44px !important;
@@ -422,8 +430,35 @@
 }
 
 .p-dialog-close-button:enabled:hover {
-  background: var(--bg) !important;
-  border-color: var(--border) !important;
+  background: var(--surface-raised) !important;
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border)) !important;
+  color: var(--text) !important;
+}
+
+.p-select-overlay,
+.p-multiselect-overlay {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-panel) !important;
+  box-shadow: var(--shadow) !important;
+  color: var(--text) !important;
+  overflow: hidden;
+}
+
+.p-select-option,
+.p-multiselect-option {
+  color: var(--text) !important;
+}
+
+.p-select-option.p-focus,
+.p-multiselect-option.p-focus {
+  background: var(--surface-raised) !important;
+  color: var(--text) !important;
+}
+
+.p-select-option.p-selected,
+.p-multiselect-option.p-selected {
+  background: var(--active) !important;
   color: var(--text) !important;
 }
 
@@ -446,7 +481,7 @@
 .attachment-link:visited,
 .attachment-link:hover,
 .attachment-link:active {
-  color: #ffffff !important;
+  color: var(--accent) !important;
 }
 
 .p-inputtext,
@@ -499,6 +534,13 @@
   text-overflow: ellipsis;
 }
 
+.p-chip {
+  background: color-mix(in srgb, var(--accent-alt) 14%, var(--surface-raised)) !important;
+  border: 1px solid color-mix(in srgb, var(--accent-alt) 34%, var(--border)) !important;
+  border-radius: 999px !important;
+  color: var(--text) !important;
+}
+
 .detail > .field-stack {
   margin-top: 1.15rem;
 }
@@ -510,7 +552,7 @@
 
 .detail .tag-multiselect.p-multiselect {
   align-items: flex-start;
-  border-radius: 6px !important;
+  border-radius: var(--radius-control) !important;
 }
 
 .field-stack > .p-button {
@@ -529,7 +571,7 @@
 .p-password-input {
   min-height: 44px;
   border-color: var(--border) !important;
-  border-radius: 999px !important;
+  border-radius: var(--radius-control) !important;
   background: var(--surface) !important;
   background-color: var(--surface) !important;
   color: var(--text) !important;
@@ -557,11 +599,11 @@
 .p-multiselect:not(.p-disabled).p-focus,
 .p-password-input:enabled:focus {
   border-color: var(--border) !important;
-  box-shadow: inset 0 0 0 1000px var(--surface), 0 0 0 1px var(--border), var(--control-shadow) !important;
+  box-shadow: inset 0 0 0 1000px var(--surface), 0 0 0 3px var(--focus-ring), var(--control-shadow) !important;
 }
 
 .p-textarea {
-  border-radius: 24px !important;
+  border-radius: var(--radius-panel) !important;
   padding-block: 0.85rem;
 }
 
@@ -589,12 +631,30 @@
 .p-colorpicker-preview {
   width: 44px;
   height: 44px;
-  border-radius: 999px !important;
+  border-radius: var(--radius-control) !important;
   border-color: var(--border) !important;
 }
 
 .p-password-toggle-mask {
   color: var(--muted) !important;
+}
+
+.p-checkbox-box {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  border-radius: 4px !important;
+  color: var(--text) !important;
+}
+
+.p-checkbox-box.p-highlight,
+.p-checkbox-checked .p-checkbox-box {
+  background: var(--accent-strong) !important;
+  border-color: var(--accent-strong) !important;
+  color: #ffffff !important;
+}
+
+.p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus-visible) .p-checkbox-box {
+  box-shadow: 0 0 0 3px var(--focus-ring) !important;
 }
 
 .p-inputtext:-webkit-autofill,
@@ -619,13 +679,14 @@
 :root[data-theme="dark"] .p-password-input,
 :root[data-theme="dark"] .p-button.p-button-secondary,
 :root[data-theme="dark"] .p-button.p-button-text {
-  background-color: #1f1f1f !important;
+  background-color: var(--surface) !important;
 }
 
 .sidebar .p-button.active,
 .tabs .p-button.active,
 .calendar .p-button.active {
   background: var(--active) !important;
+  border-color: var(--active-border) !important;
   color: var(--text) !important;
 }
 
@@ -699,7 +760,7 @@
 }
 
 .calendar .p-button.today {
-  box-shadow: inset 0 0 0 2px var(--text);
+  box-shadow: inset 0 0 0 2px var(--accent-alt);
 }
 
 .calendar .p-button.empty-day {
@@ -838,6 +899,7 @@
 
   .app-shell {
     padding-bottom: 1.6rem;
+    overflow-x: hidden;
   }
 
   .sidebar .app-version {
@@ -873,7 +935,7 @@
   .detail {
     position: fixed;
     inset: 0 0 0 auto;
-    width: min(100vw, 420px);
+    width: min(100dvw, 420px);
     max-height: none;
     overflow: auto;
     border-left: 0;
