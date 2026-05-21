@@ -29,6 +29,11 @@ function move(delta: number) {
 function dayTasks(day: string) {
   return planner.tasksFor(day);
 }
+
+function isCurrentMonth(day: string) {
+  const date = new Date(`${day}T00:00:00.000Z`);
+  return date.getUTCFullYear() === month.value.getFullYear() && date.getUTCMonth() === month.value.getMonth();
+}
 </script>
 
 <template>
@@ -43,7 +48,7 @@ function dayTasks(day: string) {
       <Button
         v-for="day in days"
         :key="day"
-        :class="{ active: selected === day, today: planner.today === day, 'empty-day': dayTasks(day).length === 0 }"
+        :class="{ active: selected === day, today: planner.today === day, 'empty-day': dayTasks(day).length === 0, 'outside-month': !isCurrentMonth(day) }"
         text
         @click="selected = day"
       >

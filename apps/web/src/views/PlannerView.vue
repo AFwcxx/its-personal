@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Task } from "@its-personal/shared";
+import { completedPlannerTasksForDate, type Task } from "@its-personal/shared";
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
@@ -22,10 +22,6 @@ const tabs = [
 ];
 
 onMounted(() => planner.refresh());
-
-function completedDate(task: { completedAt: string | null }) {
-  return task.completedAt?.slice(0, 10) ?? null;
-}
 
 function isRecentlyCompleted(task: { completedAt: string | null }) {
   if (!task.completedAt) return false;
@@ -57,7 +53,7 @@ const completedTasks = computed(() => {
   const q = search.value.toLowerCase();
   const tasks = tab.value === "overdue"
     ? completedGroupTasks((task) => task.dueDate !== null && task.dueDate < planner.today && isRecentlyCompleted(task))
-    : completedGroupTasks((task) => completedDate(task) === planner.dateForTab(tab.value));
+    : completedPlannerTasksForDate(planner.tasks, planner.dateForTab(tab.value));
   return tasks.filter((task) => task.title.toLowerCase().includes(q));
 });
 
@@ -91,17 +87,16 @@ async function reorder(tasks: Task[]) {
       <h2>Planner</h2>
       <Message v-if="planner.status === 'offline'" severity="warn" size="small">Offline read-only</Message>
     </div>
-    <div class="tabs">
-      <Button v-for="item in tabs" :key="item.key" :class="{ active: tab === item.key }" :label="item.label" text @click="selectTab(item.key)" />
+    <div class="planner-filter-row">
+      <div class="tabs">
+        <Button v-for="item in tabs" :key="item.key" :class="{ active: tab === item.key }" :label="item.label" text @click="selectTab(item.key)" />
+      </div>
+      <InputText v-model="search" placeholder="Search tasks" />
     </div>
     <div v-if="canCreateTask" class="toolbar">
-      <InputText v-model="search" placeholder="Search tasks" />
       <InputText v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
       <InputText v-model="newDueDate" type="date" aria-label="Due date" @keydown.enter.prevent="createTask" />
       <Button :disabled="planner.status === 'offline'" label="Add" @click="createTask" />
-    </div>
-    <div v-else class="toolbar">
-      <InputText v-model="search" placeholder="Search tasks" />
     </div>
     <TaskList :tasks="visibleTasks" :reorderable="canReorder" @reorder="reorder" />
     <section class="completed-section">

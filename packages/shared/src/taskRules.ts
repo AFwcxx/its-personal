@@ -38,6 +38,22 @@ export function sortPlannerItems(tasks: Task[]): Task[] {
   });
 }
 
+export function completedPlannerTasksForDate(tasks: Task[], date: string): Task[] {
+  const byId = new Map(tasks.map((task) => [task.id, task]));
+  const rootGroups = sortPlannerItems(tasks.filter((task) => {
+    if (task.deletedAt !== null || task.completedAt === null || task.dueDate !== date) return false;
+    if (task.parentId === null) return true;
+    const parent = byId.get(task.parentId);
+    return parent === undefined || parent.deletedAt !== null;
+  }));
+  const rootIds = new Set(rootGroups.map((task) => task.id));
+  const children = sortPlannerItems(tasks.filter((task) => {
+    if (task.deletedAt !== null || task.completedAt === null || task.parentId === null) return false;
+    return rootIds.has(task.parentId);
+  }));
+  return [...rootGroups, ...children];
+}
+
 export function plannerTasksForDate(tasks: Task[], date: string): Task[] {
   const byId = new Map(tasks.map((task) => [task.id, task]));
   return sortPlannerItems(

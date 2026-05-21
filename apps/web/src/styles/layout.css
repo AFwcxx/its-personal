@@ -57,6 +57,13 @@
   flex-wrap: wrap;
 }
 
+.planner-filter-row {
+  display: grid;
+  grid-template-columns: auto minmax(220px, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .task-list {
   display: grid;
   gap: 0.6rem;
@@ -241,6 +248,13 @@
   background-color: #1f1f1f !important;
 }
 
+.sidebar .p-button.active,
+.tabs .p-button.active,
+.calendar .p-button.active {
+  background: var(--active) !important;
+  color: var(--text) !important;
+}
+
 .check-label {
   display: inline-flex;
   align-items: center;
@@ -284,6 +298,14 @@
 
 .calendar .p-button.empty-day {
   opacity: 0.6;
+}
+
+.calendar .p-button.outside-month > * {
+  opacity: 0.3;
+}
+
+.calendar .p-button.outside-month.empty-day {
+  opacity: 1;
 }
 
 .date-group {
@@ -359,6 +381,10 @@
   .sidebar .p-button {
     justify-content: center;
     white-space: nowrap;
+  }
+
+  .planner-filter-row {
+    grid-template-columns: 1fr;
   }
 
   .detail {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canCompleteTask, overdueTasks, plannerTasksForDate, sortPlannerItems, visibleArchiveItems } from "../src/taskRules.js";
+import { canCompleteTask, completedPlannerTasksForDate, overdueTasks, plannerTasksForDate, sortPlannerItems, visibleArchiveItems } from "../src/taskRules.js";
 import type { Task } from "../src/types.js";
 
 const base = (task: Partial<Task>): Task => ({
@@ -35,6 +35,13 @@ describe("task rules", () => {
     const child = base({ id: "c", parentId: "p", completedAt: "2026-05-20T01:00:00.000Z" });
     expect(plannerTasksForDate([parent, child], "2026-05-20").map((task) => task.id)).toEqual(["p", "c"]);
     expect(overdueTasks([{ ...parent, dueDate: "2026-05-19" }, { ...child, dueDate: "2026-05-19" }], "2026-05-20").map((task) => task.id)).toEqual(["p", "c"]);
+  });
+
+  it("groups completed planner tasks by due date so future tabs keep their completed items", () => {
+    const future = base({ id: "future", dueDate: "2026-05-22", completedAt: "2026-05-21T01:00:00.000Z" });
+    const child = base({ id: "child", parentId: "future", dueDate: "2026-05-22", completedAt: "2026-05-21T01:10:00.000Z" });
+    const today = base({ id: "today", dueDate: "2026-05-21", completedAt: "2026-05-21T01:20:00.000Z" });
+    expect(completedPlannerTasksForDate([future, child, today], "2026-05-22").map((task) => task.id)).toEqual(["future", "child"]);
   });
 
   it("sorts pinned above unpinned then manual order", () => {
