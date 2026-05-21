@@ -10,6 +10,7 @@ const base = (task: Partial<Task>): Task => ({
   completedAt: task.completedAt ?? null,
   pinned: task.pinned ?? false,
   tagId: task.tagId ?? null,
+  tagIds: task.tagIds ?? [],
   notes: task.notes ?? "",
   recurrence: task.recurrence ?? { type: "none" },
   order: task.order ?? 0,

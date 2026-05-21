@@ -2,8 +2,10 @@
 import Button from "primevue/button";
 import FileUpload from "primevue/fileupload";
 import InputText from "primevue/inputtext";
+import MultiSelect from "primevue/multiselect";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
+import type { Recurrence } from "@its-personal/shared";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { X } from "lucide-vue-next";
 import { openAttachment, uploadAttachment, plannerApi } from "../services/api.js";
@@ -12,29 +14,29 @@ import { usePlannerStore } from "../stores/planner.js";
 const planner = usePlannerStore();
 const title = ref("");
 const notes = ref("");
-const selectedTagId = ref<string | null>(null);
+const selectedTagIds = ref<string[]>([]);
 const linkUrl = ref("");
+const customIntervalDays = ref(1);
 let notesSaveTimer: ReturnType<typeof setTimeout> | null = null;
 const recurrenceOptions = [
   { label: "None", value: "none" },
   { label: "Daily", value: "daily" },
   { label: "Weekly", value: "weekly" },
   { label: "Monthly", value: "monthly" },
-  { label: "Yearly", value: "yearly" }
+  { label: "Yearly", value: "yearly" },
+  { label: "Every N days", value: "every_n_days" }
 ];
 
 const task = computed(() => planner.selectedTask);
 const taskLinks = computed(() => planner.links.filter((link) => link.taskId === task.value?.id && !link.deletedAt));
 const taskAttachments = computed(() => planner.attachments.filter((attachment) => attachment.taskId === task.value?.id && !attachment.deletedAt));
-const tagOptions = computed(() => [
-  { id: null, name: "None" },
-  ...planner.activeTags
-]);
+const tagOptions = computed(() => planner.activeTags);
 
 watch(task, (value) => {
   title.value = value?.title ?? "";
   notes.value = value?.notes ?? "";
-  selectedTagId.value = value?.tagId ?? null;
+  selectedTagIds.value = value?.tagIds ?? (value?.tagId ? [value.tagId] : []);
+  customIntervalDays.value = value?.recurrence.type === "every_n_days" ? value.recurrence.intervalDays : 1;
 }, { immediate: true });
 
 watch(notes, (value) => {
@@ -59,10 +61,26 @@ async function save() {
   await planner.updateTask(task.value.id, { title: title.value, notes: notes.value });
 }
 
-async function assignTag(tagId: string | null) {
-  selectedTagId.value = tagId;
-  if (!task.value || task.value.tagId === tagId) return;
-  await planner.updateTask(task.value.id, { tagId });
+async function assignTags(tagIds: string[]) {
+  selectedTagIds.value = tagIds;
+  const currentTagIds = task.value?.tagIds ?? (task.value?.tagId ? [task.value.tagId] : []);
+  if (!task.value || currentTagIds.join(",") === tagIds.join(",")) return;
+  await planner.updateTask(task.value.id, { tagIds });
+}
+
+async function updateRecurrence(type: Recurrence["type"]) {
+  if (!task.value) return;
+  const recurrence: Recurrence = type === "every_n_days"
+    ? { type, intervalDays: customIntervalDays.value }
+    : { type };
+  await planner.updateTask(task.value.id, { recurrence });
+}
+
+async function updateCustomIntervalDays(value: string) {
+  customIntervalDays.value = Math.min(3660, Math.max(1, Number.parseInt(value, 10) || 1));
+  if (task.value?.recurrence.type === "every_n_days") {
+    await planner.updateTask(task.value.id, { recurrence: { type: "every_n_days", intervalDays: customIntervalDays.value } });
+  }
 }
 
 async function addLink() {
@@ -90,7 +108,7 @@ async function openTaskAttachment(id: string) {
       <Button aria-label="Close" severity="secondary" text @click="planner.selectedTaskId = null"><X :size="18" /></Button>
     </div>
     <div class="field-stack">
-      <label>Title<InputText v-model="title" /></label>
+      <label>Title<Textarea v-model="title" rows="2" auto-resize /></label>
       <label>Due date<InputText :value="task.dueDate" type="date" @change="planner.updateTask(task.id, { dueDate: ($event.target as HTMLInputElement).value })" /></label>
       <label>Notes<Textarea v-model="notes" rows="5" /></label>
       <label>Recurrence
@@ -99,17 +117,29 @@ async function openTaskAttachment(id: string) {
           :options="recurrenceOptions"
           option-label="label"
           option-value="value"
-          @update:model-value="planner.updateTask(task.id, { recurrence: { type: $event as any } })"
+          @update:model-value="updateRecurrence"
+        />
+      </label>
+      <label v-if="task.recurrence.type === 'every_n_days'">Interval days
+        <InputText
+          :model-value="String(customIntervalDays)"
+          aria-label="Custom recurrence interval days"
+          inputmode="numeric"
+          type="number"
+          min="1"
+          max="3660"
+          @change="updateCustomIntervalDays(($event.target as HTMLInputElement).value)"
         />
       </label>
       <Button label="Save" @click="save" />
       <label>Add tag
-        <Select
-          v-model="selectedTagId"
+        <MultiSelect
+          v-model="selectedTagIds"
           :options="tagOptions"
           option-label="name"
           option-value="id"
-          @update:model-value="assignTag"
+          display="chip"
+          @update:model-value="assignTags"
         />
       </label>
       <label>Add link<InputText v-model="linkUrl" placeholder="https://example.com" @keydown.enter.prevent="addLink" /></label>

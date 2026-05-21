@@ -10,7 +10,8 @@ type TagRow = { id: string; name: string; color: string | null; archived_at: str
 type LinkRow = { id: string; task_id: string; url: string; label: string | null; created_at: string; deleted_at: string | null };
 type AttachmentRow = { id: string; task_id: string; original_name: string; stored_name: string; mime_type: string; size: number; checksum: string; created_at: string; deleted_at: string | null };
 
-export function rowToTask(row: TaskRow): Task {
+export function rowToTask(row: TaskRow, tagIds: string[] = []): Task {
+  const taskTagIds = tagIds.length > 0 ? tagIds : row.tag_id ? [row.tag_id] : [];
   return {
     id: row.id,
     title: row.title,
@@ -19,6 +20,7 @@ export function rowToTask(row: TaskRow): Task {
     completedAt: row.completed_at,
     pinned: row.pinned === 1,
     tagId: row.tag_id,
+    tagIds: taskTagIds,
     notes: row.notes,
     recurrence: JSON.parse(row.recurrence_json) as Recurrence,
     order: row.sort_order,
@@ -29,7 +31,14 @@ export function rowToTask(row: TaskRow): Task {
 }
 
 export function listTasks(db: Db): Task[] {
-  return db.prepare("SELECT * FROM tasks ORDER BY pinned DESC, sort_order ASC, created_at ASC").all().map((row) => rowToTask(row as TaskRow));
+  const tagRows = db.prepare("SELECT task_id, tag_id FROM task_tags ORDER BY created_at ASC").all() as { task_id: string; tag_id: string }[];
+  const tagsByTask = new Map<string, string[]>();
+  for (const row of tagRows) {
+    tagsByTask.set(row.task_id, [...(tagsByTask.get(row.task_id) ?? []), row.tag_id]);
+  }
+  return db.prepare("SELECT * FROM tasks ORDER BY pinned DESC, sort_order ASC, created_at ASC")
+    .all()
+    .map((row) => rowToTask(row as TaskRow, tagsByTask.get((row as TaskRow).id)));
 }
 
 export function getTask(db: Db, id: string): Task | null {
@@ -38,13 +47,17 @@ export function getTask(db: Db, id: string): Task | null {
 }
 
 export function upsertTask(db: Db, task: Task): Task {
+  const tagIds = task.tagIds.length > 0 ? task.tagIds : task.tagId ? [task.tagId] : [];
   db.prepare(`
     INSERT INTO tasks (id, title, parent_id, due_date, completed_at, pinned, tag_id, notes, recurrence_json, sort_order, created_at, updated_at, deleted_at)
     VALUES (@id, @title, @parentId, @dueDate, @completedAt, @pinned, @tagId, @notes, @recurrence, @order, @createdAt, @updatedAt, @deletedAt)
     ON CONFLICT(id) DO UPDATE SET title=@title, parent_id=@parentId, due_date=@dueDate, completed_at=@completedAt,
       pinned=@pinned, tag_id=@tagId, notes=@notes, recurrence_json=@recurrence, sort_order=@order, updated_at=@updatedAt, deleted_at=@deletedAt
-  `).run({ ...task, pinned: task.pinned ? 1 : 0, recurrence: JSON.stringify(task.recurrence) });
-  return task;
+  `).run({ ...task, tagId: tagIds[0] ?? null, pinned: task.pinned ? 1 : 0, recurrence: JSON.stringify(task.recurrence) });
+  db.prepare("DELETE FROM task_tags WHERE task_id = ?").run(task.id);
+  const insertTag = db.prepare("INSERT INTO task_tags (task_id, tag_id, created_at) VALUES (?, ?, ?)");
+  for (const tagId of tagIds) insertTag.run(task.id, tagId, task.updatedAt);
+  return { ...task, tagId: tagIds[0] ?? null, tagIds };
 }
 
 export function rowToTag(row: TagRow): Tag {
