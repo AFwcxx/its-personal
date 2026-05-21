@@ -20,11 +20,17 @@ export const useSessionStore = defineStore("session", {
   actions: {
     async unlock(password: string) {
       localStorage.setItem(deviceKey, this.deviceId);
-      const response = await fetch("/api/auth/unlock", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ password, deviceId: this.deviceId })
-      });
+      let response: Response;
+      try {
+        response = await fetch("/api/auth/unlock", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ password, deviceId: this.deviceId })
+        });
+      } catch {
+        this.error = "Server unavailable";
+        return false;
+      }
       if (!response.ok) {
         this.error = "Invalid password";
         return false;

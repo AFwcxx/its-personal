@@ -1,0 +1,1444 @@
+time="2026-05-21T11:16:29+08:00" level=warning msg="The \"SssJKWb4eocyLsS8B\" variable is not set. Defaulting to a blank string."
+time="2026-05-21T11:16:29+08:00" level=warning msg="The \"SssJKWb4eocyLsS8B\" variable is not set. Defaulting to a blank string."
+time="2026-05-21T11:16:29+08:00" level=warning msg="The \"SssJKWb4eocyLsS8B\" variable is not set. Defaulting to a blank string."
+time="2026-05-21T11:16:29+08:00" level=warning msg="The \"SssJKWb4eocyLsS8B\" variable is not set. Defaulting to a blank string."
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
+its-personal-1  | file:///app/node_modules/zod/v3/types.js:39
+its-personal-1  |                 const error = new ZodError(ctx.common.issues);
+its-personal-1  |                               ^
+its-personal-1  | 
+its-personal-1  | ZodError: [
+its-personal-1  |   {
+its-personal-1  |     "code": "too_small",
+its-personal-1  |     "minimum": 16,
+its-personal-1  |     "type": "string",
+its-personal-1  |     "inclusive": true,
+its-personal-1  |     "exact": false,
+its-personal-1  |     "message": "String must contain at least 16 character(s)",
+its-personal-1  |     "path": [
+its-personal-1  |       "SESSION_SECRET"
+its-personal-1  |     ]
+its-personal-1  |   }
+its-personal-1  | ]
+its-personal-1  |     at get error (file:///app/node_modules/zod/v3/types.js:39:31)
+its-personal-1  |     at ZodObject.parse (file:///app/node_modules/zod/v3/types.js:114:22)
+its-personal-1  |     at loadConfig (file:///app/apps/api/dist/config.js:14:22)
+its-personal-1  |     at file:///app/apps/api/dist/index.js:4:16
+its-personal-1  |     at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+its-personal-1  |     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+its-personal-1  |     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) {
+its-personal-1  |   issues: [
+its-personal-1  |     {
+its-personal-1  |       code: 'too_small',
+its-personal-1  |       minimum: 16,
+its-personal-1  |       type: 'string',
+its-personal-1  |       inclusive: true,
+its-personal-1  |       exact: false,
+its-personal-1  |       message: 'String must contain at least 16 character(s)',
+its-personal-1  |       path: [ 'SESSION_SECRET' ]
+its-personal-1  |     }
+its-personal-1  |   ],
+its-personal-1  |   addIssue: [Function (anonymous)],
+its-personal-1  |   addIssues: [Function (anonymous)]
+its-personal-1  | }
+its-personal-1  | 
+its-personal-1  | Node.js v22.22.3
