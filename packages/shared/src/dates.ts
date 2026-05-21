@@ -1,4 +1,5 @@
-export function todayISO(now = new Date()): string {
+export function todayISO(now = new Date(), timezone?: string): string {
+  if (timezone) return dateInTimezone(now, timezone);
   return now.toISOString().slice(0, 10);
 }
 
@@ -25,4 +26,10 @@ export function parseDate(date: string): Date {
     throw new Error(`Invalid date: ${date}`);
   }
   return parsed;
+}
+
+export function dateInTimezone(date: Date, timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date);
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
 }

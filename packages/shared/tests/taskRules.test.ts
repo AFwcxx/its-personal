@@ -46,9 +46,15 @@ describe("task rules", () => {
   });
 
   it("projects open recurring tasks into future schedule dates", () => {
-    const weekly = base({ id: "weekly", dueDate: "2026-05-21", recurrence: { type: "weekly" } });
+    const weekly = base({ id: "weekly", dueDate: "2026-05-21", recurrence: { type: "weekly", ends: { type: "eternity" } } });
     expect(scheduledTasksForDate([weekly], "2026-05-28")).toEqual([{ ...weekly, dueDate: "2026-05-28" }]);
     expect(scheduledTasksForDate([weekly], "2026-06-04")).toEqual([{ ...weekly, dueDate: "2026-06-04" }]);
+  });
+
+  it("stops projected recurring tasks after their end date", () => {
+    const weekly = base({ id: "weekly", dueDate: "2026-05-21", recurrence: { type: "weekly", ends: { type: "date", date: "2026-05-28" } } });
+    expect(scheduledTasksForDate([weekly], "2026-05-28")).toEqual([{ ...weekly, dueDate: "2026-05-28" }]);
+    expect(scheduledTasksForDate([weekly], "2026-06-04")).toEqual([]);
   });
 
   it("sorts pinned above unpinned then manual order", () => {

@@ -61,7 +61,44 @@ describe("TaskDetailPanel recurrence", () => {
     await wrapper.findComponent({ name: "Select" }).vm.$emit("update:modelValue", "every_n_days");
 
     expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, {
-      recurrence: { type: "every_n_days", intervalDays: 1 }
+      recurrence: { type: "every_n_days", intervalDays: 1, ends: { type: "eternity" } }
+    });
+  });
+
+  it("preserves interval and end date while switching recurrence types", async () => {
+    const recurringTask: Task = {
+      ...baseTask,
+      recurrence: { type: "every_n_days", intervalDays: 10, ends: { type: "date", date: "2026-06-30" } }
+    };
+    vi.mocked(plannerApi.updateTask).mockImplementation(async (_id: string, patch: Partial<Task>) => ({ ...recurringTask, ...patch }));
+    const planner = usePlannerStore();
+    planner.tasks = [recurringTask];
+    planner.selectedTaskId = recurringTask.id;
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    const recurrenceSelect = wrapper.findComponent({ name: "Select" });
+    await recurrenceSelect.vm.$emit("update:modelValue", "weekly");
+    await flushPromises();
+    await recurrenceSelect.vm.$emit("update:modelValue", "none");
+    await flushPromises();
+    await recurrenceSelect.vm.$emit("update:modelValue", "every_n_days");
+    await flushPromises();
+
+    expect(plannerApi.updateTask).toHaveBeenLastCalledWith(baseTask.id, {
+      recurrence: { type: "every_n_days", intervalDays: 10, ends: { type: "date", date: "2026-06-30" } }
     });
   });
 

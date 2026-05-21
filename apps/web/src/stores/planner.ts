@@ -1,4 +1,4 @@
-import { addDays, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Tag, type Task, type TaskLink } from "@its-personal/shared";
+import { addDays, normalizeRecurrence, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Tag, type Task, type TaskLink } from "@its-personal/shared";
 import { defineStore } from "pinia";
 import { cachedSnapshot, loadSnapshot, plannerApi } from "../services/api.js";
 
@@ -17,14 +17,16 @@ export const usePlannerStore = defineStore("planner", {
     selectedTask: (state) => state.tasks.find((task) => task.id === state.selectedTaskId) ?? null,
     activeTags: (state) => state.tags.filter((tag) => !tag.deletedAt && !tag.archivedAt),
     archiveTasks: (state) => visibleArchiveItems(state.tasks),
-    today: () => todayISO()
+    today: (state) => state.currentDate
   },
   actions: {
     apply(snapshot: PlannerSnapshot) {
       this.tasks = snapshot.tasks.map((task) => ({
         ...task,
-        tagIds: task.tagIds ?? (task.tagId ? [task.tagId] : [])
+        tagIds: task.tagIds ?? (task.tagId ? [task.tagId] : []),
+        recurrence: normalizeRecurrence(task.recurrence)
       }));
+      this.currentDate = snapshot.today ?? this.currentDate;
       this.tags = snapshot.tags;
       this.links = snapshot.links;
       this.attachments = snapshot.attachments;
@@ -52,7 +54,7 @@ export const usePlannerStore = defineStore("planner", {
       return scheduledTasksForDate(this.tasks, date);
     },
     overdue() {
-      return overdueTasks(this.tasks, todayISO());
+      return overdueTasks(this.tasks, this.currentDate);
     },
     allVisible(search = "", showCompleted = false) {
       const q = search.toLowerCase();
@@ -84,10 +86,10 @@ export const usePlannerStore = defineStore("planner", {
       this.tasks = this.tasks.map((task) => task.id === id ? { ...task, deletedAt: new Date().toISOString() } : task);
     },
     dateForTab(tab: string) {
-      if (tab === "today") return todayISO();
-      if (tab === "tomorrow") return addDays(todayISO(), 1);
-      if (tab === "day-after") return addDays(todayISO(), 2);
-      return todayISO();
+      if (tab === "today") return this.currentDate;
+      if (tab === "tomorrow") return addDays(this.currentDate, 1);
+      if (tab === "day-after") return addDays(this.currentDate, 2);
+      return this.currentDate;
     }
   }
 });

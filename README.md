@@ -114,7 +114,7 @@ The app reads configuration from environment variables.
 | --- | --- | --- |
 | `APP_PASSWORD` | `change-me` | Password used to unlock the app. Change this. |
 | `SESSION_SECRET` | `dev-session-secret-change-me` | Secret used to sign sessions. Use a long random value. |
-| `APP_TIMEZONE` | `Asia/Kuala_Lumpur` | Local timezone used by the app. |
+| `APP_TIMEZONE` | `Asia/Kuala_Lumpur` | Local timezone used by the app for planner dates and session expiry. Docker also maps this value to `TZ`. |
 | `DATABASE_PATH` | `/data/its-personal.sqlite` in Docker | SQLite database path. |
 | `ATTACHMENT_DIR` | `/attachments` in Docker | Directory for uploaded files. |
 | `MAX_ATTACHMENT_BYTES` | `52428800` | Maximum size for one attachment. |

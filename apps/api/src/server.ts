@@ -18,7 +18,7 @@ export function createServer(config: AppConfig, db: Db) {
 
   app.use("/api/health", healthRouter());
   app.use("/api/auth", authRouter(config));
-  app.use("/api/planner", authRequired(config), plannerRouter(db));
+  app.use("/api/planner", authRequired(config), plannerRouter(db, config.APP_TIMEZONE));
   app.use("/api/attachments", authRequired(config), attachmentsRouter(config, db));
 
   const webDist = path.resolve(process.cwd(), "apps/web/dist");

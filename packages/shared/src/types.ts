@@ -1,16 +1,20 @@
+export type RecurrenceEnd =
+  | { type: "eternity" }
+  | { type: "date"; date: string };
+
 export type Recurrence =
   | { type: "none" }
-  | { type: "daily" }
-  | { type: "weekly" }
-  | { type: "monthly" }
-  | { type: "yearly" }
-  | { type: "every_n_days"; intervalDays: number };
+  | { type: "daily"; ends: RecurrenceEnd }
+  | { type: "weekly"; ends: RecurrenceEnd }
+  | { type: "monthly"; ends: RecurrenceEnd }
+  | { type: "yearly"; ends: RecurrenceEnd }
+  | { type: "every_n_days"; intervalDays: number; ends: RecurrenceEnd };
 
 export interface Task {
   id: string;
   title: string;
   parentId: string | null;
-  dueDate: string | null;
+  dueDate: string;
   completedAt: string | null;
   pinned: boolean;
   tagId: string | null;
@@ -59,6 +63,8 @@ export interface PlannerSnapshot {
   tags: Tag[];
   links: TaskLink[];
   attachments: Attachment[];
+  today?: string;
+  timezone?: string;
 }
 
 export interface FieldValue<T = unknown> {

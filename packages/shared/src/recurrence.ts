@@ -1,21 +1,75 @@
 import { addDays, parseDate, toDateString } from "./dates.js";
-import type { Recurrence } from "./types.js";
+import type { Recurrence, RecurrenceEnd } from "./types.js";
+
+const eternity: RecurrenceEnd = { type: "eternity" };
 
 export function nextDueDate(date: string, recurrence: Recurrence): string | null {
-  switch (recurrence.type) {
+  const normalized = normalizeRecurrence(recurrence);
+  let next: string | null = null;
+  switch (normalized.type) {
     case "none":
       return null;
     case "daily":
-      return addDays(date, 1);
+      next = addDays(date, 1);
+      break;
     case "weekly":
-      return addDays(date, 7);
+      next = addDays(date, 7);
+      break;
     case "every_n_days":
-      return addDays(date, recurrence.intervalDays);
+      next = addDays(date, normalized.intervalDays);
+      break;
     case "monthly":
-      return addMonths(date, 1);
+      next = addMonths(date, 1);
+      break;
     case "yearly":
-      return addYears(date, 1);
+      next = addYears(date, 1);
+      break;
   }
+  return withinRecurrenceEnd(date, next, normalized.ends) ? next : null;
+}
+
+export function normalizeRecurrence(value: unknown): Recurrence {
+  if (!value || typeof value !== "object") return { type: "none" };
+  const recurrence = value as { type?: unknown; intervalDays?: unknown; ends?: unknown };
+  switch (recurrence.type) {
+    case "daily":
+    case "weekly":
+    case "monthly":
+    case "yearly":
+      return { type: recurrence.type, ends: normalizeRecurrenceEnd(recurrence.ends) };
+    case "every_n_days":
+      return {
+        type: "every_n_days",
+        intervalDays: normalizeIntervalDays(recurrence.intervalDays),
+        ends: normalizeRecurrenceEnd(recurrence.ends)
+      };
+    default:
+      return { type: "none" };
+  }
+}
+
+export function recurrenceEndsBeforeDueDate(dueDate: string, recurrence: Recurrence): boolean {
+  const normalized = normalizeRecurrence(recurrence);
+  return normalized.type !== "none" && normalized.ends.type === "date" && normalized.ends.date < dueDate;
+}
+
+function normalizeRecurrenceEnd(value: unknown): RecurrenceEnd {
+  if (!value || typeof value !== "object") return eternity;
+  const end = value as { type?: unknown; date?: unknown };
+  if (end.type === "date" && typeof end.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(end.date)) {
+    return { type: "date", date: end.date };
+  }
+  return eternity;
+}
+
+function normalizeIntervalDays(value: unknown): number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 3660 ? value : 1;
+}
+
+function withinRecurrenceEnd(current: string, next: string, ends: RecurrenceEnd): boolean {
+  if (ends.type === "eternity") return true;
+  if (ends.date < current) return false;
+  return next <= ends.date;
 }
 
 function addMonths(date: string, months: number): string {
