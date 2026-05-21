@@ -50,6 +50,23 @@
   overflow: auto;
 }
 
+.detail-panel-enter-active,
+.detail-panel-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.detail-panel-enter-from,
+.detail-panel-leave-to {
+  opacity: 0;
+  transform: translateX(1.25rem);
+}
+
+.detail-panel-enter-to,
+.detail-panel-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 .toolbar,
 .tabs,
 .row-actions {
@@ -335,6 +352,15 @@
 .p-multiselect-label .p-chip-label {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.detail > .field-stack {
+  margin-top: 1.15rem;
+}
+
+.detail .tag-multiselect.p-multiselect {
+  align-items: flex-start;
+  border-radius: 6px !important;
 }
 
 .field-stack > .p-button {

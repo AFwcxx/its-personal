@@ -134,6 +134,7 @@ async function openTaskAttachment(id: string) {
       <Button label="Save" @click="save" />
       <label>Add tag
         <MultiSelect
+          class="tag-multiselect"
           v-model="selectedTagIds"
           :options="tagOptions"
           option-label="name"
