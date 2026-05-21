@@ -42,7 +42,7 @@ async function reorder(tasks: Task[]) {
     </div>
     <section v-for="group in groups" :key="group.date" class="date-group">
       <h3 class="date-heading">Date: {{ group.date }}</h3>
-      <TaskList :tasks="group.tasks" reorderable @reorder="reorder" />
+      <TaskList :tasks="group.tasks" :reorderable="true" @reorder="reorder" />
     </section>
   </AppShell>
 </template>

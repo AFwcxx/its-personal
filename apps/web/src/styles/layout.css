@@ -135,8 +135,20 @@
   padding: 1rem;
 }
 
+.tag-create-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-block: 0.85rem 1rem;
+}
+
 .task-create-form .p-button {
   justify-self: start;
+  width: auto;
+}
+
+.tag-create-form .p-button {
   width: auto;
 }
 

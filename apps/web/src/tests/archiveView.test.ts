@@ -48,7 +48,7 @@ describe("ArchiveView", () => {
         stubs: {
           AppShell: { template: "<main><slot /></main>" },
           InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
-          TaskList: { props: ["tasks"], template: "<ul><li v-for='task in tasks' :key='task.id'>{{ task.title }} {{ task.dueDate }}</li></ul>" }
+          TaskList: { props: ["tasks", "hidePin"], template: "<ul :data-hide-pin='String(Boolean(hidePin))'><li v-for='task in tasks' :key='task.id'>{{ task.title }} {{ task.dueDate }}</li></ul>" }
         }
       }
     });
@@ -62,5 +62,6 @@ describe("ArchiveView", () => {
     expect(groups[1]).toContain("Tomorrow task 2026-05-22");
     expect(groups[2]).toContain("Date: 2026-05-21");
     expect(groups[2]).toContain("Today task 2026-05-21");
+    expect(wrapper.find("ul").attributes("data-hide-pin")).toBe("true");
   });
 });

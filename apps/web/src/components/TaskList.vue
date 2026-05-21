@@ -4,7 +4,7 @@ import Sortable from "sortablejs";
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import TaskRow from "./TaskRow.vue";
 
-const props = defineProps<{ tasks: Task[]; reorderable?: boolean; readonly?: boolean }>();
+const props = defineProps<{ tasks: Task[]; reorderable?: boolean; readonly?: boolean; hidePin?: boolean }>();
 const emit = defineEmits<{ reorder: [tasks: Task[]] }>();
 
 const listEl = ref<HTMLElement | null>(null);
@@ -63,9 +63,9 @@ onBeforeUnmount(destroySortable);
 <template>
   <div ref="listEl" class="task-list">
     <div v-for="task in rootTasks" :key="task.id" class="task-group" :data-id="task.id">
-      <TaskRow :task="task" :draggable="Boolean(reorderable)" :readonly="Boolean(readonly)" />
+      <TaskRow :task="task" :draggable="Boolean(reorderable)" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" />
       <div v-if="childrenFor(task).length > 0" class="subtask-list">
-        <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" :readonly="Boolean(readonly)" />
+        <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" />
       </div>
     </div>
     <p v-if="tasks.length === 0" class="muted">No tasks.</p>
