@@ -28,6 +28,16 @@ vi.mock("../services/api.js", () => ({
   uploadAttachment: vi.fn(),
   plannerApi: {
     createLink: vi.fn(),
+    createSubtask: vi.fn(async () => ({
+      id: "subtask-1",
+      taskId: baseTask.id,
+      title: "Use coupon",
+      completedAt: null,
+      order: 1000,
+      createdAt: "2026-05-21T00:00:00.000Z",
+      updatedAt: "2026-05-21T00:00:00.000Z",
+      deletedAt: null
+    })),
     deleteTask: vi.fn(async () => undefined),
     updateTask: vi.fn(async (_id: string, patch: Partial<Task>) => ({ ...baseTask, ...patch }))
   }
@@ -136,5 +146,36 @@ describe("TaskDetailPanel recurrence", () => {
 
     expect(plannerApi.deleteTask).toHaveBeenCalledWith(baseTask.id);
     expect(planner.selectedTaskId).toBeNull();
+  });
+
+  it("adds a subtask from the detail panel without opening a subtask detail menu", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = baseTask.id;
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<input :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    const openButton = wrapper.findAll("button").find((button) => button.text() === "Add subtask");
+    await openButton!.trigger("click");
+    await wrapper.find("input[placeholder='New subtask']").setValue("Use coupon");
+
+    const addButton = wrapper.findAll("button").find((button) => button.text() === "Add");
+    await addButton!.trigger("click");
+    await flushPromises();
+
+    expect(plannerApi.createSubtask).toHaveBeenCalledWith({ taskId: baseTask.id, title: "Use coupon" });
+    expect(planner.selectedTaskId).toBe(baseTask.id);
   });
 });

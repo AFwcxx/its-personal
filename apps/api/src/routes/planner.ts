@@ -1,14 +1,14 @@
-import { linkInputSchema, nextDueDate, normalizeRecurrence, recurrenceEndsBeforeDueDate, taskInputSchema, taskPatchSchema, tagInputSchema, todayISO, type Recurrence, type Task, type Tag, type TaskLink } from "@its-personal/shared";
+import { linkInputSchema, nextDueDate, normalizeRecurrence, recurrenceEndsBeforeDueDate, subtaskInputSchema, subtaskPatchSchema, taskInputSchema, taskPatchSchema, tagInputSchema, todayISO, type Recurrence, type Subtask, type Task, type Tag, type TaskLink } from "@its-personal/shared";
 import { Router } from "express";
 import { nanoid } from "nanoid";
 import type { Db } from "../db/connection.js";
-import { listAttachments, listLinks, listTags, listTasks, softDelete, upsertLink, upsertTag, upsertTask } from "../db/repositories.js";
+import { listAttachments, listLinks, listSubtasks, listTags, listTasks, softDelete, softDeleteSubtasksForTask, upsertLink, upsertSubtask, upsertTag, upsertTask } from "../db/repositories.js";
 
 export function plannerRouter(db: Db, timezone = "UTC"): Router {
   const router = Router();
 
   router.get("/snapshot", (_req, res) => {
-    res.json({ tasks: listTasks(db), tags: listTags(db), links: listLinks(db), attachments: listAttachments(db), today: todayISO(new Date(), timezone), timezone });
+    res.json({ tasks: listTasks(db), subtasks: listSubtasks(db), tags: listTags(db), links: listLinks(db), attachments: listAttachments(db), today: todayISO(new Date(), timezone), timezone });
   });
 
   router.post("/tasks", (req, res) => {
@@ -78,13 +78,14 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
 
   router.post("/tasks/:id/complete", (req, res) => {
     const tasks = listTasks(db);
+    const subtasks = listSubtasks(db);
     const task = tasks.find((candidate) => candidate.id === req.params.id && candidate.deletedAt === null);
     if (!task) {
       res.status(404).json({ error: "Task not found" });
       return;
     }
-    const hasOpenChild = tasks.some((candidate) => candidate.parentId === task.id && candidate.completedAt === null && candidate.deletedAt === null);
-    if (hasOpenChild) {
+    const hasOpenSubtask = subtasks.some((candidate) => candidate.taskId === task.id && candidate.completedAt === null && candidate.deletedAt === null);
+    if (hasOpenSubtask) {
       res.status(409).json({ error: "Complete subtasks first" });
       return;
     }
@@ -92,13 +93,80 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
     const completed = upsertTask(db, { ...task, completedAt: now, updatedAt: now });
     const recurringDueDate = nextDueDate(task.dueDate, task.recurrence);
     if (recurringDueDate) {
-      upsertTask(db, { ...task, id: nanoid(), dueDate: recurringDueDate, completedAt: null, createdAt: now, updatedAt: now });
+      const nextTask = upsertTask(db, { ...task, id: nanoid(), dueDate: recurringDueDate, completedAt: null, createdAt: now, updatedAt: now });
+      for (const subtask of subtasks.filter((candidate) => candidate.taskId === task.id && candidate.deletedAt === null)) {
+        upsertSubtask(db, {
+          ...subtask,
+          id: nanoid(),
+          taskId: nextTask.id,
+          completedAt: null,
+          createdAt: now,
+          updatedAt: now,
+          deletedAt: null
+        });
+      }
     }
     res.json(completed);
   });
 
   router.delete("/tasks/:id", (req, res) => {
-    softDelete(db, "tasks", req.params.id, new Date().toISOString());
+    const now = new Date().toISOString();
+    softDelete(db, "tasks", req.params.id, now);
+    softDeleteSubtasksForTask(db, req.params.id, now);
+    res.status(204).end();
+  });
+
+  router.post("/subtasks", (req, res) => {
+    const parsed = subtaskInputSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid subtask input", issues: parsed.error.issues });
+      return;
+    }
+    const input = parsed.data;
+    const task = listTasks(db).find((candidate) => candidate.id === input.taskId && candidate.deletedAt === null);
+    if (!task) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
+    const now = new Date().toISOString();
+    const subtask: Subtask = {
+      id: nanoid(),
+      taskId: input.taskId,
+      title: input.title,
+      completedAt: null,
+      order: input.order ?? Date.now(),
+      createdAt: now,
+      updatedAt: now,
+      deletedAt: null
+    };
+    res.status(201).json(upsertSubtask(db, subtask));
+  });
+
+  router.patch("/subtasks/:id", (req, res) => {
+    const current = listSubtasks(db).find((candidate) => candidate.id === req.params.id && candidate.deletedAt === null);
+    if (!current) {
+      res.status(404).json({ error: "Subtask not found" });
+      return;
+    }
+    const parsed = subtaskPatchSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid subtask patch", issues: parsed.error.issues });
+      return;
+    }
+    const patch = parsed.data;
+    const updated: Subtask = {
+      ...current,
+      title: patch.title ?? current.title,
+      completedAt: patch.completedAt !== undefined ? patch.completedAt : current.completedAt,
+      order: patch.order ?? current.order,
+      deletedAt: patch.deletedAt ?? current.deletedAt,
+      updatedAt: new Date().toISOString()
+    };
+    res.json(upsertSubtask(db, updated));
+  });
+
+  router.delete("/subtasks/:id", (req, res) => {
+    softDelete(db, "subtasks", req.params.id, new Date().toISOString());
     res.status(204).end();
   });
 

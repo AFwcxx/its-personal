@@ -1,4 +1,4 @@
-import type { Attachment, PlannerSnapshot, Tag, Task, TaskLink } from "@its-personal/shared";
+import type { Attachment, PlannerSnapshot, Subtask, Tag, Task, TaskLink } from "@its-personal/shared";
 import { useSessionStore } from "../stores/session.js";
 
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -33,6 +33,9 @@ export const plannerApi = {
   updateTask: (id: string, body: Partial<Task>) => apiJson<Task>(`/api/planner/tasks/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   completeTask: (id: string) => apiJson<Task>(`/api/planner/tasks/${id}/complete`, { method: "POST" }),
   deleteTask: (id: string) => authenticatedFetch(`/api/planner/tasks/${id}`, { method: "DELETE" }),
+  createSubtask: (body: Pick<Subtask, "taskId" | "title"> & Partial<Subtask>) => apiJson<Subtask>("/api/planner/subtasks", { method: "POST", body: JSON.stringify(body) }),
+  updateSubtask: (id: string, body: Partial<Subtask>) => apiJson<Subtask>(`/api/planner/subtasks/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  deleteSubtask: (id: string) => authenticatedFetch(`/api/planner/subtasks/${id}`, { method: "DELETE" }),
   createTag: (body: Pick<Tag, "name"> & Partial<Tag>) => apiJson<Tag>("/api/planner/tags", { method: "POST", body: JSON.stringify(body) }),
   updateTag: (id: string, body: Partial<Tag>) => apiJson<Tag>(`/api/planner/tags/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   deleteTag: (id: string) => authenticatedFetch(`/api/planner/tags/${id}`, { method: "DELETE" }),

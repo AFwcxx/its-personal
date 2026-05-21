@@ -32,6 +32,19 @@ export const taskPatchSchema = taskInputSchema.partial().extend({
   deletedAt: z.string().datetime().nullable().optional()
 });
 
+export const subtaskInputSchema = z.object({
+  taskId: z.string().min(1),
+  title: z.string().min(1).max(500),
+  order: z.number().optional()
+});
+
+export const subtaskPatchSchema = z.object({
+  title: z.string().min(1).max(500).optional(),
+  completedAt: z.string().datetime().nullable().optional(),
+  order: z.number().optional(),
+  deletedAt: z.string().datetime().nullable().optional()
+});
+
 const tagColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 export const tagInputSchema = z.object({
