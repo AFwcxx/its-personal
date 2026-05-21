@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { sortPlannerItems, type Task } from "@its-personal/shared";
+import { sortPlannerItems, todayISO, type Task } from "@its-personal/shared";
 import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
 import { computed, onMounted, ref } from "vue";
@@ -10,8 +10,13 @@ import { usePlannerStore } from "../stores/planner.js";
 const planner = usePlannerStore();
 const search = ref("");
 const showCompleted = ref(false);
+const rangeFrom = ref(todayISO());
+const rangeTo = ref(addCalendarMonths(todayISO(), 1));
 onMounted(() => planner.refresh());
-const tasks = computed(() => planner.allVisible(search.value, showCompleted.value));
+const tasks = computed(() => planner.allVisible(search.value, showCompleted.value).filter((task) => {
+  if (!task.dueDate) return false;
+  return task.dueDate >= rangeFrom.value && task.dueDate <= rangeTo.value;
+}));
 
 const groups = computed(() => {
   const grouped = new Map<string, Task[]>();
@@ -31,13 +36,24 @@ const groups = computed(() => {
 async function reorder(tasks: Task[]) {
   await planner.reorderTasks(tasks);
 }
+
+function addCalendarMonths(date: string, months: number) {
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  const year = parsed.getUTCFullYear();
+  const month = parsed.getUTCMonth() + months;
+  const day = parsed.getUTCDate();
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month, Math.min(day, lastDay))).toISOString().slice(0, 10);
+}
 </script>
 
 <template>
   <AppShell>
     <h2>All Tasks</h2>
-    <div class="toolbar">
+    <div class="toolbar all-tasks-toolbar">
       <InputText v-model="search" placeholder="Search tasks" />
+      <label class="date-range-field">From<InputText v-model="rangeFrom" type="date" /></label>
+      <label class="date-range-field">To<InputText v-model="rangeTo" type="date" /></label>
       <label class="check-label"><Checkbox v-model="showCompleted" binary /> Show completed</label>
     </div>
     <section v-for="group in groups" :key="group.date" class="date-group">

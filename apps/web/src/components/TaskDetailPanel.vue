@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from "primevue/button";
+import Dialog from "primevue/dialog";
 import FileUpload from "primevue/fileupload";
 import InputText from "primevue/inputtext";
 import MultiSelect from "primevue/multiselect";
@@ -17,6 +18,7 @@ const notes = ref("");
 const selectedTagIds = ref<string[]>([]);
 const linkUrl = ref("");
 const customIntervalDays = ref(1);
+const taskPendingRemoval = ref(false);
 let notesSaveTimer: ReturnType<typeof setTimeout> | null = null;
 const recurrenceOptions = [
   { label: "None", value: "none" },
@@ -99,6 +101,13 @@ async function addFile(event: { files: File[] }) {
 async function openTaskAttachment(id: string) {
   await openAttachment(id);
 }
+
+async function confirmRemove() {
+  if (!task.value) return;
+  await planner.deleteTask(task.value.id);
+  taskPendingRemoval.value = false;
+  planner.selectedTaskId = null;
+}
 </script>
 
 <template>
@@ -154,6 +163,14 @@ async function openTaskAttachment(id: string) {
           <a class="attachment-link" href="#" @click.prevent="openTaskAttachment(attachment.id)">{{ attachment.originalName }}</a>
         </li>
       </ul>
+      <Button class="detail-delete-button" label="Delete task" severity="danger" @click="taskPendingRemoval = true" />
     </div>
+    <Dialog :visible="taskPendingRemoval" modal header="Delete task" :style="{ width: 'min(420px, 92vw)' }" @update:visible="taskPendingRemoval = $event">
+      <p>This task will be deleted.</p>
+      <div class="dialog-actions">
+        <Button label="Cancel" severity="secondary" @click="taskPendingRemoval = false" />
+        <Button label="Confirm" severity="danger" @click="confirmRemove" />
+      </div>
+    </Dialog>
   </aside>
 </template>

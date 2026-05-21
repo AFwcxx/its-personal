@@ -57,6 +57,15 @@ function isCurrentMonth(day: string) {
       <span>{{ month.toLocaleString(undefined, { month: "long", year: "numeric" }) }}</span>
       <Button label="Next" severity="secondary" @click="move(1)" />
     </div>
+    <div class="calendar-weekdays" aria-hidden="true">
+      <span>Sun</span>
+      <span>Mon</span>
+      <span>Tue</span>
+      <span>Wed</span>
+      <span>Thu</span>
+      <span>Fri</span>
+      <span>Sat</span>
+    </div>
     <div class="calendar">
       <Button
         v-for="day in days"
@@ -65,7 +74,7 @@ function isCurrentMonth(day: string) {
         text
         @click="selected = day"
       >
-        <strong>{{ Number(day.slice(8)) }}</strong>
+        <strong class="calendar-day-number">{{ Number(day.slice(8)) }}</strong>
         <div class="muted">{{ dayTasks(day).length }} tasks</div>
       </Button>
     </div>
