@@ -62,13 +62,30 @@
 .detail > .toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .detail > .toolbar h2 {
   margin: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.detail-close-button.p-button.p-button-text {
+  align-self: start;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  justify-self: end;
+  margin-top: -0.25rem;
+}
+
+.detail-close-button.p-button.p-button-text:enabled:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
 }
 
 .planner-filter-row {
@@ -78,8 +95,32 @@
   align-items: center;
 }
 
-.task-create-form {
+.task-create-card {
   margin-top: 0.85rem;
+}
+
+.task-create-card.p-card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--control-shadow);
+}
+
+.task-create-card .p-card-body,
+.task-create-card .p-card-content {
+  padding: 0;
+}
+
+.task-create-form {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+}
+
+.task-create-form .p-button {
+  justify-self: start;
+  width: auto;
 }
 
 .task-list {
@@ -149,6 +190,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
+  margin-top: 0.25rem;
   min-height: 1.35rem;
 }
 
@@ -190,13 +232,27 @@
   padding-inline: 1.1rem;
 }
 
-.p-button:not(.p-button-danger) {
+.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text) {
+  border: 1px solid var(--text) !important;
+  background: var(--text) !important;
+  color: var(--bg) !important;
+}
+
+.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text):enabled:hover {
+  border-color: var(--text) !important;
+  background: color-mix(in srgb, var(--text) 86%, var(--bg)) !important;
+  color: var(--bg) !important;
+}
+
+.p-button.p-button-secondary,
+.p-button.p-button-text {
   border: 1px solid var(--border) !important;
   background: var(--surface) !important;
   color: var(--text) !important;
 }
 
-.p-button:not(.p-button-danger):enabled:hover {
+.p-button.p-button-secondary:enabled:hover,
+.p-button.p-button-text:enabled:hover {
   border-color: var(--border) !important;
   background: var(--panel) !important;
   color: var(--text) !important;
@@ -245,6 +301,12 @@
   align-items: center;
 }
 
+.p-multiselect {
+  height: auto;
+  padding-block: 0.35rem;
+  padding-inline-start: 0.65rem;
+}
+
 .p-select-label,
 .p-multiselect-label {
   align-items: center;
@@ -253,6 +315,31 @@
   gap: 0.25rem;
   line-height: 1.2 !important;
   min-height: 100%;
+}
+
+.p-multiselect-label-container {
+  border-radius: inherit;
+  overflow: hidden !important;
+}
+
+.p-multiselect-label {
+  flex-wrap: wrap;
+  overflow: visible !important;
+  white-space: normal;
+}
+
+.p-multiselect-label .p-chip {
+  max-width: 100%;
+}
+
+.p-multiselect-label .p-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.field-stack > .p-button {
+  justify-self: start;
+  width: auto;
 }
 
 .p-inputtext,
@@ -335,7 +422,8 @@
 :root[data-theme="light"] .p-textarea,
 :root[data-theme="light"] .p-select,
 :root[data-theme="light"] .p-password-input,
-:root[data-theme="light"] .p-button:not(.p-button-danger) {
+:root[data-theme="light"] .p-button.p-button-secondary,
+:root[data-theme="light"] .p-button.p-button-text {
   background-color: #ffffff !important;
 }
 
@@ -343,7 +431,8 @@
 :root[data-theme="dark"] .p-textarea,
 :root[data-theme="dark"] .p-select,
 :root[data-theme="dark"] .p-password-input,
-:root[data-theme="dark"] .p-button:not(.p-button-danger) {
+:root[data-theme="dark"] .p-button.p-button-secondary,
+:root[data-theme="dark"] .p-button.p-button-text {
   background-color: #1f1f1f !important;
 }
 

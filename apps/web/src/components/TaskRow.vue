@@ -13,6 +13,14 @@ const tags = computed(() => {
     .map((id) => planner.tags.find((tag) => tag.id === id && !tag.deletedAt))
     .filter((tag): tag is NonNullable<typeof tag> => Boolean(tag));
 });
+
+async function toggleCompleted() {
+  if (props.task.completedAt) {
+    await planner.updateTask(props.task.id, { completedAt: null });
+    return;
+  }
+  await planner.completeTask(props.task.id);
+}
 </script>
 
 <template>
@@ -32,7 +40,7 @@ const tags = computed(() => {
       <Button title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
         <Pin :size="16" :fill="task.pinned ? 'currentColor' : 'none'" />
       </Button>
-      <Button title="Complete" aria-label="Complete" severity="secondary" text @click.stop="planner.completeTask(task.id)">
+      <Button title="Complete" aria-label="Complete" severity="secondary" text @click.stop="toggleCompleted">
         <SquareCheck v-if="task.completedAt" :size="18" />
         <Square v-else :size="18" />
       </Button>

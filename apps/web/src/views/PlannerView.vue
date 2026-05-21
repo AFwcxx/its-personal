@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { completedPlannerTasksForDate, type Task } from "@its-personal/shared";
 import Button from "primevue/button";
+import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import { computed, onMounted, ref } from "vue";
@@ -93,11 +94,15 @@ async function reorder(tasks: Task[]) {
       </div>
       <InputText v-model="search" placeholder="Search tasks" />
     </div>
-    <div v-if="canCreateTask" class="toolbar task-create-form">
-      <InputText v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
-      <InputText v-model="newDueDate" type="date" aria-label="Due date" @keydown.enter.prevent="createTask" />
-      <Button :disabled="planner.status === 'offline'" label="Add" @click="createTask" />
-    </div>
+    <Card v-if="canCreateTask" class="task-create-card">
+      <template #content>
+        <div class="task-create-form">
+          <InputText v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
+          <InputText v-model="newDueDate" type="date" aria-label="Due date" @keydown.enter.prevent="createTask" />
+          <Button :disabled="planner.status === 'offline'" label="Add" @click="createTask" />
+        </div>
+      </template>
+    </Card>
     <TaskList :tasks="visibleTasks" :reorderable="canReorder" @reorder="reorder" />
     <section class="completed-section">
       <button class="completed-toggle" type="button" @click="toggleCompleted">
