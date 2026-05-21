@@ -20,6 +20,13 @@ function childrenFor(task: Task) {
   return childTasks.value.filter((child) => child.parentId === task.id);
 }
 
+function pinnedFirst(tasks: Task[]) {
+  return [
+    ...tasks.filter((task) => task.pinned),
+    ...tasks.filter((task) => !task.pinned)
+  ];
+}
+
 function destroySortable() {
   sortable?.destroy();
   sortable = null;
@@ -41,7 +48,9 @@ watch(
         const [moved] = reordered.splice(event.oldIndex, 1);
         if (!moved) return;
         reordered.splice(event.newIndex, 0, moved);
-        emit("reorder", reordered);
+        const normalized = pinnedFirst(reordered);
+        sortable?.sort(normalized.map((task) => task.id));
+        emit("reorder", normalized);
       }
     });
   },
@@ -53,7 +62,7 @@ onBeforeUnmount(destroySortable);
 
 <template>
   <div ref="listEl" class="task-list">
-    <div v-for="task in rootTasks" :key="task.id" class="task-group">
+    <div v-for="task in rootTasks" :key="task.id" class="task-group" :data-id="task.id">
       <TaskRow :task="task" :draggable="Boolean(reorderable)" :readonly="Boolean(readonly)" />
       <div v-if="childrenFor(task).length > 0" class="subtask-list">
         <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" :readonly="Boolean(readonly)" />

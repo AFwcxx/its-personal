@@ -411,6 +411,12 @@
   padding-block: 0.85rem;
 }
 
+.notes-textarea {
+  max-width: 100%;
+  min-width: 100%;
+  resize: vertical;
+}
+
 .toolbar .p-inputtext,
 .toolbar .p-select,
 .toolbar .p-multiselect,
@@ -612,8 +618,21 @@
     white-space: nowrap;
   }
 
-  .sidebar .muted {
+  .app-shell {
+    padding-bottom: 1.6rem;
+  }
+
+  .sidebar .app-version {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 3;
     margin: 0;
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1;
+    padding: 0.25rem 0.85rem;
   }
 
   .planner-filter-row {

@@ -27,7 +27,7 @@ const detailLeaving = ref(false);
           <Button :class="{ active: isActive }" :label="item.label" text @click="navigate" />
         </RouterLink>
       </nav>
-      <p class="muted">v0.0.1</p>
+      <p class="muted app-version">v0.0.1</p>
     </aside>
     <main class="main">
       <slot />
