@@ -11,8 +11,9 @@ export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<
       ...init.headers
     }
   });
-  if (response.status === 401) session.lock();
+  if (response.status === 401) session.lockLocal();
   if (!response.ok) throw new Error(await response.text());
+  session.recordActivity(false);
   return response.json() as Promise<T>;
 }
 
@@ -31,26 +32,26 @@ export const plannerApi = {
   createTask: (body: Partial<Task> & { title: string }) => apiJson<Task>("/api/planner/tasks", { method: "POST", body: JSON.stringify(body) }),
   updateTask: (id: string, body: Partial<Task>) => apiJson<Task>(`/api/planner/tasks/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   completeTask: (id: string) => apiJson<Task>(`/api/planner/tasks/${id}/complete`, { method: "POST" }),
-  deleteTask: (id: string) => fetch(`/api/planner/tasks/${id}`, { method: "DELETE", headers: useSessionStore().authHeaders() }),
+  deleteTask: (id: string) => authenticatedFetch(`/api/planner/tasks/${id}`, { method: "DELETE" }),
   createTag: (body: Pick<Tag, "name"> & Partial<Tag>) => apiJson<Tag>("/api/planner/tags", { method: "POST", body: JSON.stringify(body) }),
   updateTag: (id: string, body: Partial<Tag>) => apiJson<Tag>(`/api/planner/tags/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
-  deleteTag: (id: string) => fetch(`/api/planner/tags/${id}`, { method: "DELETE", headers: useSessionStore().authHeaders() }),
+  deleteTag: (id: string) => authenticatedFetch(`/api/planner/tags/${id}`, { method: "DELETE" }),
   createLink: (body: Pick<TaskLink, "taskId" | "url"> & Partial<TaskLink>) => apiJson<TaskLink>("/api/planner/links", { method: "POST", body: JSON.stringify(body) }),
-  deleteLink: (id: string) => fetch(`/api/planner/links/${id}`, { method: "DELETE", headers: useSessionStore().authHeaders() })
+  deleteLink: (id: string) => authenticatedFetch(`/api/planner/links/${id}`, { method: "DELETE" })
 };
 
 export async function uploadAttachment(taskId: string, file: File): Promise<Attachment> {
   const form = new FormData();
   form.set("taskId", taskId);
   form.set("file", file);
-  const response = await fetch("/api/attachments", { method: "POST", headers: useSessionStore().authHeaders(), body: form });
+  const response = await authenticatedFetch("/api/attachments", { method: "POST", body: form });
   if (!response.ok) throw new Error(await response.text());
   return response.json() as Promise<Attachment>;
 }
 
 export async function openAttachment(id: string): Promise<void> {
   const opened = window.open("", "_blank");
-  const response = await fetch(`/api/attachments/${id}`, { headers: useSessionStore().authHeaders() });
+  const response = await authenticatedFetch(`/api/attachments/${id}`);
   if (!response.ok) throw new Error(await response.text());
   const blobUrl = URL.createObjectURL(await response.blob());
   if (opened) {
@@ -58,4 +59,18 @@ export async function openAttachment(id: string): Promise<void> {
   } else {
     window.location.href = blobUrl;
   }
+}
+
+async function authenticatedFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const session = useSessionStore();
+  const response = await fetch(path, {
+    ...init,
+    headers: {
+      ...session.authHeaders(),
+      ...init.headers
+    }
+  });
+  if (response.status === 401) session.lockLocal();
+  if (response.ok) session.recordActivity(false);
+  return response;
 }

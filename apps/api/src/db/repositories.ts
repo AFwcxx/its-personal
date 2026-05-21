@@ -9,6 +9,14 @@ type TaskRow = {
 type TagRow = { id: string; name: string; color: string | null; archived_at: string | null; created_at: string; updated_at: string; deleted_at: string | null };
 type LinkRow = { id: string; task_id: string; url: string; label: string | null; created_at: string; deleted_at: string | null };
 type AttachmentRow = { id: string; task_id: string; original_name: string; stored_name: string; mime_type: string; size: number; checksum: string; created_at: string; deleted_at: string | null };
+export type SessionRow = {
+  id: string;
+  device_id: string;
+  password_fingerprint: string;
+  created_at: string;
+  last_seen_at: string;
+  invalidated_at: string | null;
+};
 
 export function rowToTask(row: TaskRow, tagIds: string[] = []): Task {
   const taskTagIds = tagIds.length > 0 ? tagIds : row.tag_id ? [row.tag_id] : [];
@@ -113,6 +121,27 @@ export function insertAttachment(db: Db, attachment: Attachment): Attachment {
     VALUES (@id, @taskId, @originalName, @storedName, @mimeType, @size, @checksum, @createdAt, @deletedAt)
   `).run(attachment);
   return attachment;
+}
+
+export function insertSession(db: Db, session: SessionRow): SessionRow {
+  db.prepare(`
+    INSERT INTO sessions (id, device_id, password_fingerprint, created_at, last_seen_at, invalidated_at)
+    VALUES (@id, @device_id, @password_fingerprint, @created_at, @last_seen_at, @invalidated_at)
+  `).run(session);
+  return session;
+}
+
+export function getSession(db: Db, id: string): SessionRow | null {
+  const row = db.prepare("SELECT * FROM sessions WHERE id = ?").get(id) as SessionRow | undefined;
+  return row ?? null;
+}
+
+export function touchSession(db: Db, id: string, now: string): void {
+  db.prepare("UPDATE sessions SET last_seen_at = ? WHERE id = ? AND invalidated_at IS NULL").run(now, id);
+}
+
+export function invalidateSession(db: Db, id: string, now: string): void {
+  db.prepare("UPDATE sessions SET invalidated_at = COALESCE(invalidated_at, ?) WHERE id = ?").run(now, id);
 }
 
 export function softDelete(db: Db, table: "tasks" | "tags" | "links" | "attachments", id: string, now: string): void {

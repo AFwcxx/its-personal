@@ -21,7 +21,7 @@ Status: Not started
 ## Open Questions
 
 - Backup format: raw SQLite copy, SQLite dump, or archive containing both?
-- Should export require re-entering password even with a valid daily session?
+- Should export require re-entering password even with a valid idle session?
 - Should total attachment limit be enforced by SQLite metadata sum, filesystem scan, or both?
 - Should the app expose a storage usage panel?
 

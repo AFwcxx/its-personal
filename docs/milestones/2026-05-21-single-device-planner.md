@@ -40,7 +40,7 @@ Date: 2026-05-21
 - 2026-05-21: Created this milestone document before implementation.
 - 2026-05-21: Scaffolded npm workspace, package configs, TypeScript base config, environment example, and ignore rules.
 - 2026-05-21: Added shared domain helpers/tests for dates, recurrence, task rules, validation, and deterministic field choice.
-- 2026-05-21: Added Express API, SQLite schema/repositories, daily unlock auth, planner CRUD, links/tags, and attachment upload/download/delete.
+- 2026-05-21: Added Express API, SQLite schema/repositories, password unlock auth, planner CRUD, links/tags, and attachment upload/download/delete.
 - 2026-05-21: Added Vue PWA shell, routes, session/planner stores, planner/all/schedule/archive/tags screens, task detail panel, theme/layout CSS, and read-only cached snapshot behavior.
 - 2026-05-21: Added Docker Compose, Dockerfile, Tailscale Serve deployment docs, manual backup/restore docs, and a Playwright smoke placeholder.
 - 2026-05-21: Installed dependencies and generated `package-lock.json`.

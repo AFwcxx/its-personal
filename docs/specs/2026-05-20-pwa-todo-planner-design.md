@@ -4,7 +4,7 @@ Date: 2026-05-20
 
 ## Summary
 
-Build a single-user, offline-capable PWA to-do/planner app in TypeScript. The frontend is a Vue 3 PWA. The backend is Node.js + Express with SQLite as the canonical database. The app is deployed with Docker Compose, uses a simple daily password unlock, stores uploaded attachments in a Docker volume, and syncs offline changes through an operation log.
+Build a single-user, offline-capable PWA to-do/planner app in TypeScript. The frontend is a Vue 3 PWA. The backend is Node.js + Express with SQLite as the canonical database. The app is deployed with Docker Compose, uses a simple password unlock with server-side idle session locking, stores uploaded attachments in a Docker volume, and syncs offline changes through an operation log.
 
 The MVP is end-to-end and intentionally lean: it should be usable as a personal planner across devices, work offline for task management, sync when online, and follow the provided planner mockup and design samples.
 
@@ -21,7 +21,7 @@ The MVP is end-to-end and intentionally lean: it should be usable as a personal 
 - Sync edits between devices when connectivity returns.
 - Store canonical data in local SQLite on the server.
 - Support standard uploaded attachments stored on the server and cached offline on demand.
-- Require a simple password once per device per day.
+- Require a simple password after a tab is locked, dormant past the configured idle timeout, or invalidated by password change.
 - Run through Docker Compose and be reachable only locally or through Tailscale/local networking by default.
 
 ## Non-goals
@@ -37,7 +37,7 @@ The MVP is end-to-end and intentionally lean: it should be usable as a personal 
 Use a TypeScript monorepo with three main workspaces:
 
 - `apps/web`: Vite + Vue 3 PWA. It owns offline UX, IndexedDB storage, service worker caching, touch interactions, and responsive UI.
-- `apps/api`: Node.js + Express API. It owns password unlock, daily session validation, SQLite persistence, sync operation ingestion, state queries, backup export, and attachment upload/download.
+- `apps/api`: Node.js + Express API. It owns password unlock, server-side idle session validation, SQLite persistence, sync operation ingestion, state queries, backup export, and attachment upload/download.
 - `packages/shared`: shared TypeScript types, validation schemas, recurrence helpers, date utilities, and sync operation definitions.
 
 Docker Compose runs the built web/API service with:
@@ -54,11 +54,12 @@ The app is single-user. The password is configured through Docker Compose, norma
 
 Unlock flow:
 
-1. The PWA asks for the password when no valid local daily session exists.
-2. The API verifies the password and issues a signed session token.
-3. The PWA stores the token locally for that device.
-4. The token expires at the next local-day boundary according to the configured app timezone.
-5. When the day changes, the PWA asks for the password again.
+1. The PWA asks for the password when the current browser tab has no valid unlocked session.
+2. The API verifies the password, creates a SQLite-backed server session, and issues a signed bearer token for that server session.
+3. The PWA stores the token in tab-scoped session storage, not persistent local storage.
+4. Browser UI activity, including pointer, click, touch, keyboard, scroll, and focus activity, updates the local idle timer and sends a throttled authenticated activity heartbeat. Successful authenticated API calls also count as activity.
+5. The API rejects tokens whose server session has been dormant longer than `SESSION_IDLE_TIMEOUT_SECONDS`, whose session was manually locked, or whose password fingerprint no longer matches the current configured `APP_PASSWORD`.
+6. Sessions have no daily boundary expiry. An actively used session can continue indefinitely until manual lock, idle expiry, token invalidation, or app password change.
 
 Each browser/device also has a stable `device_id` used for sync attribution and deterministic conflict tie-breaking. The `device_id` is not a user account.
 
@@ -157,7 +158,8 @@ SQLite is the canonical server store. The exact schema can evolve during impleme
 - `recurrences`: recurrence type, optional inclusive end date, and `interval_days` for custom every-N-days rules.
 - `list_orders`: per-list/date manual order positions.
 - `devices`: stable device ids and metadata.
-- `session_events`: optional audit records for unlock attempts and issued daily sessions. The MVP can use stateless signed tokens with expiry instead of a server-side session table.
+- `sessions`: server-side unlock sessions with device id, password fingerprint, created timestamp, last-seen timestamp, and invalidation timestamp.
+- `session_events`: optional audit records for unlock attempts and issued sessions.
 - `sync_operations`: immutable operation log for idempotent sync and audit/debug.
 
 The PWA stores an offline projection in IndexedDB:
@@ -260,7 +262,7 @@ Offline-capable:
 
 Network-required:
 
-- first unlock if no valid daily session exists,
+- first unlock if the current tab has no valid server-backed session,
 - downloading uncached attachments,
 - uploading pending attachments,
 - backup export,
@@ -273,7 +275,7 @@ The service worker caches the app shell and static assets. IndexedDB is the sour
 The app should fail visibly and recoverably:
 
 - Invalid password shows a clear unlock error.
-- Expired daily session redirects to unlock without losing local queued edits.
+- Expired idle session redirects to unlock without losing local queued edits.
 - Sync failures leave operations in the outbox and show a small pending/error indicator.
 - Attachment upload/download failures can be retried.
 - Browser storage quota issues should preserve metadata and queued operations first, then evict non-`keep offline` cached files.
@@ -299,7 +301,7 @@ Testing should cover:
 The MVP is complete when:
 
 - Docker Compose can start the app with configured password, SQLite volume, and attachment volume.
-- A user can unlock once per device per day.
+- A user can unlock a browser tab and remain unlocked while active; dormant tabs lock after the configured server-side idle timeout.
 - The main planner, overdue, all tasks, schedule, archive, and manage-tags flows work.
 - Tasks can be created, edited, completed, reordered, pinned, tagged, searched, archived, and made recurring.
 - Parent/subtask completion rules match this spec.
@@ -314,6 +316,6 @@ The MVP is complete when:
 
 - Browser storage quotas vary. Attachment caching must stay explicit and conservative.
 - Timestamp-based sync depends on device clocks. The MVP accepts this and uses device id tie-breakers; future versions may add server-assigned logical clocks.
-- Daily password sessions are suitable for a private local/Tailscale app, not public exposure.
+- Password sessions with server-side idle locking are suitable for a private local/Tailscale app, not public exposure.
 - Advanced recurrence rules beyond inclusive end dates are intentionally deferred.
 - Full backup restore UI is deferred.

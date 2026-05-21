@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the approved single-user, offline-capable Vue PWA planner with Express, SQLite, Docker Compose, daily password unlock, attachments, backup export, and operation-log sync.
+**Goal:** Build the approved single-user, offline-capable Vue PWA planner with Express, SQLite, Docker Compose, password unlock with idle session locking, attachments, backup export, and operation-log sync.
 
 **Architecture:** Use a TypeScript npm-workspace monorepo with `apps/web`, `apps/api`, and `packages/shared`. The Vue PWA stores offline state in IndexedDB and syncs operation logs to the Express API, which applies deterministic field-level last-write-wins into SQLite and stores attachments in a Docker volume.
 
@@ -532,10 +532,9 @@ Implement:
 
 - `issueSession({ deviceId, now })`
 - `verifySession(token, now)`
-- `nextLocalDayBoundary(now, timezone)`
 - `verifyPassword(input)`
 
-Use `jsonwebtoken` signed with `SESSION_SECRET`. Token expiry must align to next local-day boundary in `APP_TIMEZONE`.
+Use `jsonwebtoken` signed with `SESSION_SECRET` and a SQLite-backed server session. Session idle expiry must use `SESSION_IDLE_TIMEOUT_SECONDS`.
 
 - [ ] **Step 4: Implement routes and middleware**
 
@@ -557,7 +556,7 @@ Run:
 
 ```bash
 git add apps/api/src/auth apps/api/src/middleware apps/api/src/routes apps/api/src/server.ts apps/api/src/index.ts apps/api/tests/auth.test.ts
-git commit -m "feat: add daily password unlock"
+git commit -m "feat: add password unlock"
 ```
 
 ## Task 5: API Sync Engine And Routes
@@ -1161,5 +1160,5 @@ git commit -m "test: add planner e2e smoke coverage"
 
 - Spec coverage: tasks cover scaffold, shared domain rules, SQLite, auth, sync, attachments, backup, Vue PWA shell, offline IndexedDB, planner pages, secondary pages, Docker, docs, and verification.
 - Scope control: this remains one MVP plan but is split into independently testable commits.
-- Critical risks addressed: attachment cache quota is handled in Task 10, timestamp conflict rules in Tasks 2 and 5, daily password in Task 4, private Docker binding in Task 12.
+- Critical risks addressed: attachment cache quota is handled in Task 10, timestamp conflict rules in Tasks 2 and 5, password unlock in Task 4, private Docker binding in Task 12.
 - Execution note: dependency versions may need minor updates if npm resolves newer compatible packages; keep APIs and tests stable.

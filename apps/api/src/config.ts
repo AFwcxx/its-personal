@@ -3,6 +3,7 @@ import { z } from "zod";
 const envSchema = z.object({
   APP_PASSWORD: z.string().min(1).default("change-me"),
   SESSION_SECRET: z.string().min(16).default("dev-session-secret-change-me"),
+  SESSION_IDLE_TIMEOUT_SECONDS: z.coerce.number().int().positive().default(10_800),
   APP_TIMEZONE: z.string().default("Asia/Kuala_Lumpur"),
   DATABASE_PATH: z.string().default("./data/its-personal.sqlite"),
   ATTACHMENT_DIR: z.string().default("./attachments"),

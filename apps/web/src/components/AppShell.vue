@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import Button from "primevue/button";
-import { computed, ref } from "vue";
-import { RouterLink } from "vue-router";
+import { computed, onMounted, ref, watch } from "vue";
+import { RouterLink, useRouter } from "vue-router";
 import { usePlannerStore } from "../stores/planner.js";
+import { useSessionStore } from "../stores/session.js";
 import TaskDetailPanel from "./TaskDetailPanel.vue";
 
 const navItems = [
@@ -14,20 +15,38 @@ const navItems = [
 ];
 
 const planner = usePlannerStore();
+const session = useSessionStore();
+const router = useRouter();
 const hasDetail = computed(() => planner.selectedTask !== null);
 const detailLeaving = ref(false);
+
+onMounted(() => session.startActivityTracking());
+watch(() => session.isUnlocked, (isUnlocked) => {
+  if (!isUnlocked) void router.push("/unlock");
+});
+
+async function lock() {
+  await session.lock();
+  await router.push("/unlock");
+}
 </script>
 
 <template>
   <div class="app-shell" :class="{ 'has-detail': hasDetail || detailLeaving }">
     <aside class="sidebar">
-      <h1>Its Personal</h1>
+      <div class="sidebar-header">
+        <h1>Its Personal</h1>
+        <Button aria-label="Lock" icon="pi pi-lock" rounded text @click="lock" />
+      </div>
       <nav>
         <RouterLink v-for="item in navItems" :key="item.to" v-slot="{ navigate, isActive }" :to="item.to" custom>
           <Button :class="{ active: isActive }" :label="item.label" text @click="navigate" />
         </RouterLink>
       </nav>
-      <p class="muted app-version">v0.0.1</p>
+      <div class="muted app-version">
+        <Button aria-label="Lock" icon="pi pi-lock" rounded text @click="lock" />
+        <span>v0.0.1</span>
+      </div>
     </aside>
     <main class="main">
       <slot />

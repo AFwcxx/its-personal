@@ -1,7 +1,12 @@
 import jwt from "jsonwebtoken";
+import { nanoid } from "nanoid";
+import { createHash } from "node:crypto";
 import type { AppConfig } from "../config.js";
+import type { Db } from "../db/connection.js";
+import { getSession, insertSession, invalidateSession, touchSession } from "../db/repositories.js";
 
 export interface SessionClaims {
+  sessionId: string;
   deviceId: string;
 }
 
@@ -9,39 +14,39 @@ export function verifyPassword(config: AppConfig, input: string): boolean {
   return input === config.APP_PASSWORD;
 }
 
-export function nextLocalDayBoundary(now: Date, timezone: string): Date {
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
-  const year = Number(parts.find((part) => part.type === "year")?.value);
-  const month = Number(parts.find((part) => part.type === "month")?.value);
-  const day = Number(parts.find((part) => part.type === "day")?.value);
-  const noonNextDayUtc = new Date(Date.UTC(year, month - 1, day + 1, 12));
-  const offsetMinutes = timezoneOffsetMinutes(noonNextDayUtc, timezone);
-  return new Date(Date.UTC(year, month - 1, day + 1, 0) - offsetMinutes * 60_000);
+export function passwordFingerprint(config: AppConfig): string {
+  return createHash("sha256").update(`${config.SESSION_SECRET}:${config.APP_PASSWORD}`).digest("hex");
 }
 
-export function issueSession(config: AppConfig, deviceId: string, now = new Date()): { token: string; expiresAt: string } {
-  const expires = nextLocalDayBoundary(now, config.APP_TIMEZONE);
-  const token = jwt.sign({ deviceId }, config.SESSION_SECRET, { expiresIn: Math.max(1, Math.floor((expires.getTime() - now.getTime()) / 1000)) });
-  return { token, expiresAt: expires.toISOString() };
+export function issueSession(config: AppConfig, db: Db, deviceId: string, now = new Date()): { token: string; idleTimeoutSeconds: number } {
+  const sessionId = nanoid();
+  const timestamp = now.toISOString();
+  insertSession(db, {
+    id: sessionId,
+    device_id: deviceId,
+    password_fingerprint: passwordFingerprint(config),
+    created_at: timestamp,
+    last_seen_at: timestamp,
+    invalidated_at: null
+  });
+  const token = jwt.sign({ sessionId, deviceId }, config.SESSION_SECRET);
+  return { token, idleTimeoutSeconds: config.SESSION_IDLE_TIMEOUT_SECONDS };
 }
 
-export function verifySession(config: AppConfig, token: string): SessionClaims {
+export function verifySession(config: AppConfig, db: Db, token: string, now = new Date(), touch = true): SessionClaims {
   const decoded = jwt.verify(token, config.SESSION_SECRET) as SessionClaims;
-  return { deviceId: decoded.deviceId };
+  if (!decoded.sessionId || !decoded.deviceId) throw new Error("Invalid session token");
+  const session = getSession(db, decoded.sessionId);
+  if (!session || session.invalidated_at) throw new Error("Session expired");
+  if (session.device_id !== decoded.deviceId) throw new Error("Invalid session token");
+  if (session.password_fingerprint !== passwordFingerprint(config)) throw new Error("Session expired");
+  const idleMs = config.SESSION_IDLE_TIMEOUT_SECONDS * 1000;
+  if (Date.parse(session.last_seen_at) + idleMs <= now.getTime()) throw new Error("Session expired");
+  if (touch) touchSession(db, decoded.sessionId, now.toISOString());
+  return { sessionId: decoded.sessionId, deviceId: decoded.deviceId };
 }
 
-function timezoneOffsetMinutes(date: Date, timezone: string): number {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: timezone,
-    hourCycle: "h23",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  }).formatToParts(date);
-  const value = (type: string) => Number(parts.find((part) => part.type === type)?.value);
-  const asUtc = Date.UTC(value("year"), value("month") - 1, value("day"), value("hour"), value("minute"), value("second"));
-  return (asUtc - date.getTime()) / 60_000;
+export function endSession(config: AppConfig, db: Db, token: string, now = new Date()): void {
+  const decoded = jwt.verify(token, config.SESSION_SECRET) as SessionClaims;
+  if (decoded.sessionId) invalidateSession(db, decoded.sessionId, now.toISOString());
 }
