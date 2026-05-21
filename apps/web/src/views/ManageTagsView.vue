@@ -63,7 +63,7 @@ function pickerColor(value: string | null) {
 <template>
   <AppShell>
     <h2>Manage Tags</h2>
-    <div class="toolbar">
+    <div class="tag-create-form">
       <InputText v-model="name" placeholder="New tag" @keydown.enter.prevent="createTag" />
       <ColorPicker v-model="color" input-id="new-tag-color" aria-label="New tag color" />
       <Button label="Add" @click="createTag" />

@@ -5,7 +5,7 @@ import { GripVertical, Pin, Square, SquareCheck } from "lucide-vue-next";
 import { computed } from "vue";
 import { usePlannerStore } from "../stores/planner.js";
 
-const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean }>();
+const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean; hidePin?: boolean }>();
 const planner = usePlannerStore();
 const tags = computed(() => {
   const ids = props.task.tagIds ?? (props.task.tagId ? [props.task.tagId] : []);
@@ -37,7 +37,7 @@ async function toggleCompleted() {
       </div>
     </div>
     <div v-if="!readonly" class="row-actions">
-      <Button title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
+      <Button v-if="!hidePin" title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
         <Pin :size="16" :fill="task.pinned ? 'currentColor' : 'none'" />
       </Button>
       <Button title="Complete" aria-label="Complete" severity="secondary" text @click.stop="toggleCompleted">

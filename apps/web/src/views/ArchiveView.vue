@@ -33,7 +33,7 @@ const groups = computed(() => {
     <InputText v-model="search" placeholder="Search archive" />
     <section v-for="group in groups" :key="group.date" class="date-group">
       <h3 class="date-heading">Date: {{ group.date }}</h3>
-      <TaskList :tasks="group.tasks" />
+      <TaskList :tasks="group.tasks" :hide-pin="true" />
     </section>
   </AppShell>
 </template>

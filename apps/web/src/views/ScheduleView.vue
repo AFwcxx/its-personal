@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { completedPlannerTasksForDate, type Task } from "@its-personal/shared";
 import Button from "primevue/button";
 import { computed, onMounted, ref } from "vue";
 import AppShell from "../components/AppShell.vue";
@@ -8,6 +9,7 @@ import { usePlannerStore } from "../stores/planner.js";
 const planner = usePlannerStore();
 const month = ref(new Date());
 const selected = ref(planner.currentDate);
+const completedExpanded = ref(localStorage.getItem("its-personal-schedule-completed-expanded") === "true");
 onMounted(() => planner.refresh());
 
 const days = computed(() => {
@@ -22,6 +24,17 @@ const days = computed(() => {
 });
 
 const selectedTasks = computed(() => planner.scheduledTasksFor(selected.value));
+const completedTasks = computed(() => completedPlannerTasksForDate(planner.tasks, selected.value));
+
+async function reorder(tasks: Task[]) {
+  await planner.reorderTasks(tasks);
+}
+
+function toggleCompleted() {
+  completedExpanded.value = !completedExpanded.value;
+  localStorage.setItem("its-personal-schedule-completed-expanded", String(completedExpanded.value));
+}
+
 function move(delta: number) {
   month.value = new Date(Date.UTC(month.value.getFullYear(), month.value.getMonth() + delta, 1));
 }
@@ -57,6 +70,14 @@ function isCurrentMonth(day: string) {
       </Button>
     </div>
     <h3>{{ selected }}</h3>
-    <TaskList :tasks="selectedTasks" readonly />
+    <TaskList :tasks="selectedTasks" :reorderable="true" @reorder="reorder" />
+    <section class="completed-section">
+      <button class="completed-toggle" type="button" @click="toggleCompleted">
+        <span>Completed</span>
+        <span class="muted">{{ completedTasks.length }}</span>
+        <span aria-hidden="true">{{ completedExpanded ? "▾" : "▸" }}</span>
+      </button>
+      <TaskList v-if="completedExpanded" :tasks="completedTasks" />
+    </section>
   </AppShell>
 </template>
