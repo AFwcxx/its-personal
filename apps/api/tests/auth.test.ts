@@ -34,6 +34,7 @@ describe("auth and database", () => {
       completedAt: null,
       pinned: true,
       tagId: null,
+      tagIds: [],
       notes: "",
       recurrence: { type: "none" },
       order: 1,

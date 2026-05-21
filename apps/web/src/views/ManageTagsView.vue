@@ -34,7 +34,7 @@ async function recolor(id: string, value: string) {
 }
 
 function taskCount(id: string) {
-  return planner.tasks.filter((task) => task.tagId === id && task.deletedAt === null).length;
+  return planner.tasks.filter((task) => (task.tagIds ?? (task.tagId ? [task.tagId] : [])).includes(id) && task.deletedAt === null).length;
 }
 
 function requestRemove(id: string) {

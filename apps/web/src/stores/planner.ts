@@ -21,7 +21,10 @@ export const usePlannerStore = defineStore("planner", {
   },
   actions: {
     apply(snapshot: PlannerSnapshot) {
-      this.tasks = snapshot.tasks;
+      this.tasks = snapshot.tasks.map((task) => ({
+        ...task,
+        tagIds: task.tagIds ?? (task.tagId ? [task.tagId] : [])
+      }));
       this.tags = snapshot.tags;
       this.links = snapshot.links;
       this.attachments = snapshot.attachments;

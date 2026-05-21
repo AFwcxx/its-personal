@@ -15,6 +15,7 @@ export const taskInputSchema = z.object({
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   pinned: z.boolean().optional(),
   tagId: z.string().nullable().optional(),
+  tagIds: z.array(z.string()).optional(),
   notes: z.string().optional(),
   recurrence: recurrenceSchema.optional(),
   order: z.number().optional()

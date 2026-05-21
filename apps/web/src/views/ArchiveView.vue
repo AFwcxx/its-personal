@@ -13,14 +13,16 @@ const tasks = computed(() => planner.archiveTasks.filter((task) => task.title.to
 
 const groups = computed(() => {
   const grouped = new Map<string, Task[]>();
-  const byId = new Map(tasks.value.map((task) => [task.id, task]));
   for (const task of tasks.value) {
-    const parent = task.parentId ? byId.get(task.parentId) : null;
-    const key = (parent?.completedAt ?? task.completedAt)?.slice(0, 10) ?? "No completion date";
+    const key = task.dueDate ?? "No date";
     grouped.set(key, [...(grouped.get(key) ?? []), task]);
   }
   return [...grouped.entries()]
-    .sort(([a], [b]) => b.localeCompare(a))
+    .sort(([a], [b]) => {
+      if (a === "No date") return 1;
+      if (b === "No date") return -1;
+      return b.localeCompare(a);
+    })
     .map(([date, items]) => ({ date, tasks: sortPlannerItems(items) }));
 });
 </script>

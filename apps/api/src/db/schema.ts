@@ -20,6 +20,16 @@ export function migrate(db: Db): void {
     CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
     CREATE INDEX IF NOT EXISTS idx_tasks_parent_id ON tasks(parent_id);
 
+    CREATE TABLE IF NOT EXISTS task_tags (
+      task_id TEXT NOT NULL,
+      tag_id TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      PRIMARY KEY(task_id, tag_id),
+      FOREIGN KEY(task_id) REFERENCES tasks(id),
+      FOREIGN KEY(tag_id) REFERENCES tags(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_task_tags_tag_id ON task_tags(tag_id);
+
     CREATE TABLE IF NOT EXISTS tags (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,

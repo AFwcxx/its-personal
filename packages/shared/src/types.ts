@@ -14,6 +14,7 @@ export interface Task {
   completedAt: string | null;
   pinned: boolean;
   tagId: string | null;
+  tagIds: string[];
   notes: string;
   recurrence: Recurrence;
   order: number;
