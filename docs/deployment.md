@@ -11,14 +11,14 @@
 docker compose up -d --build
 ```
 
-Default binding is `127.0.0.1:3002`, so the app is not exposed publicly.
+Default binding is `127.0.0.1:3009`, so the app is not exposed publicly.
 
 ## Tailscale Serve HTTPS
 
 Use Tailscale Serve to expose the local app over HTTPS inside the tailnet:
 
 ```bash
-tailscale serve --bg https / http://127.0.0.1:3002
+tailscale serve --bg https / http://127.0.0.1:3009
 ```
 
 HTTPS matters because installed PWA and service-worker behavior requires a secure context outside `localhost`.

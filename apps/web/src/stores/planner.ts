@@ -66,6 +66,13 @@ export const usePlannerStore = defineStore("planner", {
       const task = await plannerApi.completeTask(id);
       this.tasks = this.tasks.map((candidate) => candidate.id === id ? task : candidate);
     },
+    async reorderTasks(tasks: Task[]) {
+      const updates = tasks.map((task, index) => ({ ...task, order: (index + 1) * 1000 }));
+      this.tasks = this.tasks.map((task) => updates.find((updated) => updated.id === task.id) ?? task);
+      for (const task of updates) {
+        await plannerApi.updateTask(task.id, { order: task.order });
+      }
+    },
     async deleteTask(id: string) {
       await plannerApi.deleteTask(id);
       this.tasks = this.tasks.map((task) => task.id === id ? { ...task, deletedAt: new Date().toISOString() } : task);

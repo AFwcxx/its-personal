@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canCompleteTask, sortPlannerItems, visibleArchiveItems } from "../src/taskRules.js";
+import { canCompleteTask, overdueTasks, plannerTasksForDate, sortPlannerItems, visibleArchiveItems } from "../src/taskRules.js";
 import type { Task } from "../src/types.js";
 
 const base = (task: Partial<Task>): Task => ({
@@ -28,6 +28,13 @@ describe("task rules", () => {
     const child = base({ id: "c", parentId: "p", completedAt: "2026-05-20T01:00:00.000Z" });
     expect(visibleArchiveItems([parent, child])).toEqual([]);
     expect(visibleArchiveItems([{ ...parent, completedAt: "2026-05-20T02:00:00.000Z" }, child]).map((task) => task.id)).toEqual(["p", "c"]);
+  });
+
+  it("keeps completed children in active planner lists until the parent is complete", () => {
+    const parent = base({ id: "p" });
+    const child = base({ id: "c", parentId: "p", completedAt: "2026-05-20T01:00:00.000Z" });
+    expect(plannerTasksForDate([parent, child], "2026-05-20").map((task) => task.id)).toEqual(["p", "c"]);
+    expect(overdueTasks([{ ...parent, dueDate: "2026-05-19" }, { ...child, dueDate: "2026-05-19" }], "2026-05-20").map((task) => task.id)).toEqual(["p", "c"]);
   });
 
   it("sorts pinned above unpinned then manual order", () => {

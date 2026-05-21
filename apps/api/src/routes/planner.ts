@@ -96,7 +96,16 @@ export function plannerRouter(db: Db): Router {
       return;
     }
     const input = tagInputSchema.partial().parse(req.body);
-    res.json(upsertTag(db, { ...current, name: input.name ?? current.name, color: input.color ?? current.color, updatedAt: new Date().toISOString() }));
+    const archivedAt = req.body.archivedAt === null || typeof req.body.archivedAt === "string" ? req.body.archivedAt : current.archivedAt;
+    const deletedAt = req.body.deletedAt === null || typeof req.body.deletedAt === "string" ? req.body.deletedAt : current.deletedAt;
+    res.json(upsertTag(db, {
+      ...current,
+      name: input.name ?? current.name,
+      color: input.color ?? current.color,
+      archivedAt,
+      deletedAt,
+      updatedAt: new Date().toISOString()
+    }));
   });
 
   router.delete("/tags/:id", (req, res) => {

@@ -9,7 +9,32 @@
   --border: #d8d6d0;
   --active: #ffec99;
   --danger: #b42318;
-  --shadow: 0 16px 40px rgb(0 0 0 / 10%);
+  --control-shadow: 0 12px 34px rgb(0 0 0 / 10%);
+  --shadow: 0 18px 48px rgb(0 0 0 / 10%);
+  --p-primary-color: #66580f;
+  --p-primary-hover-color: #4f430b;
+  --p-primary-active-color: #3e3509;
+  --p-primary-contrast-color: #ffffff;
+  --p-content-background: var(--surface);
+  --p-content-color: var(--text);
+  --p-content-border-color: var(--border);
+  --p-form-field-background: var(--surface);
+  --p-form-field-color: var(--text);
+  --p-form-field-border-color: var(--border);
+  --p-form-field-hover-border-color: var(--border);
+  --p-form-field-focus-border-color: var(--border);
+  --p-form-field-placeholder-color: var(--muted);
+  --p-form-field-shadow: var(--control-shadow);
+  --p-surface-0: #ffffff;
+  --p-surface-50: #f7f7f5;
+  --p-surface-100: #eeeeea;
+  --p-surface-700: #323232;
+  --p-surface-800: #1f1f1f;
+  --p-surface-900: #111111;
+  --p-text-color: var(--text);
+  --p-text-muted-color: var(--muted);
+  --p-button-border-radius: 999px;
+  --p-form-field-border-radius: 999px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,7 +47,20 @@
     --border: #323232;
     --active: #4a3f18;
     --danger: #ff8a80;
-    --shadow: 0 16px 40px rgb(0 0 0 / 45%);
+    --control-shadow: none;
+    --shadow: 0 18px 48px rgb(0 0 0 / 45%);
+    --p-content-background: var(--surface);
+    --p-content-color: var(--text);
+    --p-content-border-color: var(--border);
+    --p-form-field-background: var(--surface);
+    --p-form-field-color: var(--text);
+    --p-form-field-border-color: var(--border);
+    --p-form-field-hover-border-color: var(--border);
+    --p-form-field-focus-border-color: var(--border);
+    --p-form-field-placeholder-color: var(--muted);
+    --p-form-field-shadow: var(--control-shadow);
+    --p-text-color: var(--text);
+    --p-text-muted-color: var(--muted);
   }
 }
 
@@ -36,6 +74,14 @@
   --border: #d8d6d0;
   --active: #ffec99;
   --danger: #b42318;
+  --control-shadow: 0 12px 34px rgb(0 0 0 / 10%);
+  --p-form-field-background: var(--surface);
+  --p-form-field-color: var(--text);
+  --p-form-field-border-color: var(--border);
+  --p-form-field-hover-border-color: var(--border);
+  --p-form-field-focus-border-color: var(--border);
+  --p-form-field-placeholder-color: var(--muted);
+  --p-form-field-shadow: var(--control-shadow);
 }
 
 :root[data-theme="dark"] {
@@ -48,6 +94,14 @@
   --border: #323232;
   --active: #4a3f18;
   --danger: #ff8a80;
+  --control-shadow: none;
+  --p-form-field-background: var(--surface);
+  --p-form-field-color: var(--text);
+  --p-form-field-border-color: var(--border);
+  --p-form-field-hover-border-color: var(--border);
+  --p-form-field-focus-border-color: var(--border);
+  --p-form-field-placeholder-color: var(--muted);
+  --p-form-field-shadow: var(--control-shadow);
 }
 
 * {
@@ -60,33 +114,10 @@ body {
   color: var(--text);
 }
 
+.p-component,
 button,
 input,
 textarea,
 select {
   font: inherit;
-}
-
-button {
-  min-height: 44px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-}
-
-button.active {
-  background: var(--active);
-}
-
-input,
-textarea,
-select {
-  min-height: 44px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  padding: 0.65rem 0.8rem;
 }

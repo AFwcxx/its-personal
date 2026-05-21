@@ -12,7 +12,7 @@ export const recurrenceSchema = z.discriminatedUnion("type", [
 export const taskInputSchema = z.object({
   title: z.string().min(1).max(500),
   parentId: z.string().nullable().optional(),
-  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   pinned: z.boolean().optional(),
   tagId: z.string().nullable().optional(),
   notes: z.string().optional(),
@@ -30,6 +30,11 @@ const tagColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 export const tagInputSchema = z.object({
   name: z.string().min(1).max(80),
   color: tagColorSchema.nullable().optional()
+});
+
+export const tagPatchSchema = tagInputSchema.partial().extend({
+  archivedAt: z.string().datetime().nullable().optional(),
+  deletedAt: z.string().datetime().nullable().optional()
 });
 
 export const linkInputSchema = z.object({
