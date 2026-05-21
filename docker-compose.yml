@@ -1,0 +1,21 @@
+services:
+  its-personal:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_PATH: /data/its-personal.sqlite
+      ATTACHMENT_DIR: /attachments
+    ports:
+      - "${PUBLISHED_HOST:-127.0.0.1}:${PUBLISHED_PORT:-3002}:3000"
+    volumes:
+      - planner-data:/data
+      - planner-attachments:/attachments
+    restart: unless-stopped
+
+volumes:
+  planner-data:
+  planner-attachments:

@@ -1,0 +1,32 @@
+{
+  "name": "@its-personal/web",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vue-tsc -b && vite build",
+    "typecheck": "vue-tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@its-personal/shared": "0.0.1",
+    "@vite-pwa/assets-generator": "^0.2.6",
+    "@vueuse/core": "^13.2.0",
+    "dexie": "^4.0.11",
+    "lucide-vue-next": "^0.511.0",
+    "pinia": "^3.0.2",
+    "vite-plugin-pwa": "^0.21.2",
+    "vue": "^3.5.14",
+    "vue-router": "^4.5.1",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/test-utils": "^2.4.6",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.4",
+    "vue-tsc": "^2.2.10"
+  }
+}

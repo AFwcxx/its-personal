@@ -1,15 +1,11 @@
-.superpowers
 node_modules/
 dist/
 coverage/
-.DS_Store
+.git/
 .env
-.superpowers/
 data/
 attachments/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
 *.tsbuildinfo
-test-results/
-playwright-report/

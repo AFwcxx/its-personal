@@ -1,0 +1,107 @@
+import type { Attachment, Recurrence, Tag, Task, TaskLink } from "@its-personal/shared";
+import type { Db } from "./connection.js";
+
+type TaskRow = {
+  id: string; title: string; parent_id: string | null; due_date: string | null; completed_at: string | null;
+  pinned: number; tag_id: string | null; notes: string; recurrence_json: string; sort_order: number;
+  created_at: string; updated_at: string; deleted_at: string | null;
+};
+type TagRow = { id: string; name: string; color: string | null; archived_at: string | null; created_at: string; updated_at: string; deleted_at: string | null };
+type LinkRow = { id: string; task_id: string; url: string; label: string | null; created_at: string; deleted_at: string | null };
+type AttachmentRow = { id: string; task_id: string; original_name: string; stored_name: string; mime_type: string; size: number; checksum: string; created_at: string; deleted_at: string | null };
+
+export function rowToTask(row: TaskRow): Task {
+  return {
+    id: row.id,
+    title: row.title,
+    parentId: row.parent_id,
+    dueDate: row.due_date,
+    completedAt: row.completed_at,
+    pinned: row.pinned === 1,
+    tagId: row.tag_id,
+    notes: row.notes,
+    recurrence: JSON.parse(row.recurrence_json) as Recurrence,
+    order: row.sort_order,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at
+  };
+}
+
+export function listTasks(db: Db): Task[] {
+  return db.prepare("SELECT * FROM tasks ORDER BY pinned DESC, sort_order ASC, created_at ASC").all().map((row) => rowToTask(row as TaskRow));
+}
+
+export function getTask(db: Db, id: string): Task | null {
+  const row = db.prepare("SELECT * FROM tasks WHERE id = ?").get(id) as TaskRow | undefined;
+  return row ? rowToTask(row) : null;
+}
+
+export function upsertTask(db: Db, task: Task): Task {
+  db.prepare(`
+    INSERT INTO tasks (id, title, parent_id, due_date, completed_at, pinned, tag_id, notes, recurrence_json, sort_order, created_at, updated_at, deleted_at)
+    VALUES (@id, @title, @parentId, @dueDate, @completedAt, @pinned, @tagId, @notes, @recurrence, @order, @createdAt, @updatedAt, @deletedAt)
+    ON CONFLICT(id) DO UPDATE SET title=@title, parent_id=@parentId, due_date=@dueDate, completed_at=@completedAt,
+      pinned=@pinned, tag_id=@tagId, notes=@notes, recurrence_json=@recurrence, sort_order=@order, updated_at=@updatedAt, deleted_at=@deletedAt
+  `).run({ ...task, pinned: task.pinned ? 1 : 0, recurrence: JSON.stringify(task.recurrence) });
+  return task;
+}
+
+export function rowToTag(row: TagRow): Tag {
+  return { id: row.id, name: row.name, color: row.color, archivedAt: row.archived_at, createdAt: row.created_at, updatedAt: row.updated_at, deletedAt: row.deleted_at };
+}
+
+export function listTags(db: Db): Tag[] {
+  return db.prepare("SELECT * FROM tags ORDER BY name").all().map((row) => rowToTag(row as TagRow));
+}
+
+export function upsertTag(db: Db, tag: Tag): Tag {
+  db.prepare(`
+    INSERT INTO tags (id, name, color, archived_at, created_at, updated_at, deleted_at)
+    VALUES (@id, @name, @color, @archivedAt, @createdAt, @updatedAt, @deletedAt)
+    ON CONFLICT(id) DO UPDATE SET name=@name, color=@color, archived_at=@archivedAt, updated_at=@updatedAt, deleted_at=@deletedAt
+  `).run(tag);
+  return tag;
+}
+
+export function rowToLink(row: LinkRow): TaskLink {
+  return { id: row.id, taskId: row.task_id, url: row.url, label: row.label, createdAt: row.created_at, deletedAt: row.deleted_at };
+}
+
+export function listLinks(db: Db): TaskLink[] {
+  return db.prepare("SELECT * FROM links ORDER BY created_at").all().map((row) => rowToLink(row as LinkRow));
+}
+
+export function upsertLink(db: Db, link: TaskLink): TaskLink {
+  db.prepare(`
+    INSERT INTO links (id, task_id, url, label, created_at, deleted_at)
+    VALUES (@id, @taskId, @url, @label, @createdAt, @deletedAt)
+    ON CONFLICT(id) DO UPDATE SET task_id=@taskId, url=@url, label=@label, deleted_at=@deletedAt
+  `).run(link);
+  return link;
+}
+
+export function rowToAttachment(row: AttachmentRow): Attachment {
+  return { id: row.id, taskId: row.task_id, originalName: row.original_name, storedName: row.stored_name, mimeType: row.mime_type, size: row.size, checksum: row.checksum, createdAt: row.created_at, deletedAt: row.deleted_at };
+}
+
+export function listAttachments(db: Db): Attachment[] {
+  return db.prepare("SELECT * FROM attachments ORDER BY created_at").all().map((row) => rowToAttachment(row as AttachmentRow));
+}
+
+export function getAttachment(db: Db, id: string): Attachment | null {
+  const row = db.prepare("SELECT * FROM attachments WHERE id = ?").get(id) as AttachmentRow | undefined;
+  return row ? rowToAttachment(row) : null;
+}
+
+export function insertAttachment(db: Db, attachment: Attachment): Attachment {
+  db.prepare(`
+    INSERT INTO attachments (id, task_id, original_name, stored_name, mime_type, size, checksum, created_at, deleted_at)
+    VALUES (@id, @taskId, @originalName, @storedName, @mimeType, @size, @checksum, @createdAt, @deletedAt)
+  `).run(attachment);
+  return attachment;
+}
+
+export function softDelete(db: Db, table: "tasks" | "tags" | "links" | "attachments", id: string, now: string): void {
+  db.prepare(`UPDATE ${table} SET deleted_at = ? WHERE id = ?`).run(now, id);
+}
