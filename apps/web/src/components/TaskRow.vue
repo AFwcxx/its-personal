@@ -8,6 +8,7 @@ import { usePlannerStore } from "../stores/planner.js";
 const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean; hidePin?: boolean }>();
 const planner = usePlannerStore();
 const isSelected = computed(() => planner.selectedTaskId === props.task.id);
+const isRecurring = computed(() => props.task.recurrence.type !== "none");
 const tags = computed(() => {
   const ids = props.task.tagIds ?? (props.task.tagId ? [props.task.tagId] : []);
   return ids
@@ -31,7 +32,10 @@ async function toggleCompleted() {
     </Button>
     <span v-else class="task-row-spacer" aria-hidden="true" />
     <div>
-      <strong>{{ task.title }}</strong>
+      <strong class="task-title">
+        <i v-if="isRecurring" class="pi pi-replay task-recurrence-icon" aria-hidden="true" />
+        <span>{{ task.title }}</span>
+      </strong>
       <div class="task-tags">
         <span v-for="tag in tags" :key="tag.id" class="task-tag" :style="{ '--tag-color': tag.color ?? '#6b7280' }">{{ tag.name }}</span>
         <span v-if="tags.length === 0" class="muted">No tags</span>
