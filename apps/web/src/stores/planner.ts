@@ -1,10 +1,11 @@
-import { addDays, normalizeRecurrence, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Tag, type Task, type TaskLink } from "@its-personal/shared";
+import { addDays, normalizeRecurrence, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Subtask, type Tag, type Task, type TaskLink } from "@its-personal/shared";
 import { defineStore } from "pinia";
 import { cachedSnapshot, loadSnapshot, plannerApi } from "../services/api.js";
 
 export const usePlannerStore = defineStore("planner", {
   state: () => ({
     tasks: [] as Task[],
+    subtasks: [] as Subtask[],
     tags: [] as Tag[],
     links: [] as TaskLink[],
     attachments: [] as Attachment[],
@@ -26,6 +27,7 @@ export const usePlannerStore = defineStore("planner", {
         tagIds: task.tagIds ?? (task.tagId ? [task.tagId] : []),
         recurrence: normalizeRecurrence(task.recurrence)
       }));
+      this.subtasks = snapshot.subtasks ?? [];
       this.currentDate = snapshot.today ?? this.currentDate;
       this.tags = snapshot.tags;
       this.links = snapshot.links;
@@ -65,14 +67,29 @@ export const usePlannerStore = defineStore("planner", {
       this.tasks.push(task);
       return task;
     },
+    async createSubtask(taskId: string, title: string) {
+      const subtask = await plannerApi.createSubtask({ taskId, title });
+      this.subtasks.push(subtask);
+      return subtask;
+    },
     async updateTask(id: string, patch: Partial<Task>) {
       const task = await plannerApi.updateTask(id, patch);
       this.tasks = this.tasks.map((candidate) => candidate.id === id ? task : candidate);
       return task;
     },
+    async updateSubtask(id: string, patch: Partial<Subtask>) {
+      const subtask = await plannerApi.updateSubtask(id, patch);
+      this.subtasks = this.subtasks.map((candidate) => candidate.id === id ? subtask : candidate);
+      return subtask;
+    },
     async completeTask(id: string) {
       const task = await plannerApi.completeTask(id);
       this.tasks = this.tasks.map((candidate) => candidate.id === id ? task : candidate);
+    },
+    async toggleSubtask(id: string) {
+      const subtask = this.subtasks.find((candidate) => candidate.id === id);
+      if (!subtask) return;
+      await this.updateSubtask(id, { completedAt: subtask.completedAt ? null : new Date().toISOString() });
     },
     async reorderTasks(tasks: Task[]) {
       const updates = tasks.map((task, index) => ({ ...task, order: (index + 1) * 1000 }));
@@ -81,9 +98,21 @@ export const usePlannerStore = defineStore("planner", {
         await plannerApi.updateTask(task.id, { order: task.order });
       }
     },
+    async reorderSubtasks(subtasks: Subtask[]) {
+      const updates = subtasks.map((subtask, index) => ({ ...subtask, order: (index + 1) * 1000 }));
+      this.subtasks = this.subtasks.map((subtask) => updates.find((updated) => updated.id === subtask.id) ?? subtask);
+      for (const subtask of updates) {
+        await plannerApi.updateSubtask(subtask.id, { order: subtask.order });
+      }
+    },
     async deleteTask(id: string) {
       await plannerApi.deleteTask(id);
       this.tasks = this.tasks.map((task) => task.id === id ? { ...task, deletedAt: new Date().toISOString() } : task);
+      this.subtasks = this.subtasks.map((subtask) => subtask.taskId === id ? { ...subtask, deletedAt: new Date().toISOString() } : subtask);
+    },
+    async deleteSubtask(id: string) {
+      await plannerApi.deleteSubtask(id);
+      this.subtasks = this.subtasks.map((subtask) => subtask.id === id ? { ...subtask, deletedAt: new Date().toISOString() } : subtask);
     },
     dateForTab(tab: string) {
       if (tab === "today") return this.currentDate;

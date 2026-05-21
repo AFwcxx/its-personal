@@ -3,7 +3,7 @@ import request from "supertest";
 import { issueSession, verifyPassword, verifySession } from "../src/auth/session.js";
 import { loadConfig } from "../src/config.js";
 import { openDatabase } from "../src/db/connection.js";
-import { listTasks, upsertTask } from "../src/db/repositories.js";
+import { listSubtasks, listTasks, upsertSubtask, upsertTask } from "../src/db/repositories.js";
 import { createServer } from "../src/server.js";
 
 const config = loadConfig({
@@ -18,6 +18,26 @@ const config = loadConfig({
   PORT: "3000",
   HOST: "127.0.0.1"
 });
+
+function taskFixture(id: string, patch: Partial<Parameters<typeof upsertTask>[1]> = {}): Parameters<typeof upsertTask>[1] {
+  return {
+    id,
+    title: "Task",
+    parentId: null,
+    dueDate: "2026-05-20",
+    completedAt: null,
+    pinned: false,
+    tagId: null,
+    tagIds: [],
+    notes: "",
+    recurrence: { type: "none" },
+    order: 1,
+    createdAt: "2026-05-20T00:00:00.000Z",
+    updatedAt: "2026-05-20T00:00:00.000Z",
+    deletedAt: null,
+    ...patch
+  };
+}
 
 describe("auth and database", () => {
   it("issues verifiable idle sessions only after password verification", () => {
@@ -112,5 +132,112 @@ describe("auth and database", () => {
         recurrence: { type: "weekly", ends: { type: "date", date: "2026-05-19" } }
       })
       .expect(400);
+  });
+
+  it("persists subtasks separately from task rows and returns them in snapshots", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    upsertTask(db, taskFixture("task-1"));
+
+    await request(createServer(config, db))
+      .post("/api/planner/subtasks")
+      .set("authorization", `Bearer ${token}`)
+      .send({ taskId: "task-1", title: "Use coupon" })
+      .expect(201)
+      .expect((response) => {
+        expect(response.body.taskId).toBe("task-1");
+        expect(response.body.title).toBe("Use coupon");
+        expect(response.body.completedAt).toBeNull();
+      });
+
+    await request(createServer(config, db))
+      .get("/api/planner/snapshot")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.subtasks.map((subtask: { title: string }) => subtask.title)).toEqual(["Use coupon"]);
+      });
+  });
+
+  it("requires open subtasks to be completed before completing the parent task", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    upsertTask(db, taskFixture("task-1"));
+    upsertSubtask(db, {
+      id: "subtask-1",
+      taskId: "task-1",
+      title: "Use coupon",
+      completedAt: null,
+      order: 1000,
+      createdAt: "2026-05-20T00:00:00.000Z",
+      updatedAt: "2026-05-20T00:00:00.000Z",
+      deletedAt: null
+    });
+
+    await request(createServer(config, db))
+      .post("/api/planner/tasks/task-1/complete")
+      .set("authorization", `Bearer ${token}`)
+      .expect(409);
+
+    await request(createServer(config, db))
+      .patch("/api/planner/subtasks/subtask-1")
+      .set("authorization", `Bearer ${token}`)
+      .send({ completedAt: "2026-05-20T01:00:00.000Z" })
+      .expect(200);
+
+    await request(createServer(config, db))
+      .post("/api/planner/tasks/task-1/complete")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+  });
+
+  it("soft-deletes subtasks when deleting the parent task", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    upsertTask(db, taskFixture("task-1"));
+    upsertSubtask(db, {
+      id: "subtask-1",
+      taskId: "task-1",
+      title: "Use coupon",
+      completedAt: null,
+      order: 1000,
+      createdAt: "2026-05-20T00:00:00.000Z",
+      updatedAt: "2026-05-20T00:00:00.000Z",
+      deletedAt: null
+    });
+
+    await request(createServer(config, db))
+      .delete("/api/planner/tasks/task-1")
+      .set("authorization", `Bearer ${token}`)
+      .expect(204);
+
+    expect(listSubtasks(db).find((subtask) => subtask.id === "subtask-1")?.deletedAt).not.toBeNull();
+  });
+
+  it("clones recurring task subtasks into the next occurrence as incomplete", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    upsertTask(db, taskFixture("task-1", { recurrence: { type: "daily", ends: { type: "eternity" } } }));
+    upsertSubtask(db, {
+      id: "subtask-1",
+      taskId: "task-1",
+      title: "Use coupon",
+      completedAt: "2026-05-20T01:00:00.000Z",
+      order: 1000,
+      createdAt: "2026-05-20T00:00:00.000Z",
+      updatedAt: "2026-05-20T00:00:00.000Z",
+      deletedAt: null
+    });
+
+    await request(createServer(config, db))
+      .post("/api/planner/tasks/task-1/complete")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200);
+
+    const nextTask = listTasks(db).find((task) => task.id !== "task-1" && task.dueDate === "2026-05-21");
+    expect(nextTask).toBeTruthy();
+    const clonedSubtask = listSubtasks(db).find((subtask) => subtask.taskId === nextTask?.id);
+    expect(clonedSubtask?.title).toBe("Use coupon");
+    expect(clonedSubtask?.completedAt).toBeNull();
   });
 });

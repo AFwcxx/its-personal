@@ -2,10 +2,13 @@
 import type { Task } from "@its-personal/shared";
 import Sortable from "sortablejs";
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { usePlannerStore } from "../stores/planner.js";
+import SubtaskList from "./SubtaskList.vue";
 import TaskRow from "./TaskRow.vue";
 
 const props = defineProps<{ tasks: Task[]; reorderable?: boolean; readonly?: boolean; hidePin?: boolean }>();
 const emit = defineEmits<{ reorder: [tasks: Task[]] }>();
+const planner = usePlannerStore();
 
 const listEl = ref<HTMLElement | null>(null);
 let sortable: Sortable | null = null;
@@ -64,6 +67,7 @@ onBeforeUnmount(destroySortable);
   <div ref="listEl" class="task-list">
     <div v-for="task in rootTasks" :key="task.id" class="task-group" :data-id="task.id">
       <TaskRow :task="task" :draggable="Boolean(reorderable)" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" />
+      <SubtaskList :task-id="task.id" :subtasks="planner.subtasks" :readonly="Boolean(readonly)" />
       <div v-if="childrenFor(task).length > 0" class="subtask-list">
         <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" />
       </div>

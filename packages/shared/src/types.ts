@@ -27,6 +27,17 @@ export interface Task {
   deletedAt: string | null;
 }
 
+export interface Subtask {
+  id: string;
+  taskId: string;
+  title: string;
+  completedAt: string | null;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
 export interface Tag {
   id: string;
   name: string;
@@ -60,6 +71,7 @@ export interface Attachment {
 
 export interface PlannerSnapshot {
   tasks: Task[];
+  subtasks: Subtask[];
   tags: Tag[];
   links: TaskLink[];
   attachments: Attachment[];

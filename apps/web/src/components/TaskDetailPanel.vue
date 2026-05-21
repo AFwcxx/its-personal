@@ -17,6 +17,8 @@ const title = ref("");
 const notes = ref("");
 const selectedTagIds = ref<string[]>([]);
 const linkUrl = ref("");
+const subtaskTitle = ref("");
+const subtaskDialogVisible = ref(false);
 const customIntervalDays = ref(1);
 const recurrenceEnds = ref<RecurrenceEnd>({ type: "eternity" });
 const taskPendingRemoval = ref(false);
@@ -39,6 +41,7 @@ const task = computed(() => planner.selectedTask);
 const taskLinks = computed(() => planner.links.filter((link) => link.taskId === task.value?.id && !link.deletedAt));
 const taskAttachments = computed(() => planner.attachments.filter((attachment) => attachment.taskId === task.value?.id && !attachment.deletedAt));
 const tagOptions = computed(() => planner.activeTags);
+const canAddSubtask = computed(() => Boolean(task.value && task.value.completedAt === null && task.value.deletedAt === null));
 
 watch(task, (value) => {
   const changedTask = value?.id !== syncedTaskId;
@@ -130,6 +133,13 @@ async function addFile(event: { files: File[] }) {
   planner.attachments.push(await uploadAttachment(task.value.id, file));
 }
 
+async function addSubtask(closeAfterAdd = false) {
+  if (!task.value || !subtaskTitle.value.trim() || !canAddSubtask.value) return;
+  await planner.createSubtask(task.value.id, subtaskTitle.value.trim());
+  subtaskTitle.value = "";
+  if (closeAfterAdd) subtaskDialogVisible.value = false;
+}
+
 async function openTaskAttachment(id: string) {
   await openAttachment(id);
 }
@@ -148,6 +158,7 @@ async function confirmRemove() {
       <h2>{{ task.title }}</h2>
       <Button class="detail-close-button" aria-label="Close" severity="secondary" text @click="planner.selectedTaskId = null"><X :size="18" /></Button>
     </div>
+    <Button v-if="canAddSubtask" class="detail-add-subtask-button" label="Add subtask" severity="secondary" @click="subtaskDialogVisible = true" />
     <div class="field-stack">
       <label>Title<Textarea v-model="title" rows="2" auto-resize /></label>
       <label>Due date<InputText :value="task.dueDate" type="date" :disabled="task.recurrence.type !== 'none' && recurrenceEnds.type === 'date'" @change="planner.updateTask(task.id, { dueDate: ($event.target as HTMLInputElement).value })" /></label>
@@ -220,6 +231,15 @@ async function confirmRemove() {
       <div class="dialog-actions">
         <Button label="Cancel" severity="secondary" @click="taskPendingRemoval = false" />
         <Button label="Confirm" severity="danger" @click="confirmRemove" />
+      </div>
+    </Dialog>
+    <Dialog :visible="subtaskDialogVisible" modal header="Add subtask" :style="{ width: 'min(420px, 92vw)' }" @update:visible="subtaskDialogVisible = $event">
+      <div class="dialog-form">
+        <InputText v-model="subtaskTitle" placeholder="New subtask" autofocus @keydown.enter.prevent="addSubtask(false)" />
+      </div>
+      <div class="dialog-actions">
+        <Button label="Add" @click="addSubtask(false)" />
+        <Button label="Add & Close" @click="addSubtask(true)" />
       </div>
     </Dialog>
   </aside>

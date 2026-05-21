@@ -1,9 +1,13 @@
-import { normalizeRecurrence, type Attachment, type Tag, type Task, type TaskLink } from "@its-personal/shared";
+import { normalizeRecurrence, type Attachment, type Subtask, type Tag, type Task, type TaskLink } from "@its-personal/shared";
 import type { Db } from "./connection.js";
 
 type TaskRow = {
   id: string; title: string; parent_id: string | null; due_date: string; completed_at: string | null;
   pinned: number; tag_id: string | null; notes: string; recurrence_json: string; sort_order: number;
+  created_at: string; updated_at: string; deleted_at: string | null;
+};
+type SubtaskRow = {
+  id: string; task_id: string; title: string; completed_at: string | null; sort_order: number;
   created_at: string; updated_at: string; deleted_at: string | null;
 };
 type TagRow = { id: string; name: string; color: string | null; archived_at: string | null; created_at: string; updated_at: string; deleted_at: string | null };
@@ -66,6 +70,39 @@ export function upsertTask(db: Db, task: Task): Task {
   const insertTag = db.prepare("INSERT INTO task_tags (task_id, tag_id, created_at) VALUES (?, ?, ?)");
   for (const tagId of tagIds) insertTag.run(task.id, tagId, task.updatedAt);
   return { ...task, tagId: tagIds[0] ?? null, tagIds };
+}
+
+export function rowToSubtask(row: SubtaskRow): Subtask {
+  return {
+    id: row.id,
+    taskId: row.task_id,
+    title: row.title,
+    completedAt: row.completed_at,
+    order: row.sort_order,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at
+  };
+}
+
+export function listSubtasks(db: Db): Subtask[] {
+  return db.prepare("SELECT * FROM subtasks ORDER BY sort_order ASC, created_at ASC")
+    .all()
+    .map((row) => rowToSubtask(row as SubtaskRow));
+}
+
+export function upsertSubtask(db: Db, subtask: Subtask): Subtask {
+  db.prepare(`
+    INSERT INTO subtasks (id, task_id, title, completed_at, sort_order, created_at, updated_at, deleted_at)
+    VALUES (@id, @taskId, @title, @completedAt, @order, @createdAt, @updatedAt, @deletedAt)
+    ON CONFLICT(id) DO UPDATE SET task_id=@taskId, title=@title, completed_at=@completedAt,
+      sort_order=@order, updated_at=@updatedAt, deleted_at=@deletedAt
+  `).run(subtask);
+  return subtask;
+}
+
+export function softDeleteSubtasksForTask(db: Db, taskId: string, now: string): void {
+  db.prepare("UPDATE subtasks SET deleted_at = ?, updated_at = ? WHERE task_id = ? AND deleted_at IS NULL").run(now, now, taskId);
 }
 
 export function rowToTag(row: TagRow): Tag {
@@ -144,6 +181,6 @@ export function invalidateSession(db: Db, id: string, now: string): void {
   db.prepare("UPDATE sessions SET invalidated_at = COALESCE(invalidated_at, ?) WHERE id = ?").run(now, id);
 }
 
-export function softDelete(db: Db, table: "tasks" | "tags" | "links" | "attachments", id: string, now: string): void {
+export function softDelete(db: Db, table: "tasks" | "subtasks" | "tags" | "links" | "attachments", id: string, now: string): void {
   db.prepare(`UPDATE ${table} SET deleted_at = ? WHERE id = ?`).run(now, id);
 }
