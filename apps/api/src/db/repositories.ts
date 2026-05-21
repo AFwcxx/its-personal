@@ -1,8 +1,8 @@
-import type { Attachment, Recurrence, Tag, Task, TaskLink } from "@its-personal/shared";
+import { normalizeRecurrence, type Attachment, type Tag, type Task, type TaskLink } from "@its-personal/shared";
 import type { Db } from "./connection.js";
 
 type TaskRow = {
-  id: string; title: string; parent_id: string | null; due_date: string | null; completed_at: string | null;
+  id: string; title: string; parent_id: string | null; due_date: string; completed_at: string | null;
   pinned: number; tag_id: string | null; notes: string; recurrence_json: string; sort_order: number;
   created_at: string; updated_at: string; deleted_at: string | null;
 };
@@ -22,7 +22,7 @@ export function rowToTask(row: TaskRow, tagIds: string[] = []): Task {
     tagId: row.tag_id,
     tagIds: taskTagIds,
     notes: row.notes,
-    recurrence: JSON.parse(row.recurrence_json) as Recurrence,
+    recurrence: normalizeRecurrence(JSON.parse(row.recurrence_json)),
     order: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

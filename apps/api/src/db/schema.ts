@@ -6,7 +6,7 @@ export function migrate(db: Db): void {
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
       parent_id TEXT,
-      due_date TEXT,
+      due_date TEXT NOT NULL,
       completed_at TEXT,
       pinned INTEGER NOT NULL DEFAULT 0,
       tag_id TEXT,

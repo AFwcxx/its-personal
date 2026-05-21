@@ -3,6 +3,7 @@ import { openDatabase } from "./db/connection.js";
 import { createServer } from "./server.js";
 
 const config = loadConfig();
+process.env.TZ = config.APP_TIMEZONE;
 const db = openDatabase(config.DATABASE_PATH);
 const app = createServer(config, db);
 

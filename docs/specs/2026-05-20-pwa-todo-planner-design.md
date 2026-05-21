@@ -28,7 +28,7 @@ The MVP is end-to-end and intentionally lean: it should be usable as a personal 
 
 - Multi-user accounts, roles, sharing, or collaboration.
 - Public internet hardening beyond private-network access controls.
-- Full calendar recurrence rules such as weekdays-only, nth weekday, exceptions, or end dates.
+- Full calendar recurrence rules such as weekdays-only, nth weekday, exceptions, or count-based limits.
 - Full UI import/restore workflow for backups.
 - Real-time multi-user presence or push notifications.
 
@@ -144,7 +144,7 @@ The MVP supports these recurrence types:
 - yearly,
 - custom repeat every `N` days.
 
-When a recurring task is completed, the app creates or activates the next occurrence based on the recurrence rule. The MVP does not support advanced recurrence exceptions, end dates, or weekday/month-position rules.
+Recurring task rules can end at Eternity or on a selected inclusive end date. The end date cannot be earlier than the task due date. When a recurring task is completed, the app creates or activates the next occurrence based on the recurrence rule only when that next due date is on or before the configured end date. Monthly and yearly recurrences still clamp to the last valid day of the target month before this end-date check is applied. The MVP does not support advanced recurrence exceptions, weekday/month-position rules, or count-based recurrence limits.
 
 ## Data Model
 
@@ -154,7 +154,7 @@ SQLite is the canonical server store. The exact schema can evolve during impleme
 - `tags`: tag name, archived/deleted state, timestamps.
 - `links`: task-linked URLs.
 - `attachments`: task id, original filename, stored filename/path, MIME type, size, checksum, created/modified timestamps, deleted state.
-- `recurrences`: recurrence type and `interval_days` for custom every-N-days rules.
+- `recurrences`: recurrence type, optional inclusive end date, and `interval_days` for custom every-N-days rules.
 - `list_orders`: per-list/date manual order positions.
 - `devices`: stable device ids and metadata.
 - `session_events`: optional audit records for unlock attempts and issued daily sessions. The MVP can use stateless signed tokens with expiry instead of a server-side session table.
@@ -315,5 +315,5 @@ The MVP is complete when:
 - Browser storage quotas vary. Attachment caching must stay explicit and conservative.
 - Timestamp-based sync depends on device clocks. The MVP accepts this and uses device id tie-breakers; future versions may add server-assigned logical clocks.
 - Daily password sessions are suitable for a private local/Tailscale app, not public exposure.
-- Advanced recurrence rules are intentionally deferred.
+- Advanced recurrence rules beyond inclusive end dates are intentionally deferred.
 - Full backup restore UI is deferred.

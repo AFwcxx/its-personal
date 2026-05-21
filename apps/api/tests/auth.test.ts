@@ -76,4 +76,30 @@ describe("auth and database", () => {
         expect(response.body.completedAt).toBeNull();
       });
   });
+
+  it("rejects task creation without a due date", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, "test-device").token;
+
+    await request(createServer(config, db))
+      .post("/api/planner/tasks")
+      .set("authorization", `Bearer ${token}`)
+      .send({ title: "No date" })
+      .expect(400);
+  });
+
+  it("rejects recurrence end dates before the task due date", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, "test-device").token;
+
+    await request(createServer(config, db))
+      .post("/api/planner/tasks")
+      .set("authorization", `Bearer ${token}`)
+      .send({
+        title: "Invalid recurrence",
+        dueDate: "2026-05-20",
+        recurrence: { type: "weekly", ends: { type: "date", date: "2026-05-19" } }
+      })
+      .expect(400);
+  });
 });

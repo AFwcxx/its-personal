@@ -77,7 +77,7 @@ export function scheduledTasksForDate(tasks: Task[], date: string): Task[] {
 }
 
 function isProjectedOccurrence(task: Task, date: string): boolean {
-  if (task.deletedAt !== null || task.completedAt !== null || task.dueDate === null || task.dueDate >= date) return false;
+  if (task.deletedAt !== null || task.completedAt !== null || task.dueDate >= date) return false;
   let next = nextDueDate(task.dueDate, task.recurrence);
   while (next !== null && next <= date) {
     if (next === date) return true;
@@ -90,7 +90,7 @@ export function overdueTasks(tasks: Task[], today: string): Task[] {
   const byId = new Map(tasks.map((task) => [task.id, task]));
   return sortPlannerItems(
     tasks.filter((task) => {
-      if (task.deletedAt !== null || task.dueDate === null || compareDate(task.dueDate, today) >= 0) return false;
+      if (task.deletedAt !== null || compareDate(task.dueDate, today) >= 0) return false;
       if (task.completedAt === null) return true;
       const parent = task.parentId ? byId.get(task.parentId) : null;
       return parent !== null && parent !== undefined && parent.completedAt === null;

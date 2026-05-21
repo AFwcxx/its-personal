@@ -1,35 +1,44 @@
-import { linkInputSchema, nextDueDate, taskInputSchema, taskPatchSchema, tagInputSchema, todayISO, type Recurrence, type Task, type Tag, type TaskLink } from "@its-personal/shared";
+import { linkInputSchema, nextDueDate, normalizeRecurrence, recurrenceEndsBeforeDueDate, taskInputSchema, taskPatchSchema, tagInputSchema, todayISO, type Recurrence, type Task, type Tag, type TaskLink } from "@its-personal/shared";
 import { Router } from "express";
 import { nanoid } from "nanoid";
 import type { Db } from "../db/connection.js";
 import { listAttachments, listLinks, listTags, listTasks, softDelete, upsertLink, upsertTag, upsertTask } from "../db/repositories.js";
 
-export function plannerRouter(db: Db): Router {
+export function plannerRouter(db: Db, timezone = "UTC"): Router {
   const router = Router();
 
   router.get("/snapshot", (_req, res) => {
-    res.json({ tasks: listTasks(db), tags: listTags(db), links: listLinks(db), attachments: listAttachments(db) });
+    res.json({ tasks: listTasks(db), tags: listTags(db), links: listLinks(db), attachments: listAttachments(db), today: todayISO(new Date(), timezone), timezone });
   });
 
   router.post("/tasks", (req, res) => {
-    const input = taskInputSchema.parse(req.body);
+    const parsed = taskInputSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid task input", issues: parsed.error.issues });
+      return;
+    }
+    const input = parsed.data;
     const now = new Date().toISOString();
     const task: Task = {
       id: nanoid(),
       title: input.title,
       parentId: input.parentId ?? null,
-      dueDate: input.dueDate ?? todayISO(),
+      dueDate: input.dueDate,
       completedAt: null,
       pinned: input.pinned ?? false,
       tagId: input.tagId ?? null,
       tagIds: input.tagIds ?? (input.tagId ? [input.tagId] : []),
       notes: input.notes ?? "",
-      recurrence: input.recurrence ?? { type: "none" },
+      recurrence: normalizeRecurrence(input.recurrence ?? { type: "none" }),
       order: input.order ?? Date.now(),
       createdAt: now,
       updatedAt: now,
       deletedAt: null
     };
+    if (recurrenceEndsBeforeDueDate(task.dueDate, task.recurrence)) {
+      res.status(400).json({ error: "Recurrence end date cannot be earlier than due date" });
+      return;
+    }
     res.status(201).json(upsertTask(db, task));
   });
 
@@ -39,7 +48,12 @@ export function plannerRouter(db: Db): Router {
       res.status(404).json({ error: "Task not found" });
       return;
     }
-    const patch = taskPatchSchema.parse(req.body);
+    const parsed = taskPatchSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid task patch", issues: parsed.error.issues });
+      return;
+    }
+    const patch = parsed.data;
     const updated: Task = {
       ...current,
       title: patch.title ?? current.title,
@@ -52,9 +66,13 @@ export function plannerRouter(db: Db): Router {
       notes: patch.notes ?? current.notes,
       order: patch.order ?? current.order,
       deletedAt: patch.deletedAt ?? current.deletedAt,
-      recurrence: (patch.recurrence as Recurrence | undefined) ?? current.recurrence,
+      recurrence: normalizeRecurrence((patch.recurrence as Recurrence | undefined) ?? current.recurrence),
       updatedAt: new Date().toISOString()
     };
+    if (recurrenceEndsBeforeDueDate(updated.dueDate, updated.recurrence)) {
+      res.status(400).json({ error: "Recurrence end date cannot be earlier than due date" });
+      return;
+    }
     res.json(upsertTask(db, updated));
   });
 
@@ -72,7 +90,7 @@ export function plannerRouter(db: Db): Router {
     }
     const now = new Date().toISOString();
     const completed = upsertTask(db, { ...task, completedAt: now, updatedAt: now });
-    const recurringDueDate = task.dueDate ? nextDueDate(task.dueDate, task.recurrence) : null;
+    const recurringDueDate = nextDueDate(task.dueDate, task.recurrence);
     if (recurringDueDate) {
       upsertTask(db, { ...task, id: nanoid(), dueDate: recurringDueDate, completedAt: null, createdAt: now, updatedAt: now });
     }

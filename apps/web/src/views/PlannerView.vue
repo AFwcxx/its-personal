@@ -47,7 +47,7 @@ function completedGroupTasks(predicate: (task: Task) => boolean) {
 function groupTasksByDueDate(tasks: Task[]) {
   const grouped = new Map<string, Task[]>();
   for (const task of tasks) {
-    const key = task.dueDate ?? "No date";
+    const key = task.dueDate;
     grouped.set(key, [...(grouped.get(key) ?? []), task]);
   }
   return [...grouped.entries()]
@@ -70,7 +70,7 @@ const visibleGroups = computed(() => groupTasksByDueDate(visibleTasks.value));
 const completedTasks = computed(() => {
   const q = search.value.toLowerCase();
   const tasks = tab.value === "overdue"
-    ? completedGroupTasks((task) => task.dueDate !== null && task.dueDate < planner.today && isRecentlyCompleted(task))
+    ? completedGroupTasks((task) => task.dueDate < planner.today && isRecentlyCompleted(task))
     : completedPlannerTasksForDate(planner.tasks, planner.dateForTab(tab.value));
   return tasks.filter((task) => task.title.toLowerCase().includes(q));
 });

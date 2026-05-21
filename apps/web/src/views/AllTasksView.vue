@@ -21,7 +21,7 @@ const tasks = computed(() => planner.allVisible(search.value, showCompleted.valu
 const groups = computed(() => {
   const grouped = new Map<string, Task[]>();
   for (const task of tasks.value) {
-    const key = task.dueDate ?? "No date";
+    const key = task.dueDate;
     grouped.set(key, [...(grouped.get(key) ?? []), task]);
   }
   return [...grouped.entries()]

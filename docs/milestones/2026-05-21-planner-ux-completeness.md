@@ -13,7 +13,7 @@ Status: Not started
 
 - Improve planner UI toward `docs/design/gui.png`, `sample-light.png`, and `sample-dark.png`.
 - Complete task workflows: subtasks, parent completion restrictions, pinned ordering, manual ordering, completed sections, overdue stability, archive grouping.
-- Complete recurrence UI, including custom repeat every `N` days.
+- Complete recurrence UI, including custom repeat every `N` days and inclusive recurrence end dates.
 - Complete tag management with counts, rename, archive/delete, and filtering.
 - Complete link management in task detail.
 - Improve mobile drawer and desktop right-panel behavior.
