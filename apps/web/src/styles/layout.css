@@ -512,21 +512,48 @@
   gap: 0.35rem;
 }
 
-.calendar {
+.calendar,
+.calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-weekdays {
+  align-items: end;
+  gap: 0;
+  margin-top: 0.75rem;
+}
+
+.calendar-weekdays span {
+  color: var(--text);
+  font-weight: 700;
+  padding: 0 0.5rem 0.35rem;
+  text-align: left;
+}
+
+.calendar {
   border: 1px solid var(--border);
 }
 
 .calendar .p-button {
+  align-items: flex-start;
   min-height: 86px;
   border-radius: 0 !important;
   border: 0;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   text-align: left;
-  padding: 0.5rem;
+  padding: 1.8rem 0.5rem 0.5rem;
+  position: relative;
   justify-content: flex-start;
+}
+
+.calendar-day-number {
+  font-size: 0.92rem;
+  line-height: 1;
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
 }
 
 .calendar .p-button.today {
@@ -551,6 +578,32 @@
 
 .date-heading {
   margin-block: 0 0.75rem;
+}
+
+.all-tasks-toolbar,
+.archive-toolbar {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  margin-bottom: 2rem;
+}
+
+.all-tasks-toolbar > .p-inputtext,
+.archive-toolbar > .p-inputtext {
+  grid-column: 1 / -1;
+}
+
+.all-tasks-toolbar .check-label {
+  align-self: end;
+}
+
+.date-range-field {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 170px;
+}
+
+.detail-delete-button.p-button {
+  justify-self: end;
 }
 
 .completed-section {
@@ -651,6 +704,15 @@
 
   .planner-filter-row {
     grid-template-columns: 1fr;
+  }
+
+  .all-tasks-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .all-tasks-toolbar .check-label {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 
   .detail {

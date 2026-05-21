@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
@@ -28,6 +28,7 @@ vi.mock("../services/api.js", () => ({
   uploadAttachment: vi.fn(),
   plannerApi: {
     createLink: vi.fn(),
+    deleteTask: vi.fn(async () => undefined),
     updateTask: vi.fn(async (_id: string, patch: Partial<Task>) => ({ ...baseTask, ...patch }))
   }
 }));
@@ -47,6 +48,7 @@ describe("TaskDetailPanel recurrence", () => {
       global: {
         stubs: {
           Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
           FileUpload: { template: "<div />" },
           InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
           MultiSelect: { props: ["modelValue"], template: "<div />" },
@@ -61,5 +63,41 @@ describe("TaskDetailPanel recurrence", () => {
     expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, {
       recurrence: { type: "every_n_days", intervalDays: 1 }
     });
+  });
+
+  it("asks for confirmation before deleting the selected task", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = baseTask.id;
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    const deleteButton = wrapper.findAll("button").find((button) => button.text() === "Delete task");
+    expect(deleteButton).toBeTruthy();
+
+    await deleteButton!.trigger("click");
+
+    expect(plannerApi.deleteTask).not.toHaveBeenCalled();
+
+    const confirmButton = wrapper.findAll("button").find((button) => button.text() === "Confirm");
+    expect(confirmButton).toBeTruthy();
+
+    await confirmButton!.trigger("click");
+    await flushPromises();
+
+    expect(plannerApi.deleteTask).toHaveBeenCalledWith(baseTask.id);
+    expect(planner.selectedTaskId).toBeNull();
   });
 });

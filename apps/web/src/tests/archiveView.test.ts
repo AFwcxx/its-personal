@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
 import ArchiveView from "../views/ArchiveView.vue";
 import { usePlannerStore } from "../stores/planner.js";
@@ -30,16 +30,23 @@ vi.mock("../services/api.js", () => ({
 
 describe("ArchiveView", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-21T08:00:00.000Z"));
     setActivePinia(createPinia());
     vi.clearAllMocks();
   });
 
-  it("groups completed archive tasks by due date so each task stays under its own date", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("groups completed archive tasks inside the default date range by due date", () => {
     const planner = usePlannerStore();
     planner.tasks = [
-      { ...baseTask, id: "future", title: "Future task", dueDate: "2026-05-23" },
+      { ...baseTask, id: "out-of-range", title: "Old task", dueDate: "2026-04-20" },
+      { ...baseTask, id: "range-start", title: "Range start task", dueDate: "2026-04-21" },
       { ...baseTask, id: "today", title: "Today task", dueDate: "2026-05-21" },
-      { ...baseTask, id: "tomorrow", title: "Tomorrow task", dueDate: "2026-05-22" }
+      { ...baseTask, id: "yesterday", title: "Yesterday task", dueDate: "2026-05-20" }
     ];
     planner.refresh = vi.fn();
 
@@ -56,12 +63,13 @@ describe("ArchiveView", () => {
     const groups = wrapper.findAll(".date-group").map((group) => group.text());
 
     expect(groups).toHaveLength(3);
-    expect(groups[0]).toContain("Date: 2026-05-23");
-    expect(groups[0]).toContain("Future task 2026-05-23");
-    expect(groups[1]).toContain("Date: 2026-05-22");
-    expect(groups[1]).toContain("Tomorrow task 2026-05-22");
-    expect(groups[2]).toContain("Date: 2026-05-21");
-    expect(groups[2]).toContain("Today task 2026-05-21");
+    expect(groups[0]).toContain("Date: 2026-05-21");
+    expect(groups[0]).toContain("Today task 2026-05-21");
+    expect(groups[1]).toContain("Date: 2026-05-20");
+    expect(groups[1]).toContain("Yesterday task 2026-05-20");
+    expect(groups[2]).toContain("Date: 2026-04-21");
+    expect(groups[2]).toContain("Range start task 2026-04-21");
+    expect(wrapper.text()).not.toContain("Old task");
     expect(wrapper.find("ul").attributes("data-hide-pin")).toBe("true");
   });
 });
