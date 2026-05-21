@@ -27,6 +27,10 @@ const groups = computed(() => {
     })
     .map(([date, items]) => ({ date, tasks: sortPlannerItems(items) }));
 });
+
+async function reorder(tasks: Task[]) {
+  await planner.reorderTasks(tasks);
+}
 </script>
 
 <template>
@@ -38,7 +42,7 @@ const groups = computed(() => {
     </div>
     <section v-for="group in groups" :key="group.date" class="date-group">
       <h3 class="date-heading">Date: {{ group.date }}</h3>
-      <TaskList :tasks="group.tasks" />
+      <TaskList :tasks="group.tasks" reorderable @reorder="reorder" />
     </section>
   </AppShell>
 </template>
