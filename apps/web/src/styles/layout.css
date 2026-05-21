@@ -281,11 +281,23 @@
   min-width: 0;
 }
 
-.task-row strong {
-  display: block;
+.task-title {
+  align-items: center;
+  display: flex;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.task-title > span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.task-recurrence-icon {
+  color: var(--accent-alt);
+  flex: 0 0 auto;
+  font-size: 0.9rem;
 }
 
 .task-row:hover {

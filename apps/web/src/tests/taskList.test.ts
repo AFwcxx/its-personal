@@ -98,4 +98,27 @@ describe("TaskList", () => {
     expect(openTask.find(".task-row").classes()).toContain("task-row-active");
     expect(otherTask.find(".task-row").classes()).not.toContain("task-row-active");
   });
+
+  it("marks recurring tasks with the replay icon before the title", () => {
+    const recurringTask = mount(TaskRow, {
+      props: { task: task({ recurrence: { type: "weekly", ends: { type: "eternity" } } }) },
+      global: {
+        stubs: {
+          Button: { template: "<button><slot /></button>" }
+        }
+      }
+    });
+    const oneTimeTask = mount(TaskRow, {
+      props: { task: task({ recurrence: { type: "none" } }) },
+      global: {
+        stubs: {
+          Button: { template: "<button><slot /></button>" }
+        }
+      }
+    });
+
+    expect(recurringTask.find(".task-title > .task-recurrence-icon + span").text()).toBe("Task");
+    expect(recurringTask.find(".task-recurrence-icon").classes()).toEqual(expect.arrayContaining(["pi", "pi-replay"]));
+    expect(oneTimeTask.find(".task-recurrence-icon").exists()).toBe(false);
+  });
 });
