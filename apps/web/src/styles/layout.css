@@ -123,6 +123,13 @@
   flex-wrap: wrap;
 }
 
+.schedule-month-controls {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
 .detail > .toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -208,6 +215,24 @@
 .task-group {
   display: grid;
   gap: 0.4rem;
+}
+
+.task-completion-fade-move,
+.task-completion-fade-enter-active,
+.task-completion-fade-leave-active {
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.task-completion-fade-enter-from,
+.task-completion-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-0.35rem);
+}
+
+.task-completion-fade-enter-to,
+.task-completion-fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .subtask-list {
@@ -350,15 +375,27 @@
 }
 
 .p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text) {
-  border: 1px solid var(--accent-strong) !important;
-  background: var(--accent-strong) !important;
-  color: #ffffff !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 78%, var(--border)) !important;
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface)) !important;
+  color: var(--text) !important;
 }
 
 .p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text):enabled:hover {
   border-color: var(--accent) !important;
-  background: color-mix(in srgb, var(--accent-strong) 86%, var(--accent-alt)) !important;
-  color: #ffffff !important;
+  background: color-mix(in srgb, var(--accent) 26%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+.p-button.p-button-danger {
+  border: 1px solid color-mix(in srgb, var(--danger) 78%, var(--border)) !important;
+  background: color-mix(in srgb, var(--danger) 18%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+.p-button.p-button-danger:enabled:hover {
+  border-color: var(--danger) !important;
+  background: color-mix(in srgb, var(--danger) 26%, var(--surface)) !important;
+  color: var(--text) !important;
 }
 
 .p-button.p-button-secondary,
@@ -539,6 +576,35 @@
   border: 1px solid color-mix(in srgb, var(--accent-alt) 34%, var(--border)) !important;
   border-radius: 999px !important;
   color: var(--text) !important;
+}
+
+.tag-multiselect-chip {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.25rem;
+  max-width: 100%;
+}
+
+.tag-chip-remove {
+  align-items: center;
+  background: color-mix(in srgb, var(--tag-color) 16%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--tag-color) 42%, var(--border));
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--text) 82%, var(--tag-color));
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 1.05rem;
+  justify-content: center;
+  padding: 0;
+  width: 1.05rem;
+}
+
+.tag-chip-remove:hover,
+.tag-chip-remove:focus-visible {
+  background: color-mix(in srgb, var(--tag-color) 30%, var(--surface));
+  color: var(--text);
+  outline: 0;
 }
 
 .detail > .field-stack {

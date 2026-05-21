@@ -53,9 +53,11 @@ function isCurrentMonth(day: string) {
   <AppShell>
     <div class="toolbar">
       <h2>Schedule</h2>
-      <Button label="Prev" severity="secondary" @click="move(-1)" />
-      <span>{{ month.toLocaleString(undefined, { month: "long", year: "numeric" }) }}</span>
-      <Button label="Next" severity="secondary" @click="move(1)" />
+      <div class="schedule-month-controls">
+        <Button label="Prev" severity="secondary" @click="move(-1)" />
+        <span>{{ month.toLocaleString(undefined, { month: "long", year: "numeric" }) }}</span>
+        <Button label="Next" severity="secondary" @click="move(1)" />
+      </div>
     </div>
     <div class="calendar-weekdays" aria-hidden="true">
       <span>Sun</span>

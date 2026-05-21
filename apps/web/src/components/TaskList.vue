@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Task } from "@its-personal/shared";
 import Sortable from "sortablejs";
-import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch, type ComponentPublicInstance } from "vue";
 import { usePlannerStore } from "../stores/planner.js";
 import SubtaskList from "./SubtaskList.vue";
 import TaskRow from "./TaskRow.vue";
@@ -28,6 +28,15 @@ function pinnedFirst(tasks: Task[]) {
     ...tasks.filter((task) => task.pinned),
     ...tasks.filter((task) => !task.pinned)
   ];
+}
+
+function setListEl(el: Element | ComponentPublicInstance | null) {
+  if (el instanceof HTMLElement) {
+    listEl.value = el;
+    return;
+  }
+  const component = el as ComponentPublicInstance | null;
+  listEl.value = component?.$el instanceof HTMLElement ? component.$el : null;
 }
 
 function destroySortable() {
@@ -64,7 +73,7 @@ onBeforeUnmount(destroySortable);
 </script>
 
 <template>
-  <div ref="listEl" class="task-list">
+  <TransitionGroup :ref="setListEl" name="task-completion-fade" tag="div" class="task-list">
     <div v-for="task in rootTasks" :key="task.id" class="task-group" :data-id="task.id">
       <TaskRow :task="task" :draggable="Boolean(reorderable)" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" />
       <SubtaskList :task-id="task.id" :subtasks="planner.subtasks" :readonly="Boolean(readonly)" />
@@ -72,6 +81,6 @@ onBeforeUnmount(destroySortable);
         <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" />
       </div>
     </div>
-    <p v-if="tasks.length === 0" class="muted">No tasks.</p>
-  </div>
+  </TransitionGroup>
+  <p v-if="tasks.length === 0" class="muted">No tasks.</p>
 </template>
