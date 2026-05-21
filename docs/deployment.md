@@ -5,6 +5,7 @@
 1. Copy `.env.example` to `.env`.
 2. Set `APP_PASSWORD` and `SESSION_SECRET`.
    If either value contains `$`, escape each `$` as `$$` because Docker Compose interpolates environment files.
+   Optionally set `SESSION_IDLE_TIMEOUT_SECONDS`; the default is `10800` seconds.
 3. Start the app:
 
 ```bash

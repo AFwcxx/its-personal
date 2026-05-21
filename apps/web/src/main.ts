@@ -4,6 +4,7 @@ import Aura from "@primeuix/themes/aura";
 import { createApp } from "vue";
 import App from "./App.vue";
 import { router } from "./router.js";
+import "primeicons/primeicons.css";
 import "./styles/theme.css";
 import "./styles/layout.css";
 

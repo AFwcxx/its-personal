@@ -30,7 +30,7 @@ Status: Not started
 
 - Do not average sync designs: implement documented operation log, not ad hoc timestamp polling.
 - Keep conflict review UI out of scope unless tests reveal unrecoverable ambiguity.
-- Preserve queued local edits if daily session expires.
+- Preserve queued local edits if the idle session expires.
 
 ## Progress Log
 

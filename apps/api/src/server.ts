@@ -17,9 +17,9 @@ export function createServer(config: AppConfig, db: Db) {
   app.use(express.json({ limit: "2mb" }));
 
   app.use("/api/health", healthRouter());
-  app.use("/api/auth", authRouter(config));
-  app.use("/api/planner", authRequired(config), plannerRouter(db, config.APP_TIMEZONE));
-  app.use("/api/attachments", authRequired(config), attachmentsRouter(config, db));
+  app.use("/api/auth", authRouter(config, db));
+  app.use("/api/planner", authRequired(config, db), plannerRouter(db, config.APP_TIMEZONE));
+  app.use("/api/attachments", authRequired(config, db), attachmentsRouter(config, db));
 
   const webDist = path.resolve(process.cwd(), "apps/web/dist");
   app.use(express.static(webDist));

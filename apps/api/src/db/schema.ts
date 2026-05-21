@@ -64,5 +64,15 @@ export function migrate(db: Db): void {
       FOREIGN KEY(task_id) REFERENCES tasks(id)
     );
     CREATE INDEX IF NOT EXISTS idx_attachments_task_id ON attachments(task_id);
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      device_id TEXT NOT NULL,
+      password_fingerprint TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      last_seen_at TEXT NOT NULL,
+      invalidated_at TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_sessions_last_seen_at ON sessions(last_seen_at);
   `);
 }
