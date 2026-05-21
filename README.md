@@ -9,7 +9,7 @@ This app is built for personal or household use on a trusted private network. It
 - Planner, schedule, all-tasks, archive, and tag-management views
 - Single shared app password with server-side idle session locking
 - SQLite storage
-- File attachments with configurable per-file and total size limits
+- File attachments with configurable per-file size limits
 - Docker Compose deployment with persistent volumes
 - PWA-friendly web frontend
 
