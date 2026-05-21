@@ -10,7 +10,7 @@ services:
       DATABASE_PATH: /data/its-personal.sqlite
       ATTACHMENT_DIR: /attachments
     ports:
-      - "${PUBLISHED_HOST:-127.0.0.1}:${PUBLISHED_PORT:-3002}:3000"
+      - "${PUBLISHED_HOST:-127.0.0.1}:${PUBLISHED_PORT:-3009}:3000"
     volumes:
       - planner-data:/data
       - planner-attachments:/attachments

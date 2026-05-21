@@ -68,11 +68,11 @@ Each browser/device also has a stable `device_id` used for sync attribution and 
 
 The Planner page supports Overdue, Today, Tomorrow, and Day After tabs. It shows the selected day or overdue grouping, a search field, pinned tasks first, and a completed section for the day.
 
-The completed section only shows completed task groups that belong to that day. A completed subtask does not appear as its own completed item unless its parent task and siblings are also complete.
+The completed section starts collapsed by default and remembers its previous expanded/collapsed state while the user navigates through the app. For Today, Tomorrow, and Day After, completed task groups are grouped by the parent task's `completed_at` date. A completed subtask does not appear as its own completed item unless its parent task and siblings are also complete.
 
 ### Overdue Page
 
-The Overdue tab groups open overdue tasks by due date. If a task is checked complete while this page is open, it remains visible until the user navigates away and returns. This preserves stable touch targets and follows the mockup.
+The Overdue tab groups open overdue tasks by due date. If a task is checked complete, it moves into the Overdue tab's completed section and remains there for 24 hours after completion.
 
 ### All Tasks Page
 
@@ -82,7 +82,7 @@ The All Tasks page supports:
 - search,
 - optional show-completed toggle.
 
-If the date range is a single day, the page behaves like the per-day planner view for that date.
+Tasks are grouped by due date. All tasks must have a due date. If the show-completed toggle is enabled, completed tasks appear inline inside their due-date group; the All Tasks page does not use completed accordions. If the date range is a single day, the page behaves like the per-day planner view for that date.
 
 ### Schedule Page
 
@@ -90,11 +90,11 @@ The Schedule page shows a month calendar with task counts/status indicators. Tap
 
 ### Archive Page
 
-The Archive page shows completed task groups by completion date. A completed subtask is not shown separately if its parent task is not complete. Fully completed parent/subtask groups appear together.
+The Archive page shows completed task groups by completion date. A completed subtask is not shown separately if its parent task is not complete. Fully completed parent/subtask groups appear together under the parent task's completion date.
 
 ### Manage Tags Page
 
-The Manage Tags page lists tags with item counts and supports creating, renaming, deleting/archiving, and filtering tags.
+The Manage Tags page lists tags with item counts and supports creating, renaming, deleting/archiving, and filtering tags. Deleting a tag requires confirmation. If active tasks are assigned to the tag, delete archives and hides the tag while preserving history; otherwise the tag can be deleted.
 
 ### Task Detail Drawer / Panel
 
@@ -126,7 +126,7 @@ Completion rules:
 
 Ordering rules:
 
-- Lists support manual ordering per list/date.
+- Planner daily tabs and the Overdue tab support manual ordering with a drag handle. All Tasks, Archive, Schedule, and Manage Tags do not expose drag reordering.
 - Pinned tasks always appear above unpinned tasks.
 - Manual order syncs across devices.
 - Drag-and-drop uses a handle or long-press on touch devices so scrolling remains reliable.

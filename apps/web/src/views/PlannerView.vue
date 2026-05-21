@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import type { Task } from "@its-personal/shared";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import Message from "primevue/message";
 import { computed, onMounted, ref } from "vue";
 import AppShell from "../components/AppShell.vue";
 import TaskList from "../components/TaskList.vue";
@@ -8,8 +12,40 @@ const planner = usePlannerStore();
 const tab = ref("today");
 const search = ref("");
 const newTitle = ref("");
+const newDueDate = ref(planner.dateForTab(tab.value));
+const completedExpanded = ref(localStorage.getItem("its-personal-completed-expanded") === "true");
+const tabs = [
+  { key: "overdue", label: "Overdue" },
+  { key: "today", label: "Today" },
+  { key: "tomorrow", label: "Tomorrow" },
+  { key: "day-after", label: "Day After" }
+];
 
 onMounted(() => planner.refresh());
+
+function completedDate(task: { completedAt: string | null }) {
+  return task.completedAt?.slice(0, 10) ?? null;
+}
+
+function isRecentlyCompleted(task: { completedAt: string | null }) {
+  if (!task.completedAt) return false;
+  return Date.now() - new Date(task.completedAt).getTime() <= 24 * 60 * 60 * 1000;
+}
+
+function completedGroupTasks(predicate: (task: Task) => boolean) {
+  const byId = new Map(planner.tasks.map((task) => [task.id, task]));
+  const groups = planner.tasks.filter((task) => {
+    if (task.deletedAt !== null || task.completedAt === null) return false;
+    if (task.parentId !== null && byId.has(task.parentId)) return false;
+    return predicate(task);
+  });
+  const children = planner.tasks.filter((task) => {
+    if (task.deletedAt !== null || task.completedAt === null || task.parentId === null) return false;
+    const parent = byId.get(task.parentId);
+    return parent !== undefined && parent.completedAt !== null && groups.some((group) => group.id === parent.id);
+  });
+  return [...groups, ...children];
+}
 
 const visibleTasks = computed(() => {
   const tasks = tab.value === "overdue" ? planner.overdue() : planner.tasksFor(planner.dateForTab(tab.value));
@@ -17,10 +53,35 @@ const visibleTasks = computed(() => {
   return tasks.filter((task) => task.title.toLowerCase().includes(q));
 });
 
+const completedTasks = computed(() => {
+  const q = search.value.toLowerCase();
+  const tasks = tab.value === "overdue"
+    ? completedGroupTasks((task) => task.dueDate !== null && task.dueDate < planner.today && isRecentlyCompleted(task))
+    : completedGroupTasks((task) => completedDate(task) === planner.dateForTab(tab.value));
+  return tasks.filter((task) => task.title.toLowerCase().includes(q));
+});
+
+const canCreateTask = computed(() => tab.value !== "overdue");
+const canReorder = computed(() => ["overdue", "today", "tomorrow", "day-after"].includes(tab.value));
+
 async function createTask() {
-  if (!newTitle.value.trim() || planner.status === "offline") return;
-  await planner.createTask(newTitle.value.trim(), planner.dateForTab(tab.value));
+  if (!newTitle.value.trim() || !newDueDate.value || !canCreateTask.value || planner.status === "offline") return;
+  await planner.createTask(newTitle.value.trim(), newDueDate.value);
   newTitle.value = "";
+}
+
+function selectTab(key: string) {
+  tab.value = key;
+  newDueDate.value = planner.dateForTab(key);
+}
+
+function toggleCompleted() {
+  completedExpanded.value = !completedExpanded.value;
+  localStorage.setItem("its-personal-completed-expanded", String(completedExpanded.value));
+}
+
+async function reorder(tasks: Task[]) {
+  await planner.reorderTasks(tasks);
 }
 </script>
 
@@ -28,19 +89,28 @@ async function createTask() {
   <AppShell>
     <div class="toolbar">
       <h2>Planner</h2>
-      <span v-if="planner.status === 'offline'" class="muted">Offline read-only</span>
+      <Message v-if="planner.status === 'offline'" severity="warn" size="small">Offline read-only</Message>
     </div>
     <div class="tabs">
-      <button :class="{ active: tab === 'overdue' }" @click="tab = 'overdue'">Overdue</button>
-      <button :class="{ active: tab === 'today' }" @click="tab = 'today'">Today</button>
-      <button :class="{ active: tab === 'tomorrow' }" @click="tab = 'tomorrow'">Tomorrow</button>
-      <button :class="{ active: tab === 'day-after' }" @click="tab = 'day-after'">Day After</button>
+      <Button v-for="item in tabs" :key="item.key" :class="{ active: tab === item.key }" :label="item.label" text @click="selectTab(item.key)" />
     </div>
-    <div class="toolbar">
-      <input v-model="search" placeholder="Search tasks" />
-      <input v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
-      <button :disabled="planner.status === 'offline'" @click="createTask">Add</button>
+    <div v-if="canCreateTask" class="toolbar">
+      <InputText v-model="search" placeholder="Search tasks" />
+      <InputText v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
+      <InputText v-model="newDueDate" type="date" aria-label="Due date" @keydown.enter.prevent="createTask" />
+      <Button :disabled="planner.status === 'offline'" label="Add" @click="createTask" />
     </div>
-    <TaskList :tasks="visibleTasks" />
+    <div v-else class="toolbar">
+      <InputText v-model="search" placeholder="Search tasks" />
+    </div>
+    <TaskList :tasks="visibleTasks" :reorderable="canReorder" @reorder="reorder" />
+    <section class="completed-section">
+      <button class="completed-toggle" type="button" @click="toggleCompleted">
+        <span>Completed</span>
+        <span class="muted">{{ completedTasks.length }}</span>
+        <span aria-hidden="true">{{ completedExpanded ? "▾" : "▸" }}</span>
+      </button>
+      <TaskList v-if="completedExpanded" :tasks="completedTasks" />
+    </section>
   </AppShell>
 </template>

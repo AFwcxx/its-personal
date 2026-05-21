@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import Button from "primevue/button";
+import Message from "primevue/message";
+import Password from "primevue/password";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useSessionStore } from "../stores/session.js";
@@ -16,9 +19,9 @@ async function submit() {
   <div class="unlock">
     <form @submit.prevent="submit">
       <h1>Its Personal</h1>
-      <input v-model="password" type="password" autocomplete="current-password" placeholder="Password" />
-      <button>Unlock</button>
-      <p v-if="session.error" class="danger">{{ session.error }}</p>
+      <Password v-model="password" autocomplete="current-password" placeholder="Password" :feedback="false" toggle-mask />
+      <Button label="Unlock" type="submit" />
+      <Message v-if="session.error" severity="error" size="small">{{ session.error }}</Message>
     </form>
   </div>
 </template>
