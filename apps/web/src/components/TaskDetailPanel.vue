@@ -4,16 +4,17 @@ import FileUpload from "primevue/fileupload";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { X } from "lucide-vue-next";
-import { uploadAttachment, plannerApi } from "../services/api.js";
+import { openAttachment, uploadAttachment, plannerApi } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
 const planner = usePlannerStore();
 const title = ref("");
 const notes = ref("");
-const tagName = ref("");
+const selectedTagId = ref<string | null>(null);
 const linkUrl = ref("");
+let notesSaveTimer: ReturnType<typeof setTimeout> | null = null;
 const recurrenceOptions = [
   { label: "None", value: "none" },
   { label: "Daily", value: "daily" },
@@ -25,23 +26,43 @@ const recurrenceOptions = [
 const task = computed(() => planner.selectedTask);
 const taskLinks = computed(() => planner.links.filter((link) => link.taskId === task.value?.id && !link.deletedAt));
 const taskAttachments = computed(() => planner.attachments.filter((attachment) => attachment.taskId === task.value?.id && !attachment.deletedAt));
+const tagOptions = computed(() => [
+  { id: null, name: "None" },
+  ...planner.activeTags
+]);
 
 watch(task, (value) => {
   title.value = value?.title ?? "";
   notes.value = value?.notes ?? "";
+  selectedTagId.value = value?.tagId ?? null;
 }, { immediate: true });
+
+watch(notes, (value) => {
+  if (!task.value || value === task.value.notes) return;
+  if (notesSaveTimer) clearTimeout(notesSaveTimer);
+  const taskId = task.value.id;
+  notesSaveTimer = setTimeout(() => {
+    planner.updateTask(taskId, { notes: value });
+    notesSaveTimer = null;
+  }, 500);
+});
+
+onBeforeUnmount(() => {
+  if (notesSaveTimer) clearTimeout(notesSaveTimer);
+  if (task.value && notes.value !== task.value.notes) {
+    planner.updateTask(task.value.id, { notes: notes.value });
+  }
+});
 
 async function save() {
   if (!task.value) return;
   await planner.updateTask(task.value.id, { title: title.value, notes: notes.value });
 }
 
-async function addTag() {
-  if (!task.value || !tagName.value.trim()) return;
-  const tag = await plannerApi.createTag({ name: tagName.value.trim() });
-  planner.tags.push(tag);
-  await planner.updateTask(task.value.id, { tagId: tag.id });
-  tagName.value = "";
+async function assignTag(tagId: string | null) {
+  selectedTagId.value = tagId;
+  if (!task.value || task.value.tagId === tagId) return;
+  await planner.updateTask(task.value.id, { tagId });
 }
 
 async function addLink() {
@@ -55,6 +76,10 @@ async function addFile(event: { files: File[] }) {
   const file = event.files[0];
   if (!file) return;
   planner.attachments.push(await uploadAttachment(task.value.id, file));
+}
+
+async function openTaskAttachment(id: string) {
+  await openAttachment(id);
 }
 </script>
 
@@ -78,17 +103,24 @@ async function addFile(event: { files: File[] }) {
         />
       </label>
       <Button label="Save" @click="save" />
-      <label>Add tag<InputText v-model="tagName" @keydown.enter.prevent="addTag" /></label>
-      <Button label="Add Tag" @click="addTag" />
+      <label>Add tag
+        <Select
+          v-model="selectedTagId"
+          :options="tagOptions"
+          option-label="name"
+          option-value="id"
+          @update:model-value="assignTag"
+        />
+      </label>
       <label>Add link<InputText v-model="linkUrl" placeholder="https://example.com" @keydown.enter.prevent="addLink" /></label>
       <Button label="Add Link" @click="addLink" />
       <ul>
         <li v-for="link in taskLinks" :key="link.id"><a :href="link.url" target="_blank" rel="noreferrer">{{ link.url }}</a></li>
       </ul>
-      <label>Attachment<FileUpload mode="basic" custom-upload auto choose-label="Choose File" @select="addFile" /></label>
+      <label>Attachment<FileUpload class="attachment-upload" mode="basic" custom-upload auto choose-label="Choose File" @select="addFile" /></label>
       <ul>
         <li v-for="attachment in taskAttachments" :key="attachment.id">
-          <a :href="`/api/attachments/${attachment.id}`">{{ attachment.originalName }}</a>
+          <a class="attachment-link" href="#" @click.prevent="openTaskAttachment(attachment.id)">{{ attachment.originalName }}</a>
         </li>
       </ul>
     </div>

@@ -4,7 +4,7 @@ import Button from "primevue/button";
 import { GripVertical, Pin, Square, SquareCheck } from "lucide-vue-next";
 import { usePlannerStore } from "../stores/planner.js";
 
-defineProps<{ task: Task; draggable?: boolean }>();
+defineProps<{ task: Task; draggable?: boolean; readonly?: boolean }>();
 const planner = usePlannerStore();
 </script>
 
@@ -18,7 +18,7 @@ const planner = usePlannerStore();
       <strong>{{ task.title }}</strong>
       <div class="muted">{{ task.dueDate || "No date" }}</div>
     </div>
-    <div class="row-actions">
+    <div v-if="!readonly" class="row-actions">
       <Button title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
         <Pin :size="16" />
       </Button>

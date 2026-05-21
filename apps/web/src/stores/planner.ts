@@ -1,4 +1,4 @@
-import { addDays, overdueTasks, plannerTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Tag, type Task, type TaskLink } from "@its-personal/shared";
+import { addDays, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Tag, type Task, type TaskLink } from "@its-personal/shared";
 import { defineStore } from "pinia";
 import { cachedSnapshot, loadSnapshot, plannerApi } from "../services/api.js";
 
@@ -44,6 +44,9 @@ export const usePlannerStore = defineStore("planner", {
     },
     tasksFor(date: string) {
       return plannerTasksForDate(this.tasks, date);
+    },
+    scheduledTasksFor(date: string) {
+      return scheduledTasksForDate(this.tasks, date);
     },
     overdue() {
       return overdueTasks(this.tasks, todayISO());

@@ -21,13 +21,13 @@ const days = computed(() => {
   });
 });
 
-const selectedTasks = computed(() => planner.tasksFor(selected.value));
+const selectedTasks = computed(() => planner.scheduledTasksFor(selected.value));
 function move(delta: number) {
   month.value = new Date(Date.UTC(month.value.getFullYear(), month.value.getMonth() + delta, 1));
 }
 
 function dayTasks(day: string) {
-  return planner.tasksFor(day);
+  return planner.scheduledTasksFor(day);
 }
 
 function isCurrentMonth(day: string) {
@@ -57,6 +57,6 @@ function isCurrentMonth(day: string) {
       </Button>
     </div>
     <h3>{{ selected }}</h3>
-    <TaskList :tasks="selectedTasks" />
+    <TaskList :tasks="selectedTasks" readonly />
   </AppShell>
 </template>

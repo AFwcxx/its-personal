@@ -1,4 +1,5 @@
 import { compareDate } from "./dates.js";
+import { nextDueDate } from "./recurrence.js";
 import type { Task } from "./types.js";
 
 export function isComplete(task: Task): boolean {
@@ -64,6 +65,25 @@ export function plannerTasksForDate(tasks: Task[], date: string): Task[] {
       return parent !== null && parent !== undefined && parent.completedAt === null;
     })
   );
+}
+
+export function scheduledTasksForDate(tasks: Task[], date: string): Task[] {
+  return sortPlannerItems([
+    ...plannerTasksForDate(tasks, date),
+    ...tasks
+      .filter((task) => isProjectedOccurrence(task, date))
+      .map((task) => ({ ...task, dueDate: date }))
+  ]);
+}
+
+function isProjectedOccurrence(task: Task, date: string): boolean {
+  if (task.deletedAt !== null || task.completedAt !== null || task.dueDate === null || task.dueDate >= date) return false;
+  let next = nextDueDate(task.dueDate, task.recurrence);
+  while (next !== null && next <= date) {
+    if (next === date) return true;
+    next = nextDueDate(next, task.recurrence);
+  }
+  return false;
 }
 
 export function overdueTasks(tasks: Task[], today: string): Task[] {

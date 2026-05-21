@@ -93,7 +93,7 @@ async function reorder(tasks: Task[]) {
       </div>
       <InputText v-model="search" placeholder="Search tasks" />
     </div>
-    <div v-if="canCreateTask" class="toolbar">
+    <div v-if="canCreateTask" class="toolbar task-create-form">
       <InputText v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
       <InputText v-model="newDueDate" type="date" aria-label="Due date" @keydown.enter.prevent="createTask" />
       <Button :disabled="planner.status === 'offline'" label="Add" @click="createTask" />

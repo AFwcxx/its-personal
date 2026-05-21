@@ -64,6 +64,10 @@
   align-items: center;
 }
 
+.task-create-form {
+  margin-top: 0.85rem;
+}
+
 .task-list {
   display: grid;
   gap: 0.6rem;
@@ -150,6 +154,28 @@
   width: 44px;
   min-width: 44px;
   padding-inline: 0;
+}
+
+.attachment-upload.p-fileupload-choose-button.p-button {
+  width: auto !important;
+  min-width: 132px;
+  padding-inline: 1rem;
+}
+
+.attachment-upload .p-button-label,
+.attachment-upload.p-button .p-button-label {
+  white-space: nowrap;
+}
+
+.detail a,
+.detail a:visited,
+.detail a:hover,
+.detail a:active,
+.attachment-link,
+.attachment-link:visited,
+.attachment-link:hover,
+.attachment-link:active {
+  color: #ffffff !important;
 }
 
 .p-inputtext,
