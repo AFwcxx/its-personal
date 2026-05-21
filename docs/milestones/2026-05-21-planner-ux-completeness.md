@@ -30,7 +30,7 @@ Status: Not started
 - Keep UI minimal and task-focused; no speculative dashboard or analytics features.
 - Completed sections start collapsed and remember expanded/collapsed state during navigation.
 - Overdue completed tasks move into an Overdue completed section and remain there for 24 hours after completion.
-- Planner daily completed sections use the parent task's `completed_at` date.
+- Planner daily completed sections use task due date so completed future tasks remain visible in Tomorrow and Day After completed groups.
 - Manual drag reorder is limited to Planner Today, Tomorrow, Day After, and Overdue.
 - All Tasks and Archive group rows by date; All Tasks groups by due date and Archive groups by parent completion date.
 - Tag delete requires confirmation. Tags assigned to active tasks are archived/hidden instead of hard-deleted.
@@ -44,6 +44,7 @@ Status: Not started
 - 2026-05-21: Tuned PrimeVue control styling to match the referenced ChatGPT-style dark/light input bars: pill radius, mode-specific surfaces, softer borders, icon-sized buttons, and light-mode shadow.
 - 2026-05-21: Changed Docker Compose published port back to `127.0.0.1:3009` because host port `3002` is already owned by an unrelated `cokeeps-admin` container.
 - 2026-05-21: Recreated Docker Compose service on `127.0.0.1:3009` and verified `GET /api/health` returns `{"ok":true}`.
+- 2026-05-21: Aligned Planner search with the day filter pills, restored active highlights for sidebar and Planner pills, fixed Tomorrow/Day After completed sections to group completed tasks by due date, and faded non-current Schedule month days to 30% content opacity.
 
 ## Next Actions
 
