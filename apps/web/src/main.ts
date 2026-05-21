@@ -9,6 +9,10 @@ import "./styles/theme.css";
 import "./styles/layout.css";
 
 const PrimeVue = PrimeVueConfig.default;
+const storedTheme = localStorage.getItem("its-personal-theme");
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+const theme = storedTheme === "dark" || storedTheme === "light" ? storedTheme : prefersDark ? "dark" : "light";
+document.documentElement.dataset.theme = theme;
 
 createApp(App)
   .use(createPinia())

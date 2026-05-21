@@ -90,7 +90,6 @@ async function confirmRemove() {
   <Dialog :visible="pendingRemoval !== null" modal header="Delete subtask" :style="{ width: 'min(420px, 92vw)' }" @update:visible="pendingRemovalId = $event ? pendingRemovalId : null">
     <p v-if="pendingRemoval">Delete "{{ pendingRemoval.title }}"?</p>
     <div class="dialog-actions">
-      <Button label="Cancel" severity="secondary" @click="pendingRemovalId = null" />
       <Button label="Confirm" severity="danger" @click="confirmRemove" />
     </div>
   </Dialog>

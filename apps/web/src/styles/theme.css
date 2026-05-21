@@ -1,19 +1,28 @@
 :root {
   color-scheme: light dark;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --bg: #ffffff;
-  --panel: #f7f7f5;
+  --bg: #f8fafc;
+  --panel: #f4f4f5;
   --surface: #ffffff;
-  --text: #111111;
-  --muted: #6f6f6f;
-  --border: #d8d6d0;
-  --active: #ffec99;
+  --surface-raised: #fafafa;
+  --text: #111827;
+  --muted: #71717a;
+  --border: #d4d4d8;
+  --active: #ecfdf5;
+  --active-border: #22c55e;
+  --accent: #22c55e;
+  --accent-strong: #16a34a;
+  --accent-alt: #7c3aed;
+  --focus-ring: rgb(34 197 94 / 28%);
   --danger: #b42318;
-  --control-shadow: 0 12px 34px rgb(0 0 0 / 10%);
-  --shadow: 0 18px 48px rgb(0 0 0 / 10%);
-  --p-primary-color: #66580f;
-  --p-primary-hover-color: #4f430b;
-  --p-primary-active-color: #3e3509;
+  --radius-control: 9px;
+  --radius-panel: 12px;
+  --radius-soft: 16px;
+  --control-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+  --shadow: 0 18px 48px rgb(15 23 42 / 14%);
+  --p-primary-color: var(--accent-strong);
+  --p-primary-hover-color: #15803d;
+  --p-primary-active-color: #166534;
   --p-primary-contrast-color: #ffffff;
   --p-content-background: var(--surface);
   --p-content-color: var(--text);
@@ -24,29 +33,35 @@
   --p-form-field-hover-border-color: var(--border);
   --p-form-field-focus-border-color: var(--border);
   --p-form-field-placeholder-color: var(--muted);
-  --p-form-field-shadow: var(--control-shadow);
+  --p-form-field-shadow: none;
   --p-surface-0: #ffffff;
-  --p-surface-50: #f7f7f5;
-  --p-surface-100: #eeeeea;
-  --p-surface-700: #323232;
-  --p-surface-800: #1f1f1f;
-  --p-surface-900: #111111;
+  --p-surface-50: #f8fafc;
+  --p-surface-100: #f4f4f5;
+  --p-surface-700: #3f3f46;
+  --p-surface-800: #27272a;
+  --p-surface-900: #18181b;
   --p-text-color: var(--text);
   --p-text-muted-color: var(--muted);
-  --p-button-border-radius: 999px;
-  --p-form-field-border-radius: 999px;
+  --p-button-border-radius: var(--radius-control);
+  --p-form-field-border-radius: var(--radius-control);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #000000;
-    --panel: #111111;
-    --surface: #1f1f1f;
-    --text: #f5f5f5;
-    --muted: #a3a3a3;
-    --border: #323232;
-    --active: #4a3f18;
-    --danger: #ff8a80;
+    --bg: #09090b;
+    --panel: #101014;
+    --surface: #18181b;
+    --surface-raised: #202026;
+    --text: #f4f4f5;
+    --muted: #a1a1aa;
+    --border: #33333f;
+    --active: rgb(34 197 94 / 14%);
+    --active-border: #34d399;
+    --accent: #34d399;
+    --accent-strong: #22c55e;
+    --accent-alt: #a78bfa;
+    --focus-ring: rgb(52 211 153 / 24%);
+    --danger: #fb7185;
     --control-shadow: none;
     --shadow: 0 18px 48px rgb(0 0 0 / 45%);
     --p-content-background: var(--surface);
@@ -66,15 +81,21 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #ffffff;
-  --panel: #f7f7f5;
+  --bg: #f8fafc;
+  --panel: #f4f4f5;
   --surface: #ffffff;
-  --text: #111111;
-  --muted: #6f6f6f;
-  --border: #d8d6d0;
-  --active: #ffec99;
+  --surface-raised: #fafafa;
+  --text: #111827;
+  --muted: #71717a;
+  --border: #d4d4d8;
+  --active: #ecfdf5;
+  --active-border: #22c55e;
+  --accent: #22c55e;
+  --accent-strong: #16a34a;
+  --accent-alt: #7c3aed;
+  --focus-ring: rgb(34 197 94 / 28%);
   --danger: #b42318;
-  --control-shadow: 0 12px 34px rgb(0 0 0 / 10%);
+  --control-shadow: 0 1px 2px rgb(15 23 42 / 5%);
   --p-form-field-background: var(--surface);
   --p-form-field-color: var(--text);
   --p-form-field-border-color: var(--border);
@@ -86,14 +107,20 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #000000;
-  --panel: #111111;
-  --surface: #1f1f1f;
-  --text: #f5f5f5;
-  --muted: #a3a3a3;
-  --border: #323232;
-  --active: #4a3f18;
-  --danger: #ff8a80;
+  --bg: #09090b;
+  --panel: #101014;
+  --surface: #18181b;
+  --surface-raised: #202026;
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+  --border: #33333f;
+  --active: rgb(34 197 94 / 14%);
+  --active-border: #34d399;
+  --accent: #34d399;
+  --accent-strong: #22c55e;
+  --accent-alt: #a78bfa;
+  --focus-ring: rgb(52 211 153 / 24%);
+  --danger: #fb7185;
   --control-shadow: none;
   --p-form-field-background: var(--surface);
   --p-form-field-color: var(--text);
@@ -112,6 +139,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
+  overflow-x: hidden;
 }
 
 .p-component,

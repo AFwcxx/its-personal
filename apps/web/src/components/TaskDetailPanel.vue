@@ -42,6 +42,7 @@ const taskLinks = computed(() => planner.links.filter((link) => link.taskId === 
 const taskAttachments = computed(() => planner.attachments.filter((attachment) => attachment.taskId === task.value?.id && !attachment.deletedAt));
 const tagOptions = computed(() => planner.activeTags);
 const canAddSubtask = computed(() => Boolean(task.value && task.value.completedAt === null && task.value.deletedAt === null));
+const tagsById = computed(() => new Map(planner.activeTags.map((tag) => [tag.id, tag])));
 
 watch(task, (value) => {
   const changedTask = value?.id !== syncedTaskId;
@@ -87,6 +88,10 @@ async function assignTags(tagIds: string[]) {
   const currentTagIds = task.value?.tagIds ?? (task.value?.tagId ? [task.value.tagId] : []);
   if (!task.value || currentTagIds.join(",") === tagIds.join(",")) return;
   await planner.updateTask(task.value.id, { tagIds });
+}
+
+function tagStyle(tagId: string) {
+  return { "--tag-color": tagsById.value.get(tagId)?.color ?? "#6b7280" };
 }
 
 async function updateRecurrence(type: Recurrence["type"]) {
@@ -211,7 +216,19 @@ async function confirmRemove() {
           option-value="id"
           display="chip"
           @update:model-value="assignTags"
-        />
+        >
+          <template #chip="{ value, removeCallback }">
+            <span class="task-tag tag-multiselect-chip" :style="tagStyle(value)">
+              <span>{{ tagsById.get(value)?.name ?? value }}</span>
+              <button class="tag-chip-remove" type="button" aria-label="Remove tag" @click.stop="removeCallback">
+                <X :size="14" />
+              </button>
+            </span>
+          </template>
+          <template #option="{ option }">
+            <span class="task-tag" :style="{ '--tag-color': option.color ?? '#6b7280' }">{{ option.name }}</span>
+          </template>
+        </MultiSelect>
       </label>
       <label>Add link<InputText v-model="linkUrl" placeholder="https://example.com" @keydown.enter.prevent="addLink" /></label>
       <Button label="Add Link" @click="addLink" />
@@ -229,7 +246,6 @@ async function confirmRemove() {
     <Dialog :visible="taskPendingRemoval" modal header="Delete task" :style="{ width: 'min(420px, 92vw)' }" @update:visible="taskPendingRemoval = $event">
       <p>This task will be deleted.</p>
       <div class="dialog-actions">
-        <Button label="Cancel" severity="secondary" @click="taskPendingRemoval = false" />
         <Button label="Confirm" severity="danger" @click="confirmRemove" />
       </div>
     </Dialog>
