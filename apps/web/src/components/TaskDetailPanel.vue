@@ -110,7 +110,7 @@ async function openTaskAttachment(id: string) {
     <div class="field-stack">
       <label>Title<Textarea v-model="title" rows="2" auto-resize /></label>
       <label>Due date<InputText :value="task.dueDate" type="date" @change="planner.updateTask(task.id, { dueDate: ($event.target as HTMLInputElement).value })" /></label>
-      <label>Notes<Textarea v-model="notes" rows="5" /></label>
+      <label>Notes<Textarea v-model="notes" class="notes-textarea" rows="5" /></label>
       <label>Recurrence
         <Select
           :model-value="task.recurrence.type"
