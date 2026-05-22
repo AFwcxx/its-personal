@@ -28,8 +28,11 @@
   margin: 0;
 }
 
-.sidebar-header .p-button {
+.sidebar-header-actions {
+  align-items: center;
   display: none;
+  flex: 0 0 auto;
+  gap: 0.5rem;
 }
 
 .sidebar nav {
@@ -1026,8 +1029,8 @@
     margin: 0;
   }
 
-  .sidebar-header .p-button {
-    display: inline-flex;
+  .sidebar-header-actions {
+    display: flex;
   }
 
   .sidebar nav {
