@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "workspaces": ["apps/api", "apps/web", "packages/shared"],
+  "workspaces": ["packages/shared", "apps/api", "apps/web"],
   "scripts": {
     "build": "npm run build -ws",
     "typecheck": "npm run typecheck -ws",
