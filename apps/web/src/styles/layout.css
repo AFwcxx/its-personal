@@ -202,6 +202,19 @@
   width: auto;
 }
 
+.task-create-actions {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.task-create-tags.p-multiselect {
+  margin-left: auto;
+  min-width: min(22rem, 100%);
+  width: min(34rem, 100%);
+}
+
 .tag-create-form .p-button {
   width: auto;
 }
@@ -633,6 +646,10 @@
   border-radius: var(--radius-control) !important;
 }
 
+.task-create-tags.tag-multiselect.p-multiselect {
+  align-items: flex-start;
+}
+
 .field-stack > .p-button {
   justify-self: start;
   width: auto;
@@ -758,6 +775,18 @@
 :root[data-theme="dark"] .p-button.p-button-secondary,
 :root[data-theme="dark"] .p-button.p-button-text {
   background-color: var(--surface) !important;
+}
+
+@media (max-width: 640px) {
+  .task-create-actions {
+    flex-direction: column;
+  }
+
+  .task-create-tags.p-multiselect {
+    margin-left: 0;
+    order: -1;
+    width: 100%;
+  }
 }
 
 .sidebar .p-button.active,

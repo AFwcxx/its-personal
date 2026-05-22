@@ -62,8 +62,8 @@ export const usePlannerStore = defineStore("planner", {
       const q = search.toLowerCase();
       return sortPlannerItems(this.tasks.filter((task) => !task.deletedAt && (showCompleted || !task.completedAt) && task.title.toLowerCase().includes(q)));
     },
-    async createTask(title: string, dueDate?: string, parentId: string | null = null) {
-      const task = await plannerApi.createTask({ title, dueDate: dueDate ?? this.currentDate, parentId });
+    async createTask(title: string, dueDate?: string, parentId: string | null = null, tagIds: string[] = []) {
+      const task = await plannerApi.createTask({ title, dueDate: dueDate ?? this.currentDate, parentId, tagIds });
       this.tasks.push(task);
       return task;
     },
