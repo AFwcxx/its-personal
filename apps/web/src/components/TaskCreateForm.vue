@@ -53,7 +53,7 @@ function toggleExpanded() {
   <Card class="task-create-card" :class="{ 'task-create-card-collapsed': !expanded }">
     <template #content>
       <button class="task-create-toggle" type="button" :aria-expanded="expanded" aria-label="Toggle add task form" @click="toggleExpanded">
-        <ChevronUp v-if="expanded" :size="18" aria-hidden="true" />
+        <ChevronUp v-if="expanded" :size="16" aria-hidden="true" />
         <ChevronDown v-else :size="18" aria-hidden="true" />
       </button>
       <div class="task-create-body" :aria-hidden="!expanded" :inert="!expanded">
