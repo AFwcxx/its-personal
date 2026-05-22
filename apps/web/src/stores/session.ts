@@ -7,7 +7,7 @@ const deviceKey = "its-personal-device-id";
 const themeKey = "its-personal-theme";
 const systemThemeQuery = "(prefers-color-scheme: dark)";
 const heartbeatMs = 5 * 60 * 1000;
-const lightThemeColor = "#f8fafc";
+const lightThemeColor = "#fffdf7";
 const darkThemeColor = "#09090b";
 
 let activityTrackingStarted = false;
