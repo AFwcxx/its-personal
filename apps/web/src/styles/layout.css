@@ -412,6 +412,7 @@
   color: var(--accent-alt);
   flex: 0 0 auto;
   font-size: 0.9rem;
+  text-shadow: 0 0 6px color-mix(in srgb, var(--accent-alt) 42%, transparent), 0 0 14px color-mix(in srgb, var(--accent-alt) 34%, transparent);
 }
 
 .task-row:hover {
