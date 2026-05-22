@@ -60,8 +60,8 @@ function toggleExpanded() {
         <div class="task-create-body-inner">
           <div class="task-create-form">
             <InputText v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
-            <InputText v-if="showDueDate" :model-value="dueDate" type="date" aria-label="Due date" @update:model-value="updateDueDate" @keydown.enter.prevent="createTask" />
-            <div class="task-create-actions">
+            <div class="task-create-actions" :class="{ 'task-create-actions-no-date': !showDueDate }">
+              <InputText v-if="showDueDate" class="task-create-date" :model-value="dueDate" type="date" aria-label="Due date" @update:model-value="updateDueDate" @keydown.enter.prevent="createTask" />
               <Button :disabled="planner.status === 'offline'" label="Add" @click="createTask" />
               <MultiSelect
                 class="tag-multiselect task-create-tags"
