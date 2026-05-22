@@ -9,6 +9,7 @@ export function migrate(db: Db): void {
       due_date TEXT NOT NULL,
       completed_at TEXT,
       pinned INTEGER NOT NULL DEFAULT 0,
+      subtasks_collapsed INTEGER NOT NULL DEFAULT 0,
       tag_id TEXT,
       notes TEXT NOT NULL DEFAULT '',
       recurrence_json TEXT NOT NULL DEFAULT '{"type":"none"}',
@@ -88,4 +89,8 @@ export function migrate(db: Db): void {
     );
     CREATE INDEX IF NOT EXISTS idx_sessions_last_seen_at ON sessions(last_seen_at);
   `);
+  const taskColumns = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
+  if (!taskColumns.some((column) => column.name === "subtasks_collapsed")) {
+    db.prepare("ALTER TABLE tasks ADD COLUMN subtasks_collapsed INTEGER NOT NULL DEFAULT 0").run();
+  }
 }

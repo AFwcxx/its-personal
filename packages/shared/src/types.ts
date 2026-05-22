@@ -17,6 +17,7 @@ export interface Task {
   dueDate: string;
   completedAt: string | null;
   pinned: boolean;
+  subtasksCollapsed: boolean;
   tagId: string | null;
   tagIds: string[];
   notes: string;

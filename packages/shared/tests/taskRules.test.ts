@@ -9,6 +9,7 @@ const base = (task: Partial<Task>): Task => ({
   dueDate: task.dueDate ?? "2026-05-20",
   completedAt: task.completedAt ?? null,
   pinned: task.pinned ?? false,
+  subtasksCollapsed: task.subtasksCollapsed ?? false,
   tagId: task.tagId ?? null,
   tagIds: task.tagIds ?? [],
   notes: task.notes ?? "",

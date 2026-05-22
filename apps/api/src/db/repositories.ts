@@ -3,7 +3,7 @@ import type { Db } from "./connection.js";
 
 type TaskRow = {
   id: string; title: string; parent_id: string | null; due_date: string; completed_at: string | null;
-  pinned: number; tag_id: string | null; notes: string; recurrence_json: string; sort_order: number;
+  pinned: number; subtasks_collapsed: number; tag_id: string | null; notes: string; recurrence_json: string; sort_order: number;
   created_at: string; updated_at: string; deleted_at: string | null;
 };
 type SubtaskRow = {
@@ -31,6 +31,7 @@ export function rowToTask(row: TaskRow, tagIds: string[] = []): Task {
     dueDate: row.due_date,
     completedAt: row.completed_at,
     pinned: row.pinned === 1,
+    subtasksCollapsed: row.subtasks_collapsed === 1,
     tagId: row.tag_id,
     tagIds: taskTagIds,
     notes: row.notes,
@@ -61,11 +62,11 @@ export function getTask(db: Db, id: string): Task | null {
 export function upsertTask(db: Db, task: Task): Task {
   const tagIds = task.tagIds.length > 0 ? task.tagIds : task.tagId ? [task.tagId] : [];
   db.prepare(`
-    INSERT INTO tasks (id, title, parent_id, due_date, completed_at, pinned, tag_id, notes, recurrence_json, sort_order, created_at, updated_at, deleted_at)
-    VALUES (@id, @title, @parentId, @dueDate, @completedAt, @pinned, @tagId, @notes, @recurrence, @order, @createdAt, @updatedAt, @deletedAt)
+    INSERT INTO tasks (id, title, parent_id, due_date, completed_at, pinned, subtasks_collapsed, tag_id, notes, recurrence_json, sort_order, created_at, updated_at, deleted_at)
+    VALUES (@id, @title, @parentId, @dueDate, @completedAt, @pinned, @subtasksCollapsed, @tagId, @notes, @recurrence, @order, @createdAt, @updatedAt, @deletedAt)
     ON CONFLICT(id) DO UPDATE SET title=@title, parent_id=@parentId, due_date=@dueDate, completed_at=@completedAt,
-      pinned=@pinned, tag_id=@tagId, notes=@notes, recurrence_json=@recurrence, sort_order=@order, updated_at=@updatedAt, deleted_at=@deletedAt
-  `).run({ ...task, tagId: tagIds[0] ?? null, pinned: task.pinned ? 1 : 0, recurrence: JSON.stringify(task.recurrence) });
+      pinned=@pinned, subtasks_collapsed=@subtasksCollapsed, tag_id=@tagId, notes=@notes, recurrence_json=@recurrence, sort_order=@order, updated_at=@updatedAt, deleted_at=@deletedAt
+  `).run({ ...task, tagId: tagIds[0] ?? null, pinned: task.pinned ? 1 : 0, subtasksCollapsed: task.subtasksCollapsed ? 1 : 0, recurrence: JSON.stringify(task.recurrence) });
   db.prepare("DELETE FROM task_tags WHERE task_id = ?").run(task.id);
   const insertTag = db.prepare("INSERT INTO task_tags (task_id, tag_id, created_at) VALUES (?, ?, ?)");
   for (const tagId of tagIds) insertTag.run(task.id, tagId, task.updatedAt);
