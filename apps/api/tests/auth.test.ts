@@ -40,6 +40,18 @@ function taskFixture(id: string, patch: Partial<Parameters<typeof upsertTask>[1]
 }
 
 describe("auth and database", () => {
+  it("exposes the configured app title before unlock", async () => {
+    const db = openDatabase(":memory:");
+    const titledConfig = { ...config, APP_TITLE: "Personal Ops" };
+
+    await request(createServer(titledConfig, db))
+      .get("/api/config")
+      .expect(200)
+      .expect((response) => {
+        expect(response.body).toEqual({ appTitle: "Personal Ops" });
+      });
+  });
+
   it("issues verifiable idle sessions only after password verification", () => {
     expect(verifyPassword(config, "wrong")).toBe(false);
     expect(verifyPassword(config, "secret")).toBe(true);

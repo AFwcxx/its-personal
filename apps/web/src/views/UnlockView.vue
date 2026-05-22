@@ -4,6 +4,7 @@ import Message from "primevue/message";
 import Password from "primevue/password";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { appTitle } from "../config.js";
 import { useSessionStore } from "../stores/session.js";
 
 const password = ref("");
@@ -18,7 +19,7 @@ async function submit() {
 <template>
   <div class="unlock">
     <form @submit.prevent="submit">
-      <h1>Its Personal</h1>
+      <h1>{{ appTitle }}</h1>
       <Password v-model="password" autocomplete="current-password" placeholder="Password" :feedback="false" toggle-mask />
       <Button label="Unlock" type="submit" />
       <Message v-if="session.error" severity="error" size="small">{{ session.error }}</Message>

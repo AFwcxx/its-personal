@@ -2,6 +2,7 @@
 import Button from "primevue/button";
 import { computed, onMounted, ref, watch } from "vue";
 import { RouterLink, useRouter } from "vue-router";
+import { appTitle } from "../config.js";
 import { usePlannerStore } from "../stores/planner.js";
 import { useSessionStore } from "../stores/session.js";
 import TaskDetailPanel from "./TaskDetailPanel.vue";
@@ -35,7 +36,7 @@ async function lock() {
   <div class="app-shell" :class="{ 'has-detail': hasDetail || detailLeaving }">
     <aside class="sidebar">
       <div class="sidebar-header">
-        <h1>Its Personal</h1>
+        <h1>{{ appTitle }}</h1>
         <Button aria-label="Lock" icon="pi pi-lock" rounded text @click="lock" />
       </div>
       <nav>

@@ -7,6 +7,7 @@ import type { Db } from "./db/connection.js";
 import { authRequired } from "./middleware/authRequired.js";
 import { attachmentsRouter } from "./routes/attachments.js";
 import { authRouter } from "./routes/auth.js";
+import { configRouter } from "./routes/config.js";
 import { healthRouter } from "./routes/health.js";
 import { plannerRouter } from "./routes/planner.js";
 
@@ -17,6 +18,7 @@ export function createServer(config: AppConfig, db: Db) {
   app.use(express.json({ limit: "2mb" }));
 
   app.use("/api/health", healthRouter());
+  app.use("/api/config", configRouter(config));
   app.use("/api/auth", authRouter(config, db));
   app.use("/api/planner", authRequired(config, db), plannerRouter(db, config.APP_TIMEZONE));
   app.use("/api/attachments", authRequired(config, db), attachmentsRouter(config, db));
