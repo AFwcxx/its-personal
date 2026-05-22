@@ -525,10 +525,11 @@
 }
 
 .p-dialog {
-  --modal-glass: rgb(9 9 11 / 66.69%);
-  --modal-glass-raised: rgb(24 24 27 / 56.43%);
-  --modal-glass-border: rgb(255 255 255 / 13.68%);
-  --modal-glass-text: #f4f4f5;
+  --modal-glass: rgb(255 255 255 / 84%);
+  --modal-glass-raised: rgb(255 255 255 / 92%);
+  --modal-glass-border: rgb(17 24 39 / 12%);
+  --modal-glass-close-hover: var(--surface-raised);
+  --modal-glass-text: var(--text);
   background: var(--modal-glass) !important;
   backdrop-filter: blur(18.81px) saturate(128.25%);
   -webkit-backdrop-filter: blur(18.81px) saturate(128.25%);
@@ -537,6 +538,14 @@
   box-shadow: 0 24px 72px rgb(0 0 0 / 37.62%) !important;
   color: var(--modal-glass-text) !important;
   overflow: hidden;
+}
+
+:root[data-theme="dark"] .p-dialog {
+  --modal-glass: rgb(9 9 11 / 66.69%);
+  --modal-glass-raised: rgb(24 24 27 / 56.43%);
+  --modal-glass-border: rgb(255 255 255 / 13.68%);
+  --modal-glass-close-hover: rgb(39 39 42 / 66.69%);
+  --modal-glass-text: #f4f4f5;
 }
 
 .p-dialog-header,
@@ -579,7 +588,7 @@
 }
 
 .p-dialog-close-button:enabled:hover {
-  background: rgb(39 39 42 / 66.69%) !important;
+  background: var(--modal-glass-close-hover) !important;
   border-color: color-mix(in srgb, var(--accent) 42%, var(--border)) !important;
   color: var(--modal-glass-text) !important;
 }
