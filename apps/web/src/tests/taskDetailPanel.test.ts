@@ -2,6 +2,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
+import SubtaskCreateDialog from "../components/SubtaskCreateDialog.vue";
 import TaskDetailPanel from "../components/TaskDetailPanel.vue";
 import { plannerApi } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
@@ -177,7 +178,7 @@ describe("TaskDetailPanel recurrence", () => {
     expect(planner.selectedTaskId).toBeNull();
   });
 
-  it("adds a subtask from the detail panel without opening a subtask detail menu", async () => {
+  it("opens the subtask dialog and closes the task detail menu", async () => {
     const planner = usePlannerStore();
     planner.tasks = [baseTask];
     planner.selectedTaskId = baseTask.id;
@@ -198,6 +199,27 @@ describe("TaskDetailPanel recurrence", () => {
 
     const openButton = wrapper.findAll("button").find((button) => button.text() === "Add subtask");
     await openButton!.trigger("click");
+
+    expect(planner.subtaskDialogTaskId).toBe(baseTask.id);
+    expect(planner.selectedTaskId).toBeNull();
+  });
+
+  it("adds a subtask from the app-level dialog without reopening the task detail menu", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = null;
+    planner.subtaskDialogTaskId = baseTask.id;
+
+    const wrapper = mount(SubtaskCreateDialog, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          InputText: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<input :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+        }
+      }
+    });
+
     await wrapper.find("input[placeholder='New subtask']").setValue("Use coupon");
 
     const addButton = wrapper.findAll("button").find((button) => button.text() === "Add");
@@ -205,6 +227,7 @@ describe("TaskDetailPanel recurrence", () => {
     await flushPromises();
 
     expect(plannerApi.createSubtask).toHaveBeenCalledWith({ taskId: baseTask.id, title: "Use coupon" });
-    expect(planner.selectedTaskId).toBe(baseTask.id);
+    expect(planner.selectedTaskId).toBeNull();
+    expect(planner.subtaskDialogTaskId).toBe(baseTask.id);
   });
 });

@@ -10,6 +10,7 @@ export const usePlannerStore = defineStore("planner", {
     links: [] as TaskLink[],
     attachments: [] as Attachment[],
     selectedTaskId: null as string | null,
+    subtaskDialogTaskId: null as string | null,
     currentDate: todayISO(),
     status: "idle" as "idle" | "loading" | "offline" | "error",
     error: ""

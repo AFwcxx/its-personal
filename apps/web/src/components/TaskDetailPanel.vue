@@ -17,8 +17,6 @@ const title = ref("");
 const notes = ref("");
 const selectedTagIds = ref<string[]>([]);
 const linkUrl = ref("");
-const subtaskTitle = ref("");
-const subtaskDialogVisible = ref(false);
 const customIntervalDays = ref(1);
 const recurrenceEnds = ref<RecurrenceEnd>({ type: "eternity" });
 const taskPendingRemoval = ref(false);
@@ -147,13 +145,6 @@ async function addFile(event: { files: File[] }) {
   planner.attachments.push(await uploadAttachment(task.value.id, file));
 }
 
-async function addSubtask(closeAfterAdd = false) {
-  if (!task.value || !subtaskTitle.value.trim() || !canAddSubtask.value) return;
-  await planner.createSubtask(task.value.id, subtaskTitle.value.trim());
-  subtaskTitle.value = "";
-  if (closeAfterAdd) subtaskDialogVisible.value = false;
-}
-
 async function openTaskAttachment(id: string) {
   await openAttachment(id);
 }
@@ -164,6 +155,12 @@ async function confirmRemove() {
   taskPendingRemoval.value = false;
   planner.selectedTaskId = null;
 }
+
+function openSubtaskDialog() {
+  if (!task.value || !canAddSubtask.value) return;
+  planner.subtaskDialogTaskId = task.value.id;
+  planner.selectedTaskId = null;
+}
 </script>
 
 <template>
@@ -172,7 +169,7 @@ async function confirmRemove() {
       <h2>{{ task.title }}</h2>
       <Button class="detail-close-button" aria-label="Close" severity="secondary" text @click="planner.selectedTaskId = null"><X :size="18" /></Button>
     </div>
-    <Button v-if="canAddSubtask" class="detail-add-subtask-button" label="Add subtask" severity="secondary" @click="subtaskDialogVisible = true" />
+    <Button v-if="canAddSubtask" class="detail-add-subtask-button" label="Add subtask" severity="secondary" @click="openSubtaskDialog" />
     <div class="field-stack">
       <label>Title<Textarea v-model="title" rows="2" auto-resize /></label>
       <label>Due date<InputText :model-value="task.dueDate" type="date" :disabled="task.recurrence.type !== 'none' && recurrenceEnds.type === 'date'" @update:model-value="updateDueDate" /></label>
@@ -256,15 +253,6 @@ async function confirmRemove() {
       <p>This task will be deleted.</p>
       <div class="dialog-actions">
         <Button label="Confirm" severity="danger" @click="confirmRemove" />
-      </div>
-    </Dialog>
-    <Dialog :visible="subtaskDialogVisible" modal header="Add subtask" :style="{ width: 'min(420px, 92vw)' }" @update:visible="subtaskDialogVisible = $event">
-      <div class="dialog-form">
-        <InputText v-model="subtaskTitle" placeholder="New subtask" autofocus @keydown.enter.prevent="addSubtask(false)" />
-      </div>
-      <div class="dialog-actions">
-        <Button label="Add" @click="addSubtask(false)" />
-        <Button label="Add & Close" @click="addSubtask(true)" />
       </div>
     </Dialog>
   </aside>

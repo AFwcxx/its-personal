@@ -5,6 +5,7 @@ import { RouterLink, useRouter } from "vue-router";
 import { appTitle } from "../config.js";
 import { usePlannerStore } from "../stores/planner.js";
 import { useSessionStore } from "../stores/session.js";
+import SubtaskCreateDialog from "./SubtaskCreateDialog.vue";
 import TaskDetailPanel from "./TaskDetailPanel.vue";
 
 const navItems = [
@@ -55,5 +56,6 @@ async function lock() {
     <Transition name="detail-panel" @before-leave="detailLeaving = true" @after-leave="detailLeaving = false">
       <TaskDetailPanel v-if="hasDetail" />
     </Transition>
+    <SubtaskCreateDialog />
   </div>
 </template>
