@@ -297,6 +297,8 @@
 
 .subtask-row-complete .subtask-title {
   color: var(--muted);
+  opacity: 0.3;
+  transition: opacity 160ms ease;
 }
 
 .task-row {
