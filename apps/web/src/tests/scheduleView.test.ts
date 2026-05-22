@@ -2,7 +2,7 @@ import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent } from "vue";
-import type { Task } from "@its-personal/shared";
+import type { Tag, Task } from "@its-personal/shared";
 import ScheduleView from "../views/ScheduleView.vue";
 import { usePlannerStore } from "../stores/planner.js";
 
@@ -23,11 +23,48 @@ const baseTask: Task = {
   deletedAt: null
 };
 
+const personalTag: Tag = {
+  id: "tag-personal",
+  name: "Personal",
+  color: "#1d4ed8",
+  archivedAt: null,
+  createdAt: "2026-05-21T00:00:00.000Z",
+  updatedAt: "2026-05-21T00:00:00.000Z",
+  deletedAt: null
+};
+
 vi.mock("../services/api.js", () => ({
   loadSnapshot: vi.fn(async () => ({ tasks: [], tags: [], links: [], attachments: [] })),
   cachedSnapshot: vi.fn(() => null),
   plannerApi: {}
 }));
+
+function mountSchedule() {
+  return mount(ScheduleView, {
+    global: {
+      stubs: {
+        AppShell: { template: "<main><slot /></main>" },
+        Button: { props: ["label", "disabled"], template: "<button type='button' :disabled='disabled' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+        Card: { template: "<section><slot name='content' /></section>" },
+        InputText: { props: ["modelValue"], emits: ["update:modelValue"], template: "<input :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" },
+        MultiSelect: {
+          props: ["modelValue", "options"],
+          emits: ["update:modelValue"],
+          template: "<select multiple :value='modelValue' @change='$emit(\"update:modelValue\", Array.from($event.target.selectedOptions).map((option) => option.value))'><option v-for='option in options' :key='option.id' :value='option.id'>{{ option.name }}</option></select>"
+        },
+        TaskList: defineComponent({
+          props: ["tasks", "reorderable"],
+          emits: ["reorder"],
+          template: `
+            <section class="task-list-stub" :data-reorderable="String(Boolean(reorderable))" @click="$emit('reorder', tasks)">
+              <span v-for="task in tasks" :key="task.id">{{ task.title }}</span>
+            </section>
+          `
+        })
+      }
+    }
+  });
+}
 
 describe("ScheduleView", () => {
   beforeEach(() => {
@@ -51,23 +88,7 @@ describe("ScheduleView", () => {
     planner.refresh = vi.fn();
     planner.reorderTasks = vi.fn();
 
-    const wrapper = mount(ScheduleView, {
-      global: {
-        stubs: {
-          AppShell: { template: "<main><slot /></main>" },
-          Button: { props: ["label"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
-          TaskList: defineComponent({
-            props: ["tasks", "reorderable"],
-            emits: ["reorder"],
-            template: `
-              <section class="task-list-stub" :data-reorderable="String(Boolean(reorderable))" @click="$emit('reorder', tasks)">
-                <span v-for="task in tasks" :key="task.id">{{ task.title }}</span>
-              </section>
-            `
-          })
-        }
-      }
-    });
+    const wrapper = mountSchedule();
 
     const activeList = wrapper.find(".task-list-stub");
 
@@ -83,5 +104,26 @@ describe("ScheduleView", () => {
 
     expect(lists).toHaveLength(2);
     expect(lists[1]!.text()).toContain("Done task");
+  });
+
+  it("creates new tasks for the selected calendar date without exposing date editing", async () => {
+    const planner = usePlannerStore();
+    planner.tags = [personalTag];
+    planner.refresh = vi.fn();
+    planner.createTask = vi.fn(async (title: string, dueDate?: string, parentId: string | null = null, tagIds: string[] = []) => {
+      const task = { ...baseTask, id: "created", title, dueDate: dueDate ?? "2026-05-21", parentId, tagIds };
+      planner.tasks.push(task);
+      return task;
+    });
+
+    const wrapper = mountSchedule();
+    const day22 = wrapper.findAll("button").find((button) => button.text().startsWith("220 tasks"));
+    await day22?.trigger("click");
+    await wrapper.find("input[placeholder='New task']").setValue("Scheduled task");
+    await wrapper.find("select").setValue(["tag-personal"]);
+    await wrapper.findAll("button").find((button) => button.text() === "Add")?.trigger("click");
+
+    expect(wrapper.find("input[type='date']").exists()).toBe(false);
+    expect(planner.createTask).toHaveBeenCalledWith("Scheduled task", "2026-05-22", null, ["tag-personal"]);
   });
 });

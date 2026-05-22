@@ -1,22 +1,18 @@
 <script setup lang="ts">
 import { completedPlannerTasksForDate, sortPlannerItems, type Task } from "@its-personal/shared";
 import Button from "primevue/button";
-import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
-import MultiSelect from "primevue/multiselect";
 import { computed, onMounted, ref } from "vue";
-import { X } from "lucide-vue-next";
 import AppShell from "../components/AppShell.vue";
+import TaskCreateForm from "../components/TaskCreateForm.vue";
 import TaskList from "../components/TaskList.vue";
 import { usePlannerStore } from "../stores/planner.js";
 
 const planner = usePlannerStore();
 const tab = ref("today");
 const search = ref("");
-const newTitle = ref("");
 const newDueDate = ref(planner.dateForTab(tab.value));
-const newTagIds = ref<string[]>([]);
 const completedExpanded = ref(localStorage.getItem("its-personal-completed-expanded") === "true");
 const tabs = [
   { key: "overdue", label: "Overdue" },
@@ -69,8 +65,6 @@ const visibleTasks = computed(() => {
 });
 
 const visibleGroups = computed(() => groupTasksByDueDate(visibleTasks.value));
-const tagOptions = computed(() => planner.activeTags);
-const tagsById = computed(() => new Map(planner.activeTags.map((tag) => [tag.id, tag])));
 
 const completedTasks = computed(() => {
   const q = search.value.toLowerCase();
@@ -84,21 +78,6 @@ const completedGroups = computed(() => groupTasksByDueDate(completedTasks.value)
 
 const canCreateTask = computed(() => tab.value !== "overdue");
 const canReorder = computed(() => ["overdue", "today", "tomorrow", "day-after"].includes(tab.value));
-
-async function createTask() {
-  if (!newTitle.value.trim() || !newDueDate.value || !canCreateTask.value || planner.status === "offline") return;
-  await planner.createTask(newTitle.value.trim(), newDueDate.value, null, newTagIds.value);
-  newTitle.value = "";
-  newTagIds.value = [];
-}
-
-function tagStyle(tagId: string) {
-  return { "--tag-color": tagsById.value.get(tagId)?.color ?? "#6b7280" };
-}
-
-function removeTagChip(event: MouseEvent, removeCallback: (event: Event, item?: unknown) => void) {
-  removeCallback(event);
-}
 
 function selectTab(key: string) {
   tab.value = key;
@@ -127,38 +106,7 @@ async function reorder(tasks: Task[]) {
       </div>
       <InputText v-model="search" placeholder="Search tasks" />
     </div>
-    <Card v-if="canCreateTask" class="task-create-card">
-      <template #content>
-        <div class="task-create-form">
-          <InputText v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
-          <InputText v-model="newDueDate" type="date" aria-label="Due date" @keydown.enter.prevent="createTask" />
-          <div class="task-create-actions">
-            <Button :disabled="planner.status === 'offline'" label="Add" @click="createTask" />
-            <MultiSelect
-              class="tag-multiselect task-create-tags"
-              v-model="newTagIds"
-              :options="tagOptions"
-              option-label="name"
-              option-value="id"
-              display="chip"
-              placeholder="Tags"
-            >
-              <template #chip="{ value, removeCallback }">
-                <span class="task-tag tag-multiselect-chip" :style="tagStyle(value)">
-                  <span>{{ tagsById.get(value)?.name ?? value }}</span>
-                  <button class="tag-chip-remove" type="button" aria-label="Remove tag" @click.stop="removeTagChip($event, removeCallback)">
-                    <X :size="14" />
-                  </button>
-                </span>
-              </template>
-              <template #option="{ option }">
-                <span class="task-tag" :style="{ '--tag-color': option.color ?? '#6b7280' }">{{ option.name }}</span>
-              </template>
-            </MultiSelect>
-          </div>
-        </div>
-      </template>
-    </Card>
+    <TaskCreateForm v-if="canCreateTask" v-model:due-date="newDueDate" />
     <template v-if="tab === 'overdue'">
       <section v-for="group in visibleGroups" :key="group.date" class="date-group">
         <h3 class="date-heading">Date: {{ group.date }}</h3>

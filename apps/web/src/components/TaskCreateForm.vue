@@ -1,0 +1,80 @@
+<script setup lang="ts">
+import Button from "primevue/button";
+import Card from "primevue/card";
+import InputText from "primevue/inputtext";
+import MultiSelect from "primevue/multiselect";
+import { X } from "lucide-vue-next";
+import { computed, ref } from "vue";
+import { usePlannerStore } from "../stores/planner.js";
+
+const props = withDefaults(defineProps<{
+  dueDate: string;
+  showDueDate?: boolean;
+}>(), {
+  showDueDate: true
+});
+const emit = defineEmits<{
+  "update:dueDate": [value: string];
+}>();
+
+const planner = usePlannerStore();
+const newTitle = ref("");
+const newTagIds = ref<string[]>([]);
+
+const tagOptions = computed(() => planner.activeTags);
+const tagsById = computed(() => new Map(planner.activeTags.map((tag) => [tag.id, tag])));
+
+async function createTask() {
+  if (!newTitle.value.trim() || !props.dueDate || planner.status === "offline") return;
+  await planner.createTask(newTitle.value.trim(), props.dueDate, null, newTagIds.value);
+  newTitle.value = "";
+  newTagIds.value = [];
+}
+
+function tagStyle(tagId: string) {
+  return { "--tag-color": tagsById.value.get(tagId)?.color ?? "#6b7280" };
+}
+
+function removeTagChip(event: MouseEvent, removeCallback: (event: Event, item?: unknown) => void) {
+  removeCallback(event);
+}
+
+function updateDueDate(value: string | undefined) {
+  emit("update:dueDate", value ?? "");
+}
+</script>
+
+<template>
+  <Card class="task-create-card">
+    <template #content>
+      <div class="task-create-form">
+        <InputText v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
+        <InputText v-if="showDueDate" :model-value="dueDate" type="date" aria-label="Due date" @update:model-value="updateDueDate" @keydown.enter.prevent="createTask" />
+        <div class="task-create-actions">
+          <Button :disabled="planner.status === 'offline'" label="Add" @click="createTask" />
+          <MultiSelect
+            class="tag-multiselect task-create-tags"
+            v-model="newTagIds"
+            :options="tagOptions"
+            option-label="name"
+            option-value="id"
+            display="chip"
+            placeholder="Tags"
+          >
+            <template #chip="{ value, removeCallback }">
+              <span class="task-tag tag-multiselect-chip" :style="tagStyle(value)">
+                <span>{{ tagsById.get(value)?.name ?? value }}</span>
+                <button class="tag-chip-remove" type="button" aria-label="Remove tag" @click.stop="removeTagChip($event, removeCallback)">
+                  <X :size="14" />
+                </button>
+              </span>
+            </template>
+            <template #option="{ option }">
+              <span class="task-tag" :style="{ '--tag-color': option.color ?? '#6b7280' }">{{ option.name }}</span>
+            </template>
+          </MultiSelect>
+        </div>
+      </div>
+    </template>
+  </Card>
+</template>
