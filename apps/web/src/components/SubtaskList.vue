@@ -4,18 +4,83 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Sortable from "sortablejs";
 import { GripVertical, Square, SquareCheck, Trash2 } from "lucide-vue-next";
-import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { usePlannerStore } from "../stores/planner.js";
 
 const props = defineProps<{ taskId: string; subtasks: Subtask[]; readonly?: boolean }>();
 const planner = usePlannerStore();
 const listEl = ref<HTMLElement | null>(null);
 const pendingRemovalId = ref<string | null>(null);
+const expandedIds = ref(new Set<string>());
+const overflowingIds = ref(new Set<string>());
+const titleEls = new Map<string, HTMLElement>();
+const pointerStart = { x: 0, y: 0 };
 let sortable: Sortable | null = null;
 
 const activeSubtasks = computed(() => props.subtasks.filter((subtask) => subtask.taskId === props.taskId && subtask.deletedAt === null));
 const sortedSubtasks = computed(() => [...activeSubtasks.value].sort((a, b) => a.order - b.order || a.createdAt.localeCompare(b.createdAt)));
 const pendingRemoval = computed(() => sortedSubtasks.value.find((subtask) => subtask.id === pendingRemovalId.value) ?? null);
+
+function isOverflowing(id: string) {
+  return overflowingIds.value.has(id);
+}
+
+function isExpanded(id: string) {
+  return expandedIds.value.has(id);
+}
+
+function setTitleEl(id: string, el: Element | null) {
+  if (el instanceof HTMLElement) {
+    titleEls.set(id, el);
+    return;
+  }
+  titleEls.delete(id);
+}
+
+function measureOverflow() {
+  const nextOverflowing = new Set<string>();
+  for (const subtask of sortedSubtasks.value) {
+    const el = titleEls.get(subtask.id);
+    if (!el) continue;
+    if (expandedIds.value.has(subtask.id) || el.scrollWidth > el.clientWidth) {
+      nextOverflowing.add(subtask.id);
+    }
+  }
+  overflowingIds.value = nextOverflowing;
+  expandedIds.value = new Set([...expandedIds.value].filter((id) => nextOverflowing.has(id)));
+}
+
+async function measureOverflowAfterRender() {
+  await nextTick();
+  measureOverflow();
+}
+
+function toggleExpanded(id: string) {
+  if (!isOverflowing(id)) return;
+  const nextExpanded = new Set(expandedIds.value);
+  if (nextExpanded.has(id)) {
+    nextExpanded.delete(id);
+  } else {
+    nextExpanded.add(id);
+  }
+  expandedIds.value = nextExpanded;
+}
+
+function hasTextSelection() {
+  const selection = window.getSelection();
+  return Boolean(selection && !selection.isCollapsed && selection.toString().trim());
+}
+
+function trackPointerStart(event: PointerEvent) {
+  pointerStart.x = event.clientX;
+  pointerStart.y = event.clientY;
+}
+
+function toggleExpandedFromPointer(id: string, event: PointerEvent) {
+  const moved = Math.abs(event.clientX - pointerStart.x) > 4 || Math.abs(event.clientY - pointerStart.y) > 4;
+  if (moved || hasTextSelection()) return;
+  toggleExpanded(id);
+}
 
 function destroySortable() {
   sortable?.destroy();
@@ -46,7 +111,20 @@ watch(
   { immediate: true }
 );
 
-onBeforeUnmount(destroySortable);
+watch(
+  () => sortedSubtasks.value.map((subtask) => `${subtask.id}:${subtask.title}`).join(","),
+  measureOverflowAfterRender,
+  { immediate: true }
+);
+
+onMounted(() => {
+  window.addEventListener("resize", measureOverflow);
+});
+
+onBeforeUnmount(() => {
+  destroySortable();
+  window.removeEventListener("resize", measureOverflow);
+});
 
 async function confirmRemove() {
   if (!pendingRemoval.value) return;
@@ -75,7 +153,18 @@ async function confirmRemove() {
         <GripVertical :size="18" />
       </Button>
       <span v-else class="task-row-spacer" aria-hidden="true" />
-      <span class="subtask-title">{{ subtask.title }}</span>
+      <button
+        class="subtask-title subtask-title-toggle"
+        :class="{ 'subtask-title-expanded': isExpanded(subtask.id) }"
+        type="button"
+        :disabled="!isOverflowing(subtask.id)"
+        :aria-expanded="isOverflowing(subtask.id) ? isExpanded(subtask.id) : undefined"
+        :ref="(el) => setTitleEl(subtask.id, el as Element | null)"
+        @pointerdown="trackPointerStart"
+        @click="toggleExpandedFromPointer(subtask.id, $event as PointerEvent)"
+      >
+        {{ subtask.title }}
+      </button>
       <div v-if="!readonly" class="row-actions">
         <Button class="task-row-icon-button" title="Delete" aria-label="Delete" severity="secondary" text @click="pendingRemovalId = subtask.id">
           <Trash2 :size="16" />
