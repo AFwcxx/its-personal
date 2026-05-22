@@ -22,6 +22,18 @@ export function createServer(config: AppConfig, db: Db) {
   app.use("/api/auth", authRouter(config, db));
   app.use("/api/planner", authRequired(config, db), plannerRouter(db, config.APP_TIMEZONE));
   app.use("/api/attachments", authRequired(config, db), attachmentsRouter(config, db));
+  app.get("/manifest.webmanifest", (_req, res) => {
+    const themeColor = config.APP_THEME === "light" ? "#f8fafc" : "#09090b";
+    res.json({
+      name: config.APP_TITLE,
+      short_name: "Planner",
+      start_url: "/",
+      display: "standalone",
+      background_color: themeColor,
+      theme_color: themeColor,
+      icons: []
+    });
+  });
 
   const webDist = path.resolve(process.cwd(), "apps/web/dist");
   app.use(express.static(webDist));

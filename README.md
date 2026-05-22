@@ -57,6 +57,7 @@ APP_PASSWORD=use-a-strong-password
 SESSION_SECRET=replace-with-a-long-random-secret
 SESSION_IDLE_TIMEOUT_SECONDS=10800
 APP_TIMEZONE=Asia/Kuala_Lumpur
+APP_THEME=dark
 PUBLISHED_HOST=127.0.0.1
 PUBLISHED_PORT=3009
 ```
@@ -151,6 +152,7 @@ The app reads configuration from environment variables.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `APP_PASSWORD` | `change-me` | Password used to unlock the app. Change this. |
+| `APP_THEME` | `dark` | App color theme. Use `dark`, `light`, or `system`. Invalid values fall back to `dark`. |
 | `SESSION_SECRET` | `dev-session-secret-change-me` | Secret used to sign sessions. Use a long random value. |
 | `SESSION_IDLE_TIMEOUT_SECONDS` | `10800` | Server-side idle timeout for unlocked browser tabs. The default is 3 hours. |
 | `APP_TIMEZONE` | `Asia/Kuala_Lumpur` | Local timezone used by the app for planner dates. Docker also maps this value to `TZ`. |

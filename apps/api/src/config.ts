@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const envSchema = z.object({
   APP_TITLE: z.string().trim().min(1).default("Its Personal"),
+  APP_THEME: z.enum(["system", "light", "dark"]).catch("dark").default("dark"),
   APP_PASSWORD: z.string().min(1).default("change-me"),
   SESSION_SECRET: z.string().min(16).default("dev-session-secret-change-me"),
   SESSION_IDLE_TIMEOUT_SECONDS: z.coerce.number().int().positive().default(10_800),
