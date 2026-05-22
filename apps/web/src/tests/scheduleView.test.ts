@@ -120,6 +120,7 @@ describe("ScheduleView", () => {
     const wrapper = mountSchedule();
     const day22 = wrapper.findAll("button").find((button) => button.text().startsWith("220 tasks"));
     await day22?.trigger("click");
+    await wrapper.find("[aria-label='Toggle add task form']").trigger("click");
     await wrapper.find("input[placeholder='New task']").setValue("Scheduled task");
     await wrapper.find("select").setValue(["tag-personal"]);
     await wrapper.findAll("button").find((button) => button.text() === "Add")?.trigger("click");

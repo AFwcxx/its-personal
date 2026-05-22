@@ -108,11 +108,33 @@ describe("PlannerView", () => {
     });
 
     const wrapper = mountPlanner();
+    await wrapper.find("[aria-label='Toggle add task form']").trigger("click");
     await wrapper.find("input[placeholder='New task']").setValue("Tagged task");
     await wrapper.find("select").setValue(["tag-personal"]);
     await wrapper.findAll("button").find((button) => button.text() === "Add")?.trigger("click");
 
     expect(planner.createTask).toHaveBeenCalledWith("Tagged task", "2026-05-21", null, ["tag-personal"]);
     expect((wrapper.find("select").element as HTMLSelectElement).selectedOptions).toHaveLength(0);
+  });
+
+  it("starts the add task form collapsed and preserves draft values across toggles", async () => {
+    const planner = usePlannerStore();
+    planner.tags = [personalTag];
+    planner.refresh = vi.fn();
+
+    const wrapper = mountPlanner();
+    const toggle = wrapper.find("[aria-label='Toggle add task form']");
+
+    expect(toggle.attributes("aria-expanded")).toBe("false");
+    expect(wrapper.find(".task-create-card-collapsed").exists()).toBe(true);
+
+    await toggle.trigger("click");
+    await wrapper.find("input[placeholder='New task']").setValue("Draft task");
+    await wrapper.find("select").setValue(["tag-personal"]);
+    await toggle.trigger("click");
+    await toggle.trigger("click");
+
+    expect((wrapper.find("input[placeholder='New task']").element as HTMLInputElement).value).toBe("Draft task");
+    expect([...((wrapper.find("select").element as HTMLSelectElement).selectedOptions)].map((option) => option.value)).toEqual(["tag-personal"]);
   });
 });
