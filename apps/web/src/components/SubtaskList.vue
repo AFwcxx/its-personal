@@ -87,6 +87,16 @@ function destroySortable() {
   sortable = null;
 }
 
+function orderedSubtasksFromDom() {
+  if (!listEl.value) return sortedSubtasks.value;
+  const byId = new Map(sortedSubtasks.value.map((subtask) => [subtask.id, subtask]));
+  const ordered = Array.from(listEl.value.querySelectorAll<HTMLElement>(".subtask-row"))
+    .map((row) => row.dataset.id)
+    .map((id) => id ? byId.get(id) : undefined)
+    .filter((subtask): subtask is Subtask => subtask !== undefined);
+  return ordered.length === sortedSubtasks.value.length ? ordered : sortedSubtasks.value;
+}
+
 watch(
   () => [props.readonly, sortedSubtasks.value.map((subtask) => subtask.id).join(",")],
   async () => {
@@ -99,14 +109,12 @@ watch(
       draggable: ".subtask-row",
       onEnd(event) {
         if (event.oldIndex === undefined || event.newIndex === undefined || event.oldIndex === event.newIndex) return;
-        const reordered = [...sortedSubtasks.value];
-        const [moved] = reordered.splice(event.oldIndex, 1);
-        if (!moved) return;
-        reordered.splice(event.newIndex, 0, moved);
+        const reordered = orderedSubtasksFromDom();
         sortable?.sort(reordered.map((subtask) => subtask.id));
         planner.reorderSubtasks(reordered);
       }
     });
+    sortable.sort(sortedSubtasks.value.map((subtask) => subtask.id));
   },
   { immediate: true }
 );

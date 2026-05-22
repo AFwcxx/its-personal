@@ -226,7 +226,7 @@ describe("TaskDetailPanel recurrence", () => {
     await addButton!.trigger("click");
     await flushPromises();
 
-    expect(plannerApi.createSubtask).toHaveBeenCalledWith({ taskId: baseTask.id, title: "Use coupon" });
+    expect(plannerApi.createSubtask).toHaveBeenCalledWith({ taskId: baseTask.id, title: "Use coupon", order: 1000 });
     expect(planner.selectedTaskId).toBeNull();
     expect(planner.subtaskDialogTaskId).toBe(baseTask.id);
   });

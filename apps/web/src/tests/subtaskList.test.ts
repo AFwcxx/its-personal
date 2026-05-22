@@ -3,10 +3,19 @@ import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Subtask } from "@its-personal/shared";
 import SubtaskList from "../components/SubtaskList.vue";
+import { usePlannerStore } from "../stores/planner.js";
+
+const sortable = vi.hoisted(() => ({
+  options: null as { onEnd?: (event: { oldIndex?: number; newIndex?: number }) => void } | null,
+  sort: vi.fn()
+}));
 
 vi.mock("sortablejs", () => ({
   default: {
-    create: vi.fn(() => ({ destroy: vi.fn(), sort: vi.fn() }))
+    create: vi.fn((_element, options) => {
+      sortable.options = options;
+      return { destroy: vi.fn(), sort: sortable.sort };
+    })
   }
 }));
 
@@ -63,6 +72,8 @@ async function renderWithWidths(widths: Record<string, { clientWidth: number; sc
 describe("SubtaskList", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    sortable.options = null;
+    sortable.sort.mockReset();
   });
 
   it("expands only subtasks whose title is truncated", async () => {
@@ -99,5 +110,40 @@ describe("SubtaskList", () => {
 
     expect(longTitle!.classes()).not.toContain("subtask-title-expanded");
     expect(longTitle!.attributes("aria-expanded")).toBe("false");
+  });
+
+  it("reorders subtasks from the DOM order after Sortable moves rows", async () => {
+    const planner = usePlannerStore();
+    planner.reorderSubtasks = vi.fn();
+    const wrapper = mount(SubtaskList, {
+      props: {
+        taskId: "task",
+        subtasks: [
+          subtask({ id: "first", title: "First", order: 1000 }),
+          subtask({ id: "second", title: "Second", order: 2000 }),
+          subtask({ id: "third", title: "Third", order: 3000 })
+        ]
+      },
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" }
+        }
+      }
+    });
+    await wrapper.vm.$nextTick();
+
+    const list = wrapper.find<HTMLElement>(".subtask-list").element;
+    const rows = wrapper.findAll<HTMLElement>(".subtask-row");
+    list.append(rows[0]!.element);
+
+    sortable.options?.onEnd?.({ oldIndex: 0, newIndex: 2 });
+
+    expect(planner.reorderSubtasks).toHaveBeenCalledWith([
+      expect.objectContaining({ id: "second" }),
+      expect.objectContaining({ id: "third" }),
+      expect.objectContaining({ id: "first" })
+    ]);
+    expect(sortable.sort).toHaveBeenLastCalledWith(["second", "third", "first"]);
   });
 });
