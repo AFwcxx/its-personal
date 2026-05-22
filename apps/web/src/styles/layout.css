@@ -476,7 +476,7 @@
 }
 
 .p-dialog {
-  --modal-glass: rgb(255 255 255 / 84%);
+  --modal-glass: #ffffff;
   --modal-glass-raised: rgb(255 255 255 / 92%);
   --modal-glass-border: rgb(17 24 39 / 12%);
   --modal-glass-close-hover: var(--surface-raised);
