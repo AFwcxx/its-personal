@@ -1,4 +1,5 @@
 .superpowers
+.af-worktree
 node_modules/
 dist/
 coverage/

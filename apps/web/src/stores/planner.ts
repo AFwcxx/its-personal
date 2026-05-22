@@ -69,7 +69,9 @@ export const usePlannerStore = defineStore("planner", {
       return task;
     },
     async createSubtask(taskId: string, title: string) {
-      const subtask = await plannerApi.createSubtask({ taskId, title });
+      const siblingSubtasks = this.subtasks.filter((subtask) => subtask.taskId === taskId && subtask.deletedAt === null);
+      const nextOrder = siblingSubtasks.reduce((max, subtask) => Math.max(max, subtask.order), 0) + 1000;
+      const subtask = await plannerApi.createSubtask({ taskId, title, order: nextOrder });
       this.subtasks.push(subtask);
       return subtask;
     },
