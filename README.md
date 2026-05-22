@@ -108,6 +108,33 @@ This exposes the app over HTTPS inside your tailnet while keeping the Docker ser
 
 If you bind `PUBLISHED_HOST` to a LAN or VPN interface, make sure that interface is not exposed to the public internet.
 
+## Installing As A PWA
+
+The app can be installed from a supported browser on a laptop, desktop, tablet, or phone. Use `http://127.0.0.1:3009` only on the same machine that runs the app. For another device, open the HTTPS address provided by your private network layer, such as Tailscale Serve.
+
+In Google Chrome on desktop Linux, including Fedora GNOME:
+
+1. Open the app URL in Chrome.
+2. Click the install icon in the address bar.
+3. If there is no install icon, open the Chrome menu and choose **Cast, save, and share** > **Install page as app**.
+4. Confirm the install dialog.
+
+After installation, launch it like a normal desktop app from the GNOME app grid or desktop launcher. On Fedora GNOME, press `Super`, search for `It's Personal`, and optionally pin it to the dash.
+
+On Android Chrome:
+
+1. Open the app URL in Chrome.
+2. Open the Chrome menu.
+3. Choose **Install app** or **Add to Home screen**.
+4. Confirm the prompt.
+
+On iPhone or iPad Safari:
+
+1. Open the app URL in Safari.
+2. Tap the share button.
+3. Choose **Add to Home Screen**.
+4. Confirm the prompt.
+
 ## Configuration
 
 The app reads configuration from environment variables.
