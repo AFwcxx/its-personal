@@ -171,6 +171,52 @@ describe("auth and database", () => {
       });
   });
 
+  it("appends new subtasks after the last active sibling order", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    upsertTask(db, taskFixture("task-1"));
+    upsertTask(db, taskFixture("task-2"));
+    upsertSubtask(db, {
+      id: "subtask-1",
+      taskId: "task-1",
+      title: "First",
+      completedAt: null,
+      order: 1000,
+      createdAt: "2026-05-20T00:00:00.000Z",
+      updatedAt: "2026-05-20T00:00:00.000Z",
+      deletedAt: null
+    });
+    upsertSubtask(db, {
+      id: "subtask-2",
+      taskId: "task-1",
+      title: "Second",
+      completedAt: null,
+      order: 2000,
+      createdAt: "2026-05-20T00:01:00.000Z",
+      updatedAt: "2026-05-20T00:01:00.000Z",
+      deletedAt: null
+    });
+    upsertSubtask(db, {
+      id: "other-task-subtask",
+      taskId: "task-2",
+      title: "Other task",
+      completedAt: null,
+      order: 9000,
+      createdAt: "2026-05-20T00:02:00.000Z",
+      updatedAt: "2026-05-20T00:02:00.000Z",
+      deletedAt: null
+    });
+
+    await request(createServer(config, db))
+      .post("/api/planner/subtasks")
+      .set("authorization", `Bearer ${token}`)
+      .send({ taskId: "task-1", title: "Third" })
+      .expect(201)
+      .expect((response) => {
+        expect(response.body.order).toBe(3000);
+      });
+  });
+
   it("requires open subtasks to be completed before completing the parent task", async () => {
     const db = openDatabase(":memory:");
     const token = issueSession(config, db, "test-device").token;
