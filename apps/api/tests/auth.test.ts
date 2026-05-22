@@ -27,6 +27,7 @@ function taskFixture(id: string, patch: Partial<Parameters<typeof upsertTask>[1]
     dueDate: "2026-05-20",
     completedAt: null,
     pinned: false,
+    subtasksCollapsed: false,
     tagId: null,
     tagIds: [],
     notes: "",
@@ -78,6 +79,7 @@ describe("auth and database", () => {
       dueDate: "2026-05-20",
       completedAt: null,
       pinned: true,
+      subtasksCollapsed: false,
       tagId: null,
       tagIds: [],
       notes: "",
@@ -90,6 +92,32 @@ describe("auth and database", () => {
     expect(listTasks(db).map((task) => task.title)).toEqual(["Buy groceries"]);
   });
 
+  it("defaults task subtask lists to expanded and persists collapse state", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+
+    await request(createServer(config, db))
+      .post("/api/planner/tasks")
+      .set("authorization", `Bearer ${token}`)
+      .send({ title: "Parent", dueDate: "2026-05-20" })
+      .expect(201)
+      .expect((response) => {
+        expect(response.body.subtasksCollapsed).toBe(false);
+      });
+
+    const taskId = listTasks(db)[0]?.id;
+    await request(createServer(config, db))
+      .patch(`/api/planner/tasks/${taskId}`)
+      .set("authorization", `Bearer ${token}`)
+      .send({ subtasksCollapsed: true })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.subtasksCollapsed).toBe(true);
+      });
+
+    expect(listTasks(db)[0]?.subtasksCollapsed).toBe(true);
+  });
+
   it("preserves explicit null task patches so completed tasks can be reopened", async () => {
     const db = openDatabase(":memory:");
     upsertTask(db, {
@@ -99,6 +127,7 @@ describe("auth and database", () => {
       dueDate: "2026-05-20",
       completedAt: "2026-05-20T01:00:00.000Z",
       pinned: true,
+      subtasksCollapsed: false,
       tagId: null,
       tagIds: [],
       notes: "",
@@ -275,7 +304,7 @@ describe("auth and database", () => {
   it("clones recurring task subtasks into the next occurrence as incomplete", async () => {
     const db = openDatabase(":memory:");
     const token = issueSession(config, db, "test-device").token;
-    upsertTask(db, taskFixture("task-1", { recurrence: { type: "daily", ends: { type: "eternity" } } }));
+    upsertTask(db, taskFixture("task-1", { subtasksCollapsed: true, recurrence: { type: "daily", ends: { type: "eternity" } } }));
     upsertSubtask(db, {
       id: "subtask-1",
       taskId: "task-1",
@@ -294,6 +323,7 @@ describe("auth and database", () => {
 
     const nextTask = listTasks(db).find((task) => task.id !== "task-1" && task.dueDate === "2026-05-21");
     expect(nextTask).toBeTruthy();
+    expect(nextTask?.subtasksCollapsed).toBe(false);
     const clonedSubtask = listSubtasks(db).find((subtask) => subtask.taskId === nextTask?.id);
     expect(clonedSubtask?.title).toBe("Use coupon");
     expect(clonedSubtask?.completedAt).toBeNull();

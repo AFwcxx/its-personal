@@ -26,6 +26,7 @@ export const usePlannerStore = defineStore("planner", {
       this.tasks = snapshot.tasks.map((task) => ({
         ...task,
         tagIds: task.tagIds ?? (task.tagId ? [task.tagId] : []),
+        subtasksCollapsed: task.subtasksCollapsed ?? false,
         recurrence: normalizeRecurrence(task.recurrence)
       }));
       this.subtasks = snapshot.subtasks ?? [];
@@ -73,6 +74,8 @@ export const usePlannerStore = defineStore("planner", {
       const nextOrder = siblingSubtasks.reduce((max, subtask) => Math.max(max, subtask.order), 0) + 1000;
       const subtask = await plannerApi.createSubtask({ taskId, title, order: nextOrder });
       this.subtasks.push(subtask);
+      const task = this.tasks.find((candidate) => candidate.id === taskId);
+      if (task?.subtasksCollapsed) await this.setSubtasksCollapsed(taskId, false);
       return subtask;
     },
     async updateTask(id: string, patch: Partial<Task>) {
@@ -93,6 +96,13 @@ export const usePlannerStore = defineStore("planner", {
       const subtask = this.subtasks.find((candidate) => candidate.id === id);
       if (!subtask) return;
       await this.updateSubtask(id, { completedAt: subtask.completedAt ? null : new Date().toISOString() });
+    },
+    async setSubtasksCollapsed(id: string, collapsed: boolean) {
+      if (this.status === "offline") {
+        this.tasks = this.tasks.map((task) => task.id === id ? { ...task, subtasksCollapsed: collapsed } : task);
+        return;
+      }
+      await this.updateTask(id, { subtasksCollapsed: collapsed });
     },
     async reorderTasks(tasks: Task[]) {
       const updates = tasks.map((task, index) => ({ ...task, order: (index + 1) * 1000 }));
