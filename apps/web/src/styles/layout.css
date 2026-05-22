@@ -268,10 +268,31 @@
 }
 
 .subtask-title {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  text-align: left;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  user-select: text;
   white-space: nowrap;
+}
+
+.subtask-title-toggle:enabled {
+  cursor: pointer;
+}
+
+.subtask-title-toggle:disabled {
+  cursor: default;
+}
+
+.subtask-title-expanded {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .subtask-row-complete .subtask-title {
@@ -450,19 +471,31 @@
 }
 
 .p-dialog {
-  background: var(--surface) !important;
-  border: 1px solid var(--border) !important;
+  --modal-glass: rgb(9 9 11 / 66.69%);
+  --modal-glass-raised: rgb(24 24 27 / 56.43%);
+  --modal-glass-border: rgb(255 255 255 / 13.68%);
+  --modal-glass-text: #f4f4f5;
+  background: var(--modal-glass) !important;
+  backdrop-filter: blur(18.81px) saturate(128.25%);
+  -webkit-backdrop-filter: blur(18.81px) saturate(128.25%);
+  border: 1px solid var(--modal-glass-border) !important;
   border-radius: var(--radius-panel) !important;
-  box-shadow: var(--shadow) !important;
-  color: var(--text) !important;
+  box-shadow: 0 24px 72px rgb(0 0 0 / 37.62%) !important;
+  color: var(--modal-glass-text) !important;
   overflow: hidden;
 }
 
 .p-dialog-header,
 .p-dialog-content,
 .p-dialog-footer {
-  background: var(--surface) !important;
-  color: var(--text) !important;
+  background: transparent !important;
+  color: var(--modal-glass-text) !important;
+}
+
+.p-dialog-mask.p-overlay-mask {
+  background: rgb(3 7 18 / 39.33%);
+  backdrop-filter: blur(8.55px) saturate(111.15%);
+  -webkit-backdrop-filter: blur(8.55px) saturate(111.15%);
 }
 
 .p-dialog-header {
@@ -478,23 +511,23 @@
 }
 
 .p-dialog-title {
-  color: var(--text) !important;
+  color: var(--modal-glass-text) !important;
 }
 
 .p-dialog-close-button {
-  background: var(--panel) !important;
-  border: 1px solid var(--border) !important;
+  background: var(--modal-glass-raised) !important;
+  border: 1px solid var(--modal-glass-border) !important;
   border-radius: var(--radius-control) !important;
-  color: var(--text) !important;
+  color: var(--modal-glass-text) !important;
   height: 44px !important;
   min-width: 44px !important;
   width: 44px !important;
 }
 
 .p-dialog-close-button:enabled:hover {
-  background: var(--surface-raised) !important;
+  background: rgb(39 39 42 / 66.69%) !important;
   border-color: color-mix(in srgb, var(--accent) 42%, var(--border)) !important;
-  color: var(--text) !important;
+  color: var(--modal-glass-text) !important;
 }
 
 .p-select-overlay,
