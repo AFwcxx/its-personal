@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Task } from "@its-personal/shared";
 import Button from "primevue/button";
-import { GripVertical, Pin, Square, SquareCheck } from "lucide-vue-next";
+import { ChevronDown, ChevronRight, GripVertical, Pin, Square, SquareCheck } from "lucide-vue-next";
 import { computed } from "vue";
 import { usePlannerStore } from "../stores/planner.js";
 
-const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean; hidePin?: boolean }>();
+const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean; hidePin?: boolean; canCollapseSubtasks?: boolean }>();
 const planner = usePlannerStore();
 const isSelected = computed(() => planner.selectedTaskId === props.task.id);
 const isRecurring = computed(() => props.task.recurrence.type !== "none");
@@ -22,6 +22,10 @@ async function toggleCompleted() {
     return;
   }
   await planner.completeTask(props.task.id);
+}
+
+async function toggleSubtasksCollapsed() {
+  await planner.setSubtasksCollapsed(props.task.id, !props.task.subtasksCollapsed);
 }
 </script>
 
@@ -41,11 +45,24 @@ async function toggleCompleted() {
         <span v-if="tags.length === 0" class="muted">No tags</span>
       </div>
     </div>
-    <div v-if="!readonly" class="row-actions">
-      <Button v-if="!hidePin" class="task-row-icon-button" title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
+    <div v-if="canCollapseSubtasks || !readonly" class="row-actions">
+      <Button
+        v-if="canCollapseSubtasks"
+        class="task-row-icon-button"
+        :title="task.subtasksCollapsed ? 'Expand subtasks' : 'Collapse subtasks'"
+        :aria-label="task.subtasksCollapsed ? 'Expand subtasks' : 'Collapse subtasks'"
+        :aria-expanded="!task.subtasksCollapsed"
+        severity="secondary"
+        text
+        @click.stop="toggleSubtasksCollapsed"
+      >
+        <ChevronRight v-if="task.subtasksCollapsed" :size="18" />
+        <ChevronDown v-else :size="18" />
+      </Button>
+      <Button v-if="!readonly && !hidePin" class="task-row-icon-button" title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
         <Pin :size="16" :fill="task.pinned ? 'currentColor' : 'none'" />
       </Button>
-      <Button class="task-row-icon-button" title="Complete" aria-label="Complete" severity="secondary" text @click.stop="toggleCompleted">
+      <Button v-if="!readonly" class="task-row-icon-button" title="Complete" aria-label="Complete" severity="secondary" text @click.stop="toggleCompleted">
         <SquareCheck v-if="task.completedAt" :size="18" />
         <Square v-else :size="18" />
       </Button>

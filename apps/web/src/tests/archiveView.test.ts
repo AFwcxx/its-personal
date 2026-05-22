@@ -12,6 +12,7 @@ const baseTask: Task = {
   dueDate: "2026-05-21",
   completedAt: "2026-05-21T01:00:00.000Z",
   pinned: false,
+  subtasksCollapsed: false,
   tagId: null,
   tagIds: [],
   notes: "",

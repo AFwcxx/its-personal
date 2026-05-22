@@ -4,6 +4,7 @@ import { describe, expect, it, beforeEach, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
 import TaskList from "../components/TaskList.vue";
 import TaskRow from "../components/TaskRow.vue";
+import { plannerApi } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
 const sortable = vi.hoisted(() => ({
@@ -32,6 +33,7 @@ const task = (patch: Partial<Task>): Task => ({
   dueDate: patch.dueDate ?? "2026-05-21",
   completedAt: patch.completedAt ?? null,
   pinned: patch.pinned ?? false,
+  subtasksCollapsed: patch.subtasksCollapsed ?? false,
   tagId: patch.tagId ?? null,
   tagIds: patch.tagIds ?? [],
   notes: patch.notes ?? "",
@@ -120,5 +122,83 @@ describe("TaskList", () => {
     expect(recurringTask.find(".task-title > .task-recurrence-icon + span").text()).toBe("Task");
     expect(recurringTask.find(".task-recurrence-icon").classes()).toEqual(expect.arrayContaining(["pi", "pi-replay"]));
     expect(oneTimeTask.find(".task-recurrence-icon").exists()).toBe(false);
+  });
+
+  it("shows a chevron only for tasks with visible subtasks and hides the subtask list when collapsed", async () => {
+    const planner = usePlannerStore();
+    planner.subtasks = [
+      {
+        id: "visible-subtask",
+        taskId: "parent",
+        title: "Visible",
+        completedAt: null,
+        order: 1000,
+        createdAt: "2026-05-21T00:00:00.000Z",
+        updatedAt: "2026-05-21T00:00:00.000Z",
+        deletedAt: null
+      },
+      {
+        id: "deleted-subtask",
+        taskId: "without-visible-subtasks",
+        title: "Deleted",
+        completedAt: null,
+        order: 1000,
+        createdAt: "2026-05-21T00:00:00.000Z",
+        updatedAt: "2026-05-21T00:00:00.000Z",
+        deletedAt: "2026-05-21T01:00:00.000Z"
+      }
+    ];
+    const wrapper = mount(TaskList, {
+      props: {
+        tasks: [
+          task({ id: "parent", title: "Parent", subtasksCollapsed: true }),
+          task({ id: "without-visible-subtasks", title: "No visible subtasks" })
+        ]
+      },
+      global: {
+        stubs: {
+          SubtaskList: {
+            props: ["taskId", "subtasks"],
+            template: "<div v-if='subtasks.some((subtask) => subtask.taskId === taskId && subtask.deletedAt === null)' class='subtask-list-stub'>{{ taskId }}</div>"
+          }
+        }
+      }
+    });
+
+    expect(wrapper.find("button[aria-label='Expand subtasks']").exists()).toBe(true);
+    expect(wrapper.find("button[aria-label='Collapse subtasks']").exists()).toBe(false);
+    expect(wrapper.find(".subtask-list-stub").exists()).toBe(false);
+    expect(wrapper.findAll(".row-actions button").filter((button) => button.attributes("aria-label")?.includes("subtasks"))).toHaveLength(1);
+
+    vi.mocked(plannerApi.updateTask).mockResolvedValue(task({ id: "parent", subtasksCollapsed: false }));
+    await wrapper.find("button[aria-label='Expand subtasks']").trigger("click");
+
+    expect(planner.selectedTaskId).toBeNull();
+    expect(plannerApi.updateTask).toHaveBeenCalledWith("parent", { subtasksCollapsed: false });
+  });
+
+  it("keeps the chevron before the completion checkbox when the pin is hidden", () => {
+    const planner = usePlannerStore();
+    planner.subtasks = [{
+      id: "subtask",
+      taskId: "archived",
+      title: "Archived subtask",
+      completedAt: null,
+      order: 1000,
+      createdAt: "2026-05-21T00:00:00.000Z",
+      updatedAt: "2026-05-21T00:00:00.000Z",
+      deletedAt: null
+    }];
+    const wrapper = mount(TaskList, {
+      props: { tasks: [task({ id: "archived" })], hidePin: true },
+      global: {
+        stubs: {
+          SubtaskList: true
+        }
+      }
+    });
+
+    const labels = wrapper.findAll(".row-actions button").map((button) => button.attributes("aria-label"));
+    expect(labels).toEqual(["Collapse subtasks", "Complete"]);
   });
 });

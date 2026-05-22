@@ -71,6 +71,8 @@ The Planner page supports Overdue, Today, Tomorrow, and Day After tabs. It shows
 
 The completed section starts collapsed by default and remembers its previous expanded/collapsed state while the user navigates through the app. For Today, Tomorrow, and Day After, completed task groups are grouped by the parent task's `completed_at` date. A completed subtask does not appear as its own completed item unless its parent task and siblings are also complete.
 
+Task rows with visible subtasks show a chevron control before the pin action. The chevron toggles only that task's subtask list, uses down for expanded and right for collapsed, and does not open the task detail panel. Collapse state is stored on the task as `subtasks_collapsed`, defaults expanded for new and existing tasks, auto-expands when a new subtask is added, and resets to expanded for recurring-task clones.
+
 ### Overdue Page
 
 The Overdue tab groups open overdue tasks by due date. If a task is checked complete, it moves into the Overdue tab's completed section and remains there for 24 hours after completion.
@@ -93,6 +95,8 @@ The Schedule page shows a month calendar with task counts/status indicators. Tap
 
 The Archive page shows completed task groups by completion date. A completed subtask is not shown separately if its parent task is not complete. Fully completed parent/subtask groups appear together under the parent task's completion date.
 
+Archive rows still expose the subtask chevron when visible subtasks exist. Because the archive hides pinning, the chevron appears before the completion checkbox.
+
 ### Manage Tags Page
 
 The Manage Tags page lists tags with item counts and supports creating, renaming, deleting/archiving, and filtering tags. Deleting a tag requires confirmation. If active tasks are assigned to the tag, delete archives and hides the tag while preserving history; otherwise the tag can be deleted.
@@ -108,6 +112,7 @@ The task detail view supports:
 - links,
 - attachments,
 - pin state,
+- subtask collapse state,
 - tag,
 - subtasks,
 - sync/pending/error states where relevant.
@@ -151,7 +156,7 @@ Recurring task rules can end at Eternity or on a selected inclusive end date. Th
 
 SQLite is the canonical server store. The exact schema can evolve during implementation, but the design requires these concepts:
 
-- `tasks`: core task fields, parent relation, due date, completion state, pin state, notes, tag reference, recurrence reference, timestamps.
+- `tasks`: core task fields, parent relation, due date, completion state, pin state, subtask collapse state, notes, tag reference, recurrence reference, timestamps.
 - `tags`: tag name, archived/deleted state, timestamps.
 - `links`: task-linked URLs.
 - `attachments`: task id, original filename, stored filename/path, MIME type, size, checksum, created/modified timestamps, deleted state.
@@ -244,7 +249,7 @@ Interaction behavior:
 
 - Rows and controls must be touch-friendly.
 - Core actions cannot be hover-only.
-- Use icons for pin, checkbox, drag handle, attachment, close, menu, search, and related controls.
+- Use icons for pin, checkbox, subtask expand/collapse, drag handle, attachment, close, menu, search, and related controls.
 - Offline, pending, and error states should be visible but restrained.
 
 ## PWA And Offline Behavior
@@ -259,6 +264,8 @@ Offline-capable:
 - update notes, tags, links, recurrence, and pin state,
 - queue attachment metadata and file uploads,
 - open cached attachments.
+
+In the single-device read-only cached mode, subtask expand/collapse can still change local visibility but is not queued and does not persist after refresh unless the server update succeeds while online.
 
 Network-required:
 

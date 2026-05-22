@@ -12,7 +12,7 @@ Date: 2026-05-21
 ## Known Requirements
 
 - Daily password unlock using server-configured password and signed session token.
-- Full task model for this milestone: tasks, subtasks, due dates, completion, pinning, manual order, notes, recurrence, tags, links, and basic attachments.
+- Full task model for this milestone: tasks, subtasks, persisted subtask collapse state, due dates, completion, pinning, manual order, notes, recurrence, tags, links, and basic attachments.
 - Screens: Planner, All Tasks, Schedule, Archive, Manage Tags, Unlock, and task detail drawer/panel.
 - Offline milestone behavior: installable PWA shell and read-only cached planner projection. Edits require server connectivity.
 - Docker Compose deployment with SQLite and attachment volumes.
@@ -42,6 +42,7 @@ Date: 2026-05-21
 - 2026-05-21: Added shared domain helpers/tests for dates, recurrence, task rules, validation, and deterministic field choice.
 - 2026-05-21: Added Express API, SQLite schema/repositories, password unlock auth, planner CRUD, links/tags, and attachment upload/download/delete.
 - 2026-05-21: Added Vue PWA shell, routes, session/planner stores, planner/all/schedule/archive/tags screens, task detail panel, theme/layout CSS, and read-only cached snapshot behavior.
+- 2026-05-23: Added persisted per-task subtask collapse state with row chevrons, default-expanded migration behavior, local-only offline toggles, auto-expand on new subtask creation, and expanded recurring clones.
 - 2026-05-21: Added Docker Compose, Dockerfile, Tailscale Serve deployment docs, manual backup/restore docs, and a Playwright smoke placeholder.
 - 2026-05-21: Installed dependencies and generated `package-lock.json`.
 - 2026-05-21: Verified `npm test`, `npm run typecheck`, and `npm run build` pass.
