@@ -675,8 +675,17 @@
 }
 
 .detail-add-subtask-button.p-button {
+  border-color: color-mix(in srgb, var(--accent-alt) 78%, var(--border)) !important;
+  background: color-mix(in srgb, var(--accent-alt) 18%, var(--surface)) !important;
+  color: var(--text) !important;
   margin-top: 1rem;
   width: auto;
+}
+
+.detail-add-subtask-button.p-button:enabled:hover {
+  border-color: var(--accent-alt) !important;
+  background: color-mix(in srgb, var(--accent-alt) 26%, var(--surface)) !important;
+  color: var(--text) !important;
 }
 
 .detail .tag-multiselect.p-multiselect {
