@@ -1284,3 +1284,311 @@
     min-width: 40px;
   }
 }
+
+:root[data-theme="light"] body {
+  background: var(--bg);
+}
+
+:root[data-theme="light"] .sidebar,
+:root[data-theme="light"] .detail,
+:root[data-theme="light"] .task-row,
+:root[data-theme="light"] .subtask-row,
+:root[data-theme="light"] .tag-row,
+:root[data-theme="light"] .task-create-card.p-card,
+:root[data-theme="light"] .task-create-card-collapsed.p-card {
+  background: var(--bg);
+}
+
+:root[data-theme="light"] .sidebar {
+  border-right-color: var(--border);
+}
+
+:root[data-theme="light"] .detail {
+  border-left-color: var(--border);
+}
+
+:root[data-theme="light"] .sidebar .app-version {
+  background: var(--bg);
+}
+
+:root[data-theme="light"] .task-row,
+:root[data-theme="light"] .subtask-row,
+:root[data-theme="light"] .tag-row,
+:root[data-theme="light"] .calendar,
+:root[data-theme="light"] .completed-section {
+  border-color: var(--border);
+}
+
+:root[data-theme="light"] .task-row:hover,
+:root[data-theme="light"] .subtask-row:hover {
+  background: var(--bg);
+  border-color: var(--text);
+  font-weight: 600;
+}
+
+:root[data-theme="light"] .task-row-active {
+  border-color: var(--text);
+  box-shadow: none;
+  outline: 1px solid var(--text);
+}
+
+:root[data-theme="light"] .task-recurrence-icon,
+:root[data-theme="light"] .detail a,
+:root[data-theme="light"] .detail a:visited,
+:root[data-theme="light"] .detail a:hover,
+:root[data-theme="light"] .detail a:active,
+:root[data-theme="light"] .attachment-link,
+:root[data-theme="light"] .attachment-link:visited,
+:root[data-theme="light"] .attachment-link:hover,
+:root[data-theme="light"] .attachment-link:active {
+  color: var(--accent-alt) !important;
+}
+
+:root[data-theme="light"] .p-button {
+  font-weight: 500;
+  transition: background-color 120ms ease, color 120ms ease, font-weight 120ms ease, outline-color 120ms ease;
+}
+
+:root[data-theme="light"] .p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text) {
+  background: var(--accent) !important;
+  border: 1px solid var(--accent) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] .p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text):enabled:hover {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  outline: 1px solid var(--accent);
+}
+
+:root[data-theme="light"] .detail-add-subtask-button.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text),
+:root[data-theme="light"] .subtask-add-close-button.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text) {
+  background: var(--accent-alt) !important;
+  border-color: var(--accent-alt) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] .detail-add-subtask-button.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text):enabled:hover,
+:root[data-theme="light"] .subtask-add-close-button.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text):enabled:hover {
+  background: var(--accent-alt) !important;
+  border-color: var(--accent-alt) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  outline: 1px solid var(--accent-alt);
+}
+
+:root[data-theme="light"] .p-button.p-button-danger {
+  background: var(--danger) !important;
+  border: 1px solid var(--danger) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] .p-button.p-button-danger:enabled:hover {
+  background: var(--danger) !important;
+  border-color: var(--danger) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  outline: 1px solid var(--danger);
+}
+
+:root[data-theme="light"] .p-button.p-button-secondary,
+:root[data-theme="light"] .p-button.p-button-text {
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  color: var(--text) !important;
+}
+
+:root[data-theme="light"] .p-button.p-button-secondary:enabled:hover,
+:root[data-theme="light"] .p-button.p-button-text:enabled:hover {
+  background: var(--accent) !important;
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+:root[data-theme="light"] .sidebar .p-button.active,
+:root[data-theme="light"] .tabs .p-button.active,
+:root[data-theme="light"] .calendar .p-button.active {
+  background: var(--bg) !important;
+  border-color: var(--active-border) !important;
+  box-shadow: none !important;
+  color: var(--text) !important;
+  font-weight: 700;
+  outline: 1px solid var(--active-border);
+}
+
+:root[data-theme="light"] .calendar .p-button {
+  background: var(--bg) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="light"] .calendar .p-button.today {
+  box-shadow: inset 0 0 0 2px var(--accent-alt) !important;
+}
+
+:root[data-theme="light"] .calendar .p-button.active {
+  box-shadow: inset 0 0 0 2px var(--active-border) !important;
+  outline: 0;
+}
+
+:root[data-theme="light"] .task-create-card.p-card,
+:root[data-theme="light"] .task-create-card-collapsed.p-card {
+  border-color: var(--accent-alt);
+  box-shadow: none;
+}
+
+:root[data-theme="light"] .task-create-toggle {
+  background: var(--bg);
+  border-color: var(--accent-alt);
+  box-shadow: none;
+  color: var(--accent-alt);
+}
+
+:root[data-theme="light"] .task-create-toggle:hover {
+  background: var(--accent-alt);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+:root[data-theme="light"] .task-tag,
+:root[data-theme="light"] .p-chip {
+  background: var(--bg) !important;
+  border-color: var(--tag-color, var(--accent-alt)) !important;
+  box-shadow: none !important;
+  color: var(--text) !important;
+}
+
+:root[data-theme="light"] .tag-chip-remove {
+  background: var(--bg);
+  border-color: var(--tag-color);
+  box-shadow: none;
+  color: var(--text);
+}
+
+:root[data-theme="light"] .tag-chip-remove:hover,
+:root[data-theme="light"] .tag-chip-remove:focus-visible {
+  background: var(--tag-color);
+  box-shadow: none;
+  color: #ffffff;
+  outline: 2px solid var(--accent-alt);
+  outline-offset: 2px;
+}
+
+:root[data-theme="light"] .p-inputtext,
+:root[data-theme="light"] .p-textarea,
+:root[data-theme="light"] .p-select,
+:root[data-theme="light"] .p-multiselect,
+:root[data-theme="light"] .p-password-input {
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
+  border-color: var(--border) !important;
+  box-shadow: inset 0 0 0 1000px var(--bg) !important;
+  color: var(--text) !important;
+}
+
+:root[data-theme="light"] .p-inputtext:hover,
+:root[data-theme="light"] .p-textarea:hover,
+:root[data-theme="light"] .p-select:hover,
+:root[data-theme="light"] .p-multiselect:hover,
+:root[data-theme="light"] .p-password-input:hover {
+  border-color: var(--text) !important;
+}
+
+:root[data-theme="light"] .p-inputtext:enabled:focus,
+:root[data-theme="light"] .p-textarea:enabled:focus,
+:root[data-theme="light"] .p-select:not(.p-disabled).p-focus,
+:root[data-theme="light"] .p-multiselect:not(.p-disabled).p-focus,
+:root[data-theme="light"] .p-password-input:enabled:focus {
+  border-color: var(--accent-alt) !important;
+  box-shadow: inset 0 0 0 1000px var(--bg) !important;
+  outline: 2px solid var(--accent-alt);
+  outline-offset: 2px;
+}
+
+:root[data-theme="light"] .p-button:focus-visible {
+  box-shadow: none !important;
+  outline: 2px solid var(--accent-alt);
+  outline-offset: 2px;
+}
+
+:root[data-theme="light"] .p-button.p-button-danger:focus-visible {
+  outline-color: var(--danger);
+}
+
+:root[data-theme="light"] .p-checkbox-box {
+  background: var(--bg) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="light"] .p-checkbox-box.p-highlight,
+:root[data-theme="light"] .p-checkbox-checked .p-checkbox-box {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+:root[data-theme="light"] .p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus-visible) .p-checkbox-box {
+  box-shadow: none !important;
+  outline: 2px solid var(--accent-alt);
+  outline-offset: 2px;
+}
+
+:root[data-theme="light"] .p-dialog {
+  --modal-glass: rgb(255 253 247 / 84%);
+  --modal-glass-raised: rgb(255 253 247 / 92%);
+  --modal-glass-border: rgb(17 17 17 / 20%);
+  --modal-glass-close-hover: rgb(255 253 247 / 96%);
+  --modal-glass-text: var(--text);
+  box-shadow: var(--shadow) !important;
+}
+
+:root[data-theme="light"] .p-dialog-mask.p-overlay-mask {
+  background: rgb(17 17 17 / 18%);
+}
+
+:root[data-theme="light"] .p-dialog-close-button,
+:root[data-theme="light"] .p-dialog-close-button:enabled:hover {
+  box-shadow: none !important;
+}
+
+:root[data-theme="light"] .p-select-overlay,
+:root[data-theme="light"] .p-multiselect-overlay {
+  background: var(--bg) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+:root[data-theme="light"] .p-select-option.p-focus,
+:root[data-theme="light"] .p-multiselect-option.p-focus {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-weight: 700;
+}
+
+:root[data-theme="light"] .p-select-option.p-selected,
+:root[data-theme="light"] .p-multiselect-option.p-selected {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-weight: 700;
+  outline: 1px solid var(--text);
+  outline-offset: -2px;
+}
+
+:root[data-theme="light"] .p-inputtext:-webkit-autofill,
+:root[data-theme="light"] .p-password-input:-webkit-autofill {
+  -webkit-text-fill-color: var(--text) !important;
+  box-shadow: 0 0 0 1000px var(--bg) inset !important;
+  caret-color: var(--text);
+}
