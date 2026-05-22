@@ -26,6 +26,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
       dueDate: input.dueDate,
       completedAt: null,
       pinned: input.pinned ?? false,
+      subtasksCollapsed: input.subtasksCollapsed ?? false,
       tagId: input.tagId ?? null,
       tagIds: input.tagIds ?? (input.tagId ? [input.tagId] : []),
       notes: input.notes ?? "",
@@ -61,6 +62,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
       dueDate: patch.dueDate ?? current.dueDate,
       completedAt: patch.completedAt !== undefined ? patch.completedAt : current.completedAt,
       pinned: patch.pinned ?? current.pinned,
+      subtasksCollapsed: patch.subtasksCollapsed ?? current.subtasksCollapsed,
       tagId: patch.tagId ?? current.tagId,
       tagIds: patch.tagIds ?? (patch.tagId !== undefined ? (patch.tagId ? [patch.tagId] : []) : current.tagIds),
       notes: patch.notes ?? current.notes,
@@ -93,7 +95,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
     const completed = upsertTask(db, { ...task, completedAt: now, updatedAt: now });
     const recurringDueDate = nextDueDate(task.dueDate, task.recurrence);
     if (recurringDueDate) {
-      const nextTask = upsertTask(db, { ...task, id: nanoid(), dueDate: recurringDueDate, completedAt: null, createdAt: now, updatedAt: now });
+      const nextTask = upsertTask(db, { ...task, id: nanoid(), dueDate: recurringDueDate, completedAt: null, subtasksCollapsed: false, createdAt: now, updatedAt: now });
       for (const subtask of subtasks.filter((candidate) => candidate.taskId === task.id && candidate.deletedAt === null)) {
         upsertSubtask(db, {
           ...subtask,

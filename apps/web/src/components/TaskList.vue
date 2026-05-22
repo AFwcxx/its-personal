@@ -23,6 +23,10 @@ function childrenFor(task: Task) {
   return childTasks.value.filter((child) => child.parentId === task.id);
 }
 
+function visibleSubtasksFor(task: Task) {
+  return planner.subtasks.filter((subtask) => subtask.taskId === task.id && subtask.deletedAt === null);
+}
+
 function pinnedFirst(tasks: Task[]) {
   return [
     ...tasks.filter((task) => task.pinned),
@@ -75,8 +79,14 @@ onBeforeUnmount(destroySortable);
 <template>
   <TransitionGroup :ref="setListEl" name="task-completion-fade" tag="div" class="task-list">
     <div v-for="task in rootTasks" :key="task.id" class="task-group" :data-id="task.id">
-      <TaskRow :task="task" :draggable="Boolean(reorderable)" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" />
-      <SubtaskList :task-id="task.id" :subtasks="planner.subtasks" :readonly="Boolean(readonly)" />
+      <TaskRow
+        :task="task"
+        :draggable="Boolean(reorderable)"
+        :readonly="Boolean(readonly)"
+        :hide-pin="Boolean(hidePin)"
+        :can-collapse-subtasks="visibleSubtasksFor(task).length > 0"
+      />
+      <SubtaskList v-if="!task.subtasksCollapsed" :task-id="task.id" :subtasks="planner.subtasks" :readonly="Boolean(readonly)" />
       <div v-if="childrenFor(task).length > 0" class="subtask-list">
         <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" />
       </div>

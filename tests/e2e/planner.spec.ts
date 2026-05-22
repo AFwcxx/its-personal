@@ -24,10 +24,21 @@ test("planner mobile layout fits the viewport", async ({ page }) => {
         deletedAt: null,
         parentId: null,
         pinned: false,
+        subtasksCollapsed: false,
         order: 1,
         tagIds: [],
         tagId: null,
         recurrence: { type: "none" }
+      }],
+      subtasks: [{
+        id: "subtask-1",
+        taskId: "task-1",
+        title: "Visible subtask",
+        completedAt: null,
+        deletedAt: null,
+        order: 1,
+        createdAt: "2026-05-22T00:00:00.000Z",
+        updatedAt: "2026-05-22T00:00:00.000Z"
       }],
       tags: []
     })

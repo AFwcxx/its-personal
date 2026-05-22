@@ -20,6 +20,7 @@ export const taskInputSchema = z.object({
   parentId: z.string().nullable().optional(),
   dueDate: dateSchema,
   pinned: z.boolean().optional(),
+  subtasksCollapsed: z.boolean().optional(),
   tagId: z.string().nullable().optional(),
   tagIds: z.array(z.string()).optional(),
   notes: z.string().optional(),
