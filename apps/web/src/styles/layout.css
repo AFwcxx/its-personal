@@ -70,6 +70,7 @@
 .calendar .p-button.active {
   background: var(--active);
   border-color: var(--active-border) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--active-border) 24%, transparent), 0 0 16px color-mix(in srgb, var(--active-border) 28%, transparent) !important;
   color: var(--text);
 }
 
@@ -964,6 +965,7 @@
 .calendar .p-button.active {
   background: var(--active) !important;
   border-color: var(--active-border) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--active-border) 24%, transparent), 0 0 16px color-mix(in srgb, var(--active-border) 28%, transparent) !important;
   color: var(--text) !important;
 }
 
