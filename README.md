@@ -151,6 +151,7 @@ The app reads configuration from environment variables.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
+| `APP_TITLE` | `Its Personal` | Browser, installed app, and manifest name. |
 | `APP_PASSWORD` | `change-me` | Password used to unlock the app. Change this. |
 | `APP_THEME` | `dark` | App color theme. Use `dark`, `light`, or `system`. Invalid values fall back to `dark`. |
 | `SESSION_SECRET` | `dev-session-secret-change-me` | Secret used to sign sessions. Use a long random value. |
