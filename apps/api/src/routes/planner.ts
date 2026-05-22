@@ -129,12 +129,14 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
       return;
     }
     const now = new Date().toISOString();
+    const siblingSubtasks = listSubtasks(db).filter((candidate) => candidate.taskId === input.taskId && candidate.deletedAt === null);
+    const nextOrder = siblingSubtasks.reduce((max, candidate) => Math.max(max, candidate.order), 0) + 1000;
     const subtask: Subtask = {
       id: nanoid(),
       taskId: input.taskId,
       title: input.title,
       completedAt: null,
-      order: input.order ?? Date.now(),
+      order: input.order ?? nextOrder,
       createdAt: now,
       updatedAt: now,
       deletedAt: null
