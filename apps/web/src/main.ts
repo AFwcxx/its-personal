@@ -3,6 +3,7 @@ import * as PrimeVueConfig from "@primevue/core/config";
 import Aura from "@primeuix/themes/aura";
 import { createApp } from "vue";
 import App from "./App.vue";
+import { loadRuntimeConfig } from "./config.js";
 import { router } from "./router.js";
 import { initializeTheme } from "./stores/session.js";
 import "primeicons/primeicons.css";
@@ -11,6 +12,7 @@ import "./styles/layout.css";
 
 const PrimeVue = PrimeVueConfig.default;
 initializeTheme();
+void loadRuntimeConfig();
 
 createApp(App)
   .use(createPinia())
