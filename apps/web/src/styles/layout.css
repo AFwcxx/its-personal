@@ -784,6 +784,7 @@
 .detail-add-subtask-button.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text) {
   border-color: color-mix(in srgb, var(--accent-alt) 78%, var(--border)) !important;
   background: color-mix(in srgb, var(--accent-alt) 18%, var(--surface)) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-alt) 18%, transparent), 0 0 16px color-mix(in srgb, var(--accent-alt) 22%, transparent) !important;
   color: var(--text) !important;
   margin-top: 1rem;
   width: auto;
@@ -792,18 +793,21 @@
 .detail-add-subtask-button.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text):enabled:hover {
   border-color: var(--accent-alt) !important;
   background: color-mix(in srgb, var(--accent-alt) 26%, var(--surface)) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-alt) 28%, transparent), 0 0 20px color-mix(in srgb, var(--accent-alt) 30%, transparent) !important;
   color: var(--text) !important;
 }
 
 .subtask-add-close-button.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text) {
   border-color: color-mix(in srgb, var(--accent-alt) 78%, var(--border)) !important;
   background: color-mix(in srgb, var(--accent-alt) 18%, var(--surface)) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-alt) 18%, transparent), 0 0 16px color-mix(in srgb, var(--accent-alt) 22%, transparent) !important;
   color: var(--text) !important;
 }
 
 .subtask-add-close-button.p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text):enabled:hover {
   border-color: var(--accent-alt) !important;
   background: color-mix(in srgb, var(--accent-alt) 26%, var(--surface)) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-alt) 28%, transparent), 0 0 20px color-mix(in srgb, var(--accent-alt) 30%, transparent) !important;
   color: var(--text) !important;
 }
 
