@@ -169,7 +169,7 @@ function openSubtaskDialog() {
       <h2>{{ task.title }}</h2>
       <Button class="detail-close-button" aria-label="Close" severity="secondary" text @click="planner.selectedTaskId = null"><X :size="18" /></Button>
     </div>
-    <Button v-if="canAddSubtask" class="detail-add-subtask-button" label="Add subtask" severity="secondary" @click="openSubtaskDialog" />
+    <Button v-if="canAddSubtask" class="detail-add-subtask-button" label="Add subtask" @click="openSubtaskDialog" />
     <div class="field-stack">
       <label>Title<Textarea v-model="title" rows="2" auto-resize /></label>
       <label>Due date<InputText :model-value="task.dueDate" type="date" :disabled="task.recurrence.type !== 'none' && recurrenceEnds.type === 'date'" @update:model-value="updateDueDate" /></label>
