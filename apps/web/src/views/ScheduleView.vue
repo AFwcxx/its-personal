@@ -3,6 +3,7 @@ import { completedPlannerTasksForDate, type Task } from "@its-personal/shared";
 import Button from "primevue/button";
 import { computed, onMounted, ref } from "vue";
 import AppShell from "../components/AppShell.vue";
+import TaskCreateForm from "../components/TaskCreateForm.vue";
 import TaskList from "../components/TaskList.vue";
 import { usePlannerStore } from "../stores/planner.js";
 
@@ -80,6 +81,7 @@ function isCurrentMonth(day: string) {
         <div class="muted">{{ dayTasks(day).length }} tasks</div>
       </Button>
     </div>
+    <TaskCreateForm :due-date="selected" :show-due-date="false" />
     <h3>{{ selected }}</h3>
     <TaskList :tasks="selectedTasks" :reorderable="true" @reorder="reorder" />
     <section class="completed-section">
