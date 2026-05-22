@@ -1050,8 +1050,15 @@
     margin: 0;
   }
 
+  .sidebar-header {
+    justify-content: center;
+    position: relative;
+  }
+
   .sidebar-header-actions {
     display: flex;
+    position: absolute;
+    right: 0;
   }
 
   .sidebar nav {
