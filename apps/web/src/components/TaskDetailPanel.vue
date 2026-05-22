@@ -129,6 +129,11 @@ async function updateRecurrenceEndDate(date: string) {
   await updateRecurrence(task.value.recurrence.type);
 }
 
+async function updateDueDate(dueDate: string | undefined) {
+  if (!task.value || !dueDate || dueDate === task.value.dueDate) return;
+  await planner.updateTask(task.value.id, { dueDate });
+}
+
 async function addLink() {
   if (!task.value || !linkUrl.value.trim()) return;
   planner.links.push(await plannerApi.createLink({ taskId: task.value.id, url: linkUrl.value.trim() }));
@@ -170,7 +175,7 @@ async function confirmRemove() {
     <Button v-if="canAddSubtask" class="detail-add-subtask-button" label="Add subtask" severity="secondary" @click="subtaskDialogVisible = true" />
     <div class="field-stack">
       <label>Title<Textarea v-model="title" rows="2" auto-resize /></label>
-      <label>Due date<InputText :value="task.dueDate" type="date" :disabled="task.recurrence.type !== 'none' && recurrenceEnds.type === 'date'" @change="planner.updateTask(task.id, { dueDate: ($event.target as HTMLInputElement).value })" /></label>
+      <label>Due date<InputText :model-value="task.dueDate" type="date" :disabled="task.recurrence.type !== 'none' && recurrenceEnds.type === 'date'" @update:model-value="updateDueDate" /></label>
       <label>Notes<Textarea v-model="notes" class="notes-textarea" rows="5" /></label>
       <label>Recurrence
         <Select

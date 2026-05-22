@@ -112,6 +112,35 @@ describe("TaskDetailPanel recurrence", () => {
     });
   });
 
+  it("saves due date edits from the detail editor", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = baseTask.id;
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { name: "InputText", props: ["modelValue", "type"], emits: ["update:modelValue"], template: "<input :type='type' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    const dueDateInput = wrapper.findAllComponents({ name: "InputText" }).find((input) => input.props("type") === "date");
+    expect(dueDateInput).toBeTruthy();
+
+    await dueDateInput!.vm.$emit("update:modelValue", "2026-05-22");
+    await flushPromises();
+
+    expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, { dueDate: "2026-05-22" });
+    expect(planner.selectedTask?.dueDate).toBe("2026-05-22");
+  });
+
   it("asks for confirmation before deleting the selected task", async () => {
     const planner = usePlannerStore();
     planner.tasks = [baseTask];
