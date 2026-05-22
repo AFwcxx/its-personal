@@ -34,7 +34,7 @@ async function addSubtask(closeAfterAdd = false) {
     </div>
     <div class="dialog-actions">
       <Button label="Add" @click="addSubtask(false)" />
-      <Button label="Add & Close" @click="addSubtask(true)" />
+      <Button class="subtask-add-close-button" label="Add & Close" @click="addSubtask(true)" />
     </div>
   </Dialog>
 </template>
