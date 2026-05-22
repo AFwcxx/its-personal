@@ -106,6 +106,15 @@ tailscale serve --bg https / http://127.0.0.1:3009
 
 This exposes the app over HTTPS inside your tailnet while keeping the Docker service bound locally. HTTPS is also important for installed PWA and service-worker behavior outside `localhost`.
 
+If you need direct access from other devices on a trusted LAN or VPN, you can publish the Docker port on all host interfaces:
+
+```dotenv
+PUBLISHED_HOST=0.0.0.0
+PUBLISHED_PORT=3009
+```
+
+Only use this on a trusted private network. `0.0.0.0` makes the app reachable on every network interface on the host, so confirm your firewall, router, VPN, and cloud security-group rules do not expose the port to the public internet.
+
 If you bind `PUBLISHED_HOST` to a LAN or VPN interface, make sure that interface is not exposed to the public internet.
 
 ## Installing As A PWA
