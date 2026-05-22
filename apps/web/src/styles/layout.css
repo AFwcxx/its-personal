@@ -1344,6 +1344,12 @@
   color: var(--accent-alt) !important;
 }
 
+:root[data-theme="light"] .task-recurrence-icon {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
 :root[data-theme="light"] .p-button {
   font-weight: 500;
   transition: background-color 120ms ease, color 120ms ease, font-weight 120ms ease, outline-color 120ms ease;
@@ -1468,7 +1474,7 @@
   background: var(--bg) !important;
   border-color: var(--tag-color, var(--accent-alt)) !important;
   box-shadow: none !important;
-  color: var(--text) !important;
+  color: var(--tag-color, var(--accent-alt)) !important;
 }
 
 :root[data-theme="light"] .tag-chip-remove {
@@ -1483,7 +1489,7 @@
   background: var(--tag-color);
   box-shadow: none;
   color: #ffffff;
-  outline: 2px solid var(--accent-alt);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
@@ -1512,20 +1518,20 @@
 :root[data-theme="light"] .p-select:not(.p-disabled).p-focus,
 :root[data-theme="light"] .p-multiselect:not(.p-disabled).p-focus,
 :root[data-theme="light"] .p-password-input:enabled:focus {
-  border-color: var(--accent-alt) !important;
+  border-color: var(--text) !important;
   box-shadow: inset 0 0 0 1000px var(--bg) !important;
-  outline: 2px solid var(--accent-alt);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
 :root[data-theme="light"] .p-button:focus-visible {
   box-shadow: none !important;
-  outline: 2px solid var(--accent-alt);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
 :root[data-theme="light"] .p-button.p-button-danger:focus-visible {
-  outline-color: var(--danger);
+  outline-color: var(--text);
 }
 
 :root[data-theme="light"] .p-checkbox-box {
@@ -1542,15 +1548,15 @@
 
 :root[data-theme="light"] .p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus-visible) .p-checkbox-box {
   box-shadow: none !important;
-  outline: 2px solid var(--accent-alt);
+  outline: 2px solid var(--text);
   outline-offset: 2px;
 }
 
 :root[data-theme="light"] .p-dialog {
-  --modal-glass: rgb(255 253 247 / 84%);
-  --modal-glass-raised: rgb(255 253 247 / 92%);
+  --modal-glass: #fffdf7;
+  --modal-glass-raised: #fffdf7;
   --modal-glass-border: rgb(17 17 17 / 20%);
-  --modal-glass-close-hover: rgb(255 253 247 / 96%);
+  --modal-glass-close-hover: #fffdf7;
   --modal-glass-text: var(--text);
   box-shadow: var(--shadow) !important;
 }
