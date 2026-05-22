@@ -170,15 +170,24 @@
 }
 
 .task-create-card {
-  margin-top: 0.85rem;
+  margin-top: 1.1rem;
 }
 
 .task-create-card.p-card {
-  border: 1px solid var(--border);
+  border: 1px solid var(--accent-alt);
   border-radius: var(--radius-panel);
   background: var(--surface);
   color: var(--text);
-  box-shadow: var(--control-shadow);
+  box-shadow: 0 0 0 1px rgb(167 139 250 / 18%), 0 0 18px rgb(167 139 250 / 18%);
+  overflow: visible;
+  position: relative;
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.task-create-card-collapsed.p-card {
+  background: rgb(167 139 250 / 18%);
+  box-shadow: 0 0 0 1px rgb(167 139 250 / 32%), 0 0 22px rgb(167 139 250 / 28%);
+  min-height: 44px;
 }
 
 .task-create-card .p-card-body,
@@ -186,10 +195,50 @@
   padding: 0;
 }
 
+.task-create-toggle {
+  align-items: center;
+  background: rgb(167 139 250 / 18%);
+  border: 1px solid var(--accent-alt);
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgb(167 139 250 / 18%), 0 0 16px rgb(167 139 250 / 28%);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  height: 30px;
+  justify-content: center;
+  left: 50%;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  z-index: 1;
+}
+
+.task-create-toggle:hover {
+  background: rgb(167 139 250 / 26%);
+}
+
+.task-create-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 180ms ease, opacity 160ms ease;
+}
+
+.task-create-card-collapsed .task-create-body {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+.task-create-body-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
 .task-create-form {
   display: grid;
   gap: 0.85rem;
-  padding: 1rem;
+  padding: 1.1rem 1rem 1rem;
 }
 
 .tag-create-form {
