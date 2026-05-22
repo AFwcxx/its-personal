@@ -7,13 +7,18 @@ const deviceKey = "its-personal-device-id";
 const themeKey = "its-personal-theme";
 const systemThemeQuery = "(prefers-color-scheme: dark)";
 const heartbeatMs = 5 * 60 * 1000;
+const lightThemeColor = "#f8fafc";
+const darkThemeColor = "#09090b";
 
 let activityTrackingStarted = false;
 let activeSystemThemeQuery: MediaQueryList | null = null;
+let appTheme: ThemePreference = "dark";
 
 type ThemePreference = "system" | "light" | "dark";
 
 function readThemePreference(): ThemePreference {
+  if (appTheme !== "system") return appTheme;
+
   const theme = localStorage.getItem(themeKey);
   return theme === "light" || theme === "dark" || theme === "system" ? theme : "system";
 }
@@ -24,7 +29,12 @@ function resolveTheme(theme: ThemePreference): "light" | "dark" {
 }
 
 function applyTheme(theme: ThemePreference) {
-  document.documentElement.dataset.theme = resolveTheme(theme);
+  const resolvedTheme = resolveTheme(theme);
+  document.documentElement.dataset.theme = resolvedTheme;
+  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute(
+    "content",
+    resolvedTheme === "dark" ? darkThemeColor : lightThemeColor
+  );
 }
 
 function createDeviceId() {
@@ -51,6 +61,11 @@ export function initializeTheme() {
     const theme = readThemePreference();
     if (theme === "system") applyTheme(theme);
   });
+}
+
+export function configureAppTheme(theme: ThemePreference) {
+  appTheme = theme;
+  applyTheme(readThemePreference());
 }
 
 export const useSessionStore = defineStore("session", {
@@ -139,7 +154,7 @@ export const useSessionStore = defineStore("session", {
     setTheme(theme: ThemePreference) {
       this.theme = theme;
       localStorage.setItem(themeKey, theme);
-      applyTheme(theme);
+      applyTheme(readThemePreference());
     },
     async lock() {
       const token = this.token;

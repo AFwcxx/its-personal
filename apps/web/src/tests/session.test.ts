@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import { initializeTheme, useSessionStore } from "../stores/session.js";
+import { configureAppTheme, initializeTheme, useSessionStore } from "../stores/session.js";
 
 function stubSystemTheme(prefersDark = false) {
   const listeners = new Set<(event: MediaQueryListEvent) => void>();
@@ -34,6 +34,7 @@ describe("session store", () => {
     sessionStorage.clear();
     document.documentElement.removeAttribute("data-theme");
     vi.restoreAllMocks();
+    configureAppTheme("dark");
   });
 
   it("keeps unlock state tab scoped and expires it after local idle timeout", async () => {
@@ -48,9 +49,18 @@ describe("session store", () => {
     expect(session.isUnlocked).toBe(false);
   });
 
-  it("updates the active theme when the system theme changes", () => {
+  it("defaults the app theme to dark", () => {
+    stubSystemTheme(false);
+
+    initializeTheme();
+
+    expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+
+  it("updates the active theme when the configured app theme follows the system", () => {
     const systemTheme = stubSystemTheme(false);
 
+    configureAppTheme("system");
     initializeTheme();
     expect(document.documentElement.dataset.theme).toBe("light");
 
@@ -61,15 +71,28 @@ describe("session store", () => {
     expect(document.documentElement.dataset.theme).toBe("light");
   });
 
-  it("keeps explicit theme overrides when the system theme changes", () => {
+  it("keeps explicit theme overrides when the configured app theme follows the system", () => {
     const systemTheme = stubSystemTheme(false);
     const session = useSessionStore();
 
+    configureAppTheme("system");
     initializeTheme();
     session.setTheme("dark");
     systemTheme.setMatches(false);
 
     expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+
+  it("ignores local theme overrides when the configured app theme is authoritative", () => {
+    const systemTheme = stubSystemTheme(false);
+    const session = useSessionStore();
+
+    configureAppTheme("light");
+    initializeTheme();
+    session.setTheme("dark");
+    systemTheme.setMatches(true);
+
+    expect(document.documentElement.dataset.theme).toBe("light");
   });
 
   it("creates a device id when native UUIDs are unavailable outside secure contexts", () => {

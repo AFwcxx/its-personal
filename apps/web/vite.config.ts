@@ -12,8 +12,8 @@ export default defineConfig({
         short_name: "Planner",
         start_url: "/",
         display: "standalone",
-        background_color: "#ffffff",
-        theme_color: "#ffffff",
+        background_color: "#09090b",
+        theme_color: "#09090b",
         icons: []
       },
       workbox: {

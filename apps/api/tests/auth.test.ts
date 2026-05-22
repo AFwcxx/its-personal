@@ -49,7 +49,24 @@ describe("auth and database", () => {
       .get("/api/config")
       .expect(200)
       .expect((response) => {
-        expect(response.body).toEqual({ appTitle: "Personal Ops" });
+        expect(response.body).toEqual({ appTitle: "Personal Ops", appTheme: "dark" });
+      });
+  });
+
+  it("silently falls back to dark for invalid app theme configuration", () => {
+    expect(loadConfig({ APP_THEME: "blue" }).APP_THEME).toBe("dark");
+  });
+
+  it("exposes theme colors in the web app manifest", async () => {
+    const db = openDatabase(":memory:");
+    const lightConfig = { ...config, APP_THEME: "light" as const };
+
+    await request(createServer(lightConfig, db))
+      .get("/manifest.webmanifest")
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.theme_color).toBe("#f8fafc");
+        expect(response.body.background_color).toBe("#f8fafc");
       });
   });
 
