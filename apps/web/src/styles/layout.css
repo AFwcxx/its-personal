@@ -47,6 +47,10 @@
   margin: auto 0 0;
 }
 
+.sidebar .app-version span {
+  margin-left: auto;
+}
+
 .sidebar .p-button {
   justify-content: flex-start;
   min-height: 44px;
@@ -1228,6 +1232,7 @@
     position: fixed;
     inset: auto 0 0;
     z-index: 3;
+    justify-content: center;
     margin: 0;
     border-top: 1px solid var(--border);
     background: var(--panel);
@@ -1239,6 +1244,10 @@
 
   .sidebar .app-version .p-button {
     display: none;
+  }
+
+  .sidebar .app-version span {
+    margin-left: 0;
   }
 
   .planner-filter-row {
