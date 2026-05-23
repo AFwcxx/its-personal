@@ -48,6 +48,13 @@ function isCurrentMonth(day: string) {
   const date = new Date(`${day}T00:00:00.000Z`);
   return date.getUTCFullYear() === month.value.getFullYear() && date.getUTCMonth() === month.value.getMonth();
 }
+
+function selectDay(day: string) {
+  if (!isCurrentMonth(day)) {
+    return;
+  }
+  selected.value = day;
+}
 </script>
 
 <template>
@@ -74,11 +81,12 @@ function isCurrentMonth(day: string) {
         v-for="day in days"
         :key="day"
         :class="{ active: selected === day, today: planner.today === day, 'empty-day': dayTasks(day).length === 0, 'outside-month': !isCurrentMonth(day) }"
+        :disabled="!isCurrentMonth(day)"
         text
-        @click="selected = day"
+        @click="selectDay(day)"
       >
         <strong class="calendar-day-number">{{ Number(day.slice(8)) }}</strong>
-        <div class="muted">{{ dayTasks(day).length }} tasks</div>
+        <div v-if="isCurrentMonth(day)" class="muted">{{ dayTasks(day).length }} tasks</div>
       </Button>
     </div>
     <TaskCreateForm :due-date="selected" :show-due-date="false" />
