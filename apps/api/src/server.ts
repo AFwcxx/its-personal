@@ -23,7 +23,7 @@ export function createServer(config: AppConfig, db: Db) {
   app.use("/api/planner", authRequired(config, db), plannerRouter(db, config.APP_TIMEZONE));
   app.use("/api/attachments", authRequired(config, db), attachmentsRouter(config, db));
   app.get("/manifest.webmanifest", (_req, res) => {
-    const themeColor = config.APP_THEME === "light" ? "#fffdf7" : "#09090b";
+    const themeColor = config.APP_THEME === "light" ? "#f1f3f1" : "#09090b";
     res.json({
       name: config.APP_TITLE,
       short_name: "Planner",
