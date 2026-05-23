@@ -28,7 +28,7 @@ const groups = computed(() => {
     .sort(([a], [b]) => {
       if (a === "No date") return 1;
       if (b === "No date") return -1;
-      return b.localeCompare(a);
+      return a.localeCompare(b);
     })
     .map(([date, items]) => ({ date, tasks: sortPlannerItems(items) }));
 });
