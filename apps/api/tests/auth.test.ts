@@ -65,8 +65,8 @@ describe("auth and database", () => {
       .get("/manifest.webmanifest")
       .expect(200)
       .expect((response) => {
-        expect(response.body.theme_color).toBe("#fffdf7");
-        expect(response.body.background_color).toBe("#fffdf7");
+        expect(response.body.theme_color).toBe("#f1f3f1");
+        expect(response.body.background_color).toBe("#f1f3f1");
       });
   });
 
