@@ -69,11 +69,38 @@ describe("AllTasksView", () => {
 
     const reorderButtons = wrapper.findAll("button");
     expect(reorderButtons).toHaveLength(2);
-    await reorderButtons[1]!.trigger("click");
+    await reorderButtons[0]!.trigger("click");
 
     expect(planner.reorderTasks).toHaveBeenCalledWith([
       expect.objectContaining({ id: "today-1" }),
       expect.objectContaining({ id: "today-2" })
+    ]);
+  });
+
+  it("orders date groups from earliest to latest", () => {
+    const planner = usePlannerStore();
+    planner.tasks = [
+      { ...baseTask, id: "latest", dueDate: "2026-05-26" },
+      { ...baseTask, id: "middle", dueDate: "2026-05-24" },
+      { ...baseTask, id: "earliest", dueDate: "2026-05-23" }
+    ];
+    planner.refresh = vi.fn();
+
+    const wrapper = mount(AllTasksView, {
+      global: {
+        stubs: {
+          AppShell: { template: "<main><slot /></main>" },
+          Checkbox: { template: "<input type='checkbox' />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          TaskList: { props: ["tasks"], template: "<div />" }
+        }
+      }
+    });
+
+    expect(wrapper.findAll(".date-heading").map((heading) => heading.text())).toEqual([
+      "Date: 2026-05-23",
+      "Date: 2026-05-24",
+      "Date: 2026-05-26"
     ]);
   });
 });
