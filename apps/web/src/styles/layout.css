@@ -572,6 +572,12 @@
   padding-inline: 0;
 }
 
+.p-button .p-button-icon,
+.p-button .pi,
+.p-button svg {
+  transition: none;
+}
+
 .p-dialog {
   --modal-glass: #ffffff;
   --modal-glass-raised: rgb(255 255 255 / 92%);
@@ -625,20 +631,28 @@
   color: var(--modal-glass-text) !important;
 }
 
-.p-dialog-close-button {
-  background: var(--modal-glass-raised) !important;
-  border: 1px solid var(--modal-glass-border) !important;
+.p-dialog-header-actions > .p-dialog-close-button.p-button {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
   border-radius: var(--radius-control) !important;
+  box-shadow: none !important;
   color: var(--modal-glass-text) !important;
   height: 44px !important;
   min-width: 44px !important;
+  outline: 0;
   width: 44px !important;
 }
 
-.p-dialog-close-button:enabled:hover {
-  background: var(--modal-glass-close-hover) !important;
-  border-color: color-mix(in srgb, var(--accent) 42%, var(--border)) !important;
+.p-dialog-header-actions > .p-dialog-close-button.p-button:enabled:hover,
+.p-dialog-header-actions > .p-dialog-close-button.p-button:enabled:active,
+.p-dialog-header-actions > .p-dialog-close-button.p-button:focus-visible {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
   color: var(--modal-glass-text) !important;
+  outline: 0;
 }
 
 .p-select-overlay,
@@ -1425,14 +1439,28 @@
   font-weight: 700;
 }
 
+:root[data-theme="light"] .p-button:is(.p-button-secondary, .p-button-text) :is(.p-button-icon, .pi, svg) {
+  color: var(--text) !important;
+  stroke: currentColor;
+}
+
+:root[data-theme="light"] .p-button:not(.p-button-secondary):not(.p-button-danger):not(.p-button-text) :is(.p-button-icon, .pi, svg),
+:root[data-theme="light"] .p-button.p-button-danger :is(.p-button-icon, .pi, svg) {
+  color: #ffffff !important;
+  stroke: currentColor;
+}
+
 :root[data-theme="light"] .detail-close-button.p-button.p-button-text,
 :root[data-theme="light"] .detail-close-button.p-button.p-button-text:enabled:hover,
 :root[data-theme="light"] .task-row-icon-button.p-button.p-button-text,
 :root[data-theme="light"] .task-row-icon-button.p-button.p-button-text:enabled:hover,
-:root[data-theme="light"] .p-dialog-close-button,
-:root[data-theme="light"] .p-dialog-close-button:enabled:hover {
+:root[data-theme="light"] .p-dialog-header-actions > .p-dialog-close-button.p-button,
+:root[data-theme="light"] .p-dialog-header-actions > .p-dialog-close-button.p-button:enabled:hover {
+  background: transparent !important;
+  background-color: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
+  outline: 0;
 }
 
 :root[data-theme="light"] .detail-close-button.p-button.p-button-text,
@@ -1583,10 +1611,13 @@
   background: rgb(62 62 62 / 18%);
 }
 
-:root[data-theme="light"] .p-dialog-close-button,
-:root[data-theme="light"] .p-dialog-close-button:enabled:hover {
+:root[data-theme="light"] .p-dialog-header-actions > .p-dialog-close-button.p-button,
+:root[data-theme="light"] .p-dialog-header-actions > .p-dialog-close-button.p-button:enabled:hover {
+  background: transparent !important;
+  background-color: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
+  outline: 0;
 }
 
 :root[data-theme="light"] .p-select-overlay,
