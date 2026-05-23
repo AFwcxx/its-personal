@@ -1425,6 +1425,23 @@
   font-weight: 700;
 }
 
+:root[data-theme="light"] .detail-close-button.p-button.p-button-text,
+:root[data-theme="light"] .detail-close-button.p-button.p-button-text:enabled:hover,
+:root[data-theme="light"] .task-row-icon-button.p-button.p-button-text,
+:root[data-theme="light"] .task-row-icon-button.p-button.p-button-text:enabled:hover,
+:root[data-theme="light"] .p-dialog-close-button,
+:root[data-theme="light"] .p-dialog-close-button:enabled:hover {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="light"] .detail-close-button.p-button.p-button-text,
+:root[data-theme="light"] .detail-close-button.p-button.p-button-text:enabled:hover,
+:root[data-theme="light"] .task-row-icon-button.p-button.p-button-text {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
 :root[data-theme="light"] .sidebar .p-button.active,
 :root[data-theme="light"] .tabs .p-button.active,
 :root[data-theme="light"] .calendar .p-button.active {
