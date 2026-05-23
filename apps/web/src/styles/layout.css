@@ -655,6 +655,23 @@
   outline: 0;
 }
 
+:root[data-theme="dark"] :is(
+  .task-row-icon-button.p-button.p-button-text,
+  .detail-close-button.p-button.p-button-text,
+  .p-dialog-header-actions > .p-dialog-close-button.p-button
+),
+:root[data-theme="dark"] :is(
+  .task-row-icon-button.p-button.p-button-text,
+  .detail-close-button.p-button.p-button-text,
+  .p-dialog-header-actions > .p-dialog-close-button.p-button
+):is(:enabled:hover, :enabled:active, :focus, :focus-visible, .p-focus) {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: 0;
+}
+
 .p-select-overlay,
 .p-multiselect-overlay {
   background: var(--surface) !important;
