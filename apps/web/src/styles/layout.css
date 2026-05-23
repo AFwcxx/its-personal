@@ -1554,16 +1554,16 @@
 }
 
 :root[data-theme="light"] .p-dialog {
-  --modal-glass: #fffdf7;
-  --modal-glass-raised: #fffdf7;
-  --modal-glass-border: rgb(17 17 17 / 20%);
-  --modal-glass-close-hover: #fffdf7;
+  --modal-glass: #f1f3f1;
+  --modal-glass-raised: #f1f3f1;
+  --modal-glass-border: rgb(62 62 62 / 20%);
+  --modal-glass-close-hover: #f1f3f1;
   --modal-glass-text: var(--text);
   box-shadow: var(--shadow) !important;
 }
 
 :root[data-theme="light"] .p-dialog-mask.p-overlay-mask {
-  background: rgb(17 17 17 / 18%);
+  background: rgb(62 62 62 / 18%);
 }
 
 :root[data-theme="light"] .p-dialog-close-button,
