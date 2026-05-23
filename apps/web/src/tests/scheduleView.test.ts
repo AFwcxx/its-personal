@@ -128,4 +128,21 @@ describe("ScheduleView", () => {
     expect(wrapper.find("input[type='date']").exists()).toBe(false);
     expect(planner.createTask).toHaveBeenCalledWith("Scheduled task", "2026-05-22", null, ["tag-personal"]);
   });
+
+  it("keeps out-of-month calendar days visible but unselectable without task counts", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [{ ...baseTask, id: "previous-month", title: "Previous month", dueDate: "2026-04-26" }];
+    planner.refresh = vi.fn();
+
+    const wrapper = mountSchedule();
+    const previousMonthDay = wrapper.findAll("button").find((button) => button.text() === "26");
+
+    expect(previousMonthDay?.exists()).toBe(true);
+    expect(previousMonthDay?.attributes("disabled")).toBeDefined();
+    expect(previousMonthDay?.text()).not.toContain("tasks");
+
+    await previousMonthDay?.trigger("click");
+
+    expect(wrapper.find("h3").text()).toBe("2026-05-21");
+  });
 });
