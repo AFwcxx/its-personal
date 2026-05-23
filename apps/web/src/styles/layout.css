@@ -1585,6 +1585,7 @@
 
 :root[data-theme="light"] .p-dialog-close-button,
 :root[data-theme="light"] .p-dialog-close-button:enabled:hover {
+  border: 0 !important;
   box-shadow: none !important;
 }
 
