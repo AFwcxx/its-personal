@@ -67,6 +67,11 @@
   justify-content: center;
   min-width: 44px;
   padding: 0;
+  width: 44px;
+}
+
+.sidebar .app-version .p-button .p-button-icon {
+  margin: 0;
 }
 
 .sidebar .p-button.active,
