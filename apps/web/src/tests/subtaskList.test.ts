@@ -95,18 +95,19 @@ describe("SubtaskList", () => {
         stubs: {
           Button: { props: ["label", "disabled"], emits: ["click"], template: "<button type='button' :disabled='disabled' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
           Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
-          InputText: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<input :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+          Textarea: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<textarea :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
         }
       }
     });
 
     await wrapper.find(".subtask-row").trigger("click");
-    await wrapper.find("input[placeholder='Subtask']").setValue("  Updated  ");
-    await wrapper.find("input[placeholder='Subtask']").trigger("keydown", { key: "Enter" });
+    await wrapper.find("textarea[placeholder='Subtask']").setValue("  Updated  ");
+    const updateButton = wrapper.findAll("button").find((button) => button.text() === "Update");
+    await updateButton!.trigger("click");
     await flushPromises();
 
     expect(plannerApi.updateSubtask).toHaveBeenCalledWith("first", { title: "Updated" });
-    expect(wrapper.find("input[placeholder='Subtask']").exists()).toBe(false);
+    expect(wrapper.find("textarea[placeholder='Subtask']").exists()).toBe(false);
   });
 
   it("blocks empty subtask title updates", async () => {
@@ -121,18 +122,18 @@ describe("SubtaskList", () => {
         stubs: {
           Button: { props: ["label", "disabled"], emits: ["click"], template: "<button type='button' :disabled='disabled' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
           Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
-          InputText: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<input :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+          Textarea: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<textarea :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
         }
       }
     });
 
     await wrapper.find(".subtask-row").trigger("click");
-    await wrapper.find("input[placeholder='Subtask']").setValue("   ");
+    await wrapper.find("textarea[placeholder='Subtask']").setValue("   ");
     const updateButton = wrapper.findAll("button").find((button) => button.text() === "Update");
 
     expect(updateButton?.element.disabled).toBe(true);
 
-    await wrapper.find("input[placeholder='Subtask']").trigger("keydown", { key: "Enter" });
+    await updateButton!.trigger("click");
     await flushPromises();
 
     expect(plannerApi.updateSubtask).not.toHaveBeenCalled();
@@ -148,14 +149,14 @@ describe("SubtaskList", () => {
         stubs: {
           Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
           Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
-          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" }
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
         }
       }
     });
 
     await wrapper.find(".subtask-row").trigger("click");
 
-    expect(wrapper.find("input[placeholder='Subtask']").exists()).toBe(false);
+    expect(wrapper.find("textarea[placeholder='Subtask']").exists()).toBe(false);
     expect(wrapper.find("button[aria-label='Complete']").exists()).toBe(true);
   });
 
@@ -174,7 +175,7 @@ describe("SubtaskList", () => {
         stubs: {
           Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\", $event)'><slot />{{ label }}</button>" },
           Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
-          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" }
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
         }
       }
     });
@@ -206,7 +207,7 @@ describe("SubtaskList", () => {
         stubs: {
           Button: { props: ["label", "disabled"], emits: ["click"], template: "<button type='button' :disabled='disabled' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
           Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
-          InputText: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<input :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+          Textarea: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<textarea :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
         }
       }
     });
@@ -221,6 +222,6 @@ describe("SubtaskList", () => {
     await flushPromises();
 
     expect(plannerApi.deleteSubtask).toHaveBeenCalledWith("first");
-    expect(wrapper.find("input[placeholder='Subtask']").exists()).toBe(false);
+    expect(wrapper.find("textarea[placeholder='Subtask']").exists()).toBe(false);
   });
 });
