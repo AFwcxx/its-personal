@@ -2,11 +2,12 @@
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Textarea from "primevue/textarea";
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch, type ComponentPublicInstance } from "vue";
 import { usePlannerStore } from "../stores/planner.js";
 
 const planner = usePlannerStore();
 const subtaskTitle = ref("");
+const subtaskTextarea = ref<ComponentPublicInstance | null>(null);
 const parentTask = computed(() => planner.tasks.find((task) => task.id === planner.subtaskDialogTaskId) ?? null);
 const visible = computed(() => planner.subtaskDialogTaskId !== null);
 const canAddSubtask = computed(() => Boolean(parentTask.value && parentTask.value.completedAt === null && parentTask.value.deletedAt === null));
@@ -19,18 +20,25 @@ function close() {
   planner.subtaskDialogTaskId = null;
 }
 
+function focusSubtaskTextarea() {
+  void nextTick(() => {
+    (subtaskTextarea.value?.$el as HTMLTextAreaElement | undefined)?.focus();
+  });
+}
+
 async function addSubtask(closeAfterAdd = false) {
   if (!parentTask.value || !subtaskTitle.value.trim() || !canAddSubtask.value) return;
   await planner.createSubtask(parentTask.value.id, subtaskTitle.value.trim());
   subtaskTitle.value = "";
   if (closeAfterAdd) close();
+  else focusSubtaskTextarea();
 }
 </script>
 
 <template>
   <Dialog :visible="visible" modal header="Add subtask" :style="{ width: 'min(420px, 92vw)' }" @update:visible="planner.subtaskDialogTaskId = $event ? planner.subtaskDialogTaskId : null">
     <div class="dialog-form">
-      <Textarea v-model="subtaskTitle" placeholder="New subtask" rows="2" auto-resize autofocus />
+      <Textarea ref="subtaskTextarea" v-model="subtaskTitle" placeholder="New subtask" rows="2" auto-resize autofocus />
     </div>
     <div class="dialog-actions">
       <Button label="Add" @click="addSubtask(false)" />

@@ -221,6 +221,7 @@ describe("TaskDetailPanel recurrence", () => {
     planner.subtaskDialogTaskId = baseTask.id;
 
     const wrapper = mount(SubtaskCreateDialog, {
+      attachTo: document.body,
       global: {
         stubs: {
           Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
@@ -239,5 +240,8 @@ describe("TaskDetailPanel recurrence", () => {
     expect(plannerApi.createSubtask).toHaveBeenCalledWith({ taskId: baseTask.id, title: "Use coupon", order: 1000 });
     expect(planner.selectedTaskId).toBeNull();
     expect(planner.subtaskDialogTaskId).toBe(baseTask.id);
+    expect(document.activeElement).toBe(wrapper.find("textarea[placeholder='New subtask']").element);
+
+    wrapper.unmount();
   });
 });
