@@ -241,6 +241,11 @@ The implementation uses the approved responsive direction:
 
 The visual baseline comes from `docs/design/sample-light.png` and `docs/design/sample-dark.png`: quiet productivity UI, strong typography, generous spacing, soft row/button highlights, subtle borders, and first-class light/dark modes. The app should adapt the design language to the planner and must not copy ChatGPT branding.
 
+Theme tone:
+
+- Light theme should stay paper-like, restrained, and low-glow.
+- Dark theme should lean cyberpunk-ish with controlled neon accents that do not distract from repeated planning work.
+
 Theme behavior:
 
 - Default follows system preference.
