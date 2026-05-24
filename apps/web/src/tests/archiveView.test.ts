@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
@@ -72,5 +72,28 @@ describe("ArchiveView", () => {
     expect(groups[2]).toContain("Range start task 2026-04-21");
     expect(wrapper.text()).not.toContain("Old task");
     expect(wrapper.find("ul").attributes("data-hide-pin")).toBe("true");
+  });
+
+  it("resets the default date range from the refreshed current date when opened", async () => {
+    const planner = usePlannerStore();
+    planner.refresh = vi.fn(async () => {
+      planner.currentDate = "2026-05-22";
+    });
+
+    const wrapper = mount(ArchiveView, {
+      global: {
+        stubs: {
+          AppShell: { template: "<main><slot /></main>" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          TaskList: { props: ["tasks", "hidePin"], template: "<ul />" }
+        }
+      }
+    });
+
+    await flushPromises();
+
+    const inputs = wrapper.findAll("input");
+    expect((inputs[1]!.element as HTMLInputElement).value).toBe("2026-04-22");
+    expect((inputs[2]!.element as HTMLInputElement).value).toBe("2026-05-22");
   });
 });

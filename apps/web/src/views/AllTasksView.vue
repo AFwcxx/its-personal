@@ -10,9 +10,15 @@ import { usePlannerStore } from "../stores/planner.js";
 const planner = usePlannerStore();
 const search = ref("");
 const showCompleted = ref(false);
-const rangeFrom = ref(todayISO());
-const rangeTo = ref(addCalendarMonths(todayISO(), 1));
-onMounted(() => planner.refresh());
+const initialToday = todayISO();
+const rangeFrom = ref(initialToday);
+const rangeTo = ref(addCalendarMonths(initialToday, 1));
+
+onMounted(async () => {
+  await planner.refresh();
+  resetDefaultRange(planner.today);
+});
+
 const tasks = computed(() => planner.allVisible(search.value, showCompleted.value).filter((task) => {
   if (!task.dueDate) return false;
   return task.dueDate >= rangeFrom.value && task.dueDate <= rangeTo.value;
@@ -44,6 +50,11 @@ function addCalendarMonths(date: string, months: number) {
   const day = parsed.getUTCDate();
   const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
   return new Date(Date.UTC(year, month, Math.min(day, lastDay))).toISOString().slice(0, 10);
+}
+
+function resetDefaultRange(today = todayISO()) {
+  rangeFrom.value = today;
+  rangeTo.value = addCalendarMonths(today, 1);
 }
 </script>
 

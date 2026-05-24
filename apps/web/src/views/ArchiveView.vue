@@ -8,9 +8,15 @@ import { usePlannerStore } from "../stores/planner.js";
 
 const planner = usePlannerStore();
 const search = ref("");
-const rangeFrom = ref(addCalendarMonths(todayISO(), -1));
-const rangeTo = ref(todayISO());
-onMounted(() => planner.refresh());
+const initialToday = todayISO();
+const rangeFrom = ref(addCalendarMonths(initialToday, -1));
+const rangeTo = ref(initialToday);
+
+onMounted(async () => {
+  await planner.refresh();
+  resetDefaultRange(planner.today);
+});
+
 const tasks = computed(() => planner.archiveTasks.filter((task) => {
   if (!task.dueDate) return false;
   return task.title.toLowerCase().includes(search.value.toLowerCase()) && task.dueDate >= rangeFrom.value && task.dueDate <= rangeTo.value;
@@ -38,6 +44,11 @@ function addCalendarMonths(date: string, months: number) {
   const day = parsed.getUTCDate();
   const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
   return new Date(Date.UTC(year, month, Math.min(day, lastDay))).toISOString().slice(0, 10);
+}
+
+function resetDefaultRange(today = todayISO()) {
+  rangeFrom.value = addCalendarMonths(today, -1);
+  rangeTo.value = today;
 }
 </script>
 
