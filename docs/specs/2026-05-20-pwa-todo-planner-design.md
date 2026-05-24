@@ -77,6 +77,8 @@ Task rows with visible subtasks show a chevron control before the pin action. Th
 
 The Overdue tab groups open overdue tasks by due date. If a task is checked complete, it moves into the Overdue tab's completed section and remains there for 24 hours after completion.
 
+Each active overdue date group can expose a sun icon action for moving that group's tasks to today's planner date. The action is hidden while search is filtering the list and must use the app's PrimeVue confirmation dialog, not a browser-native `confirm` prompt. The confirmation message must name the source overdue group date and today's target date.
+
 ### All Tasks Page
 
 The All Tasks page supports:
