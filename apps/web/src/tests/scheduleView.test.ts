@@ -118,7 +118,7 @@ describe("ScheduleView", () => {
     });
 
     const wrapper = mountSchedule();
-    const day22 = wrapper.findAll("button").find((button) => button.text().startsWith("220 tasks"));
+    const day22 = wrapper.findAll("button").find((button) => button.text() === "22");
     await day22?.trigger("click");
     await wrapper.find("[aria-label='Toggle add task form']").trigger("click");
     await wrapper.find("input[placeholder='New task']").setValue("Scheduled task");
@@ -127,6 +127,15 @@ describe("ScheduleView", () => {
 
     expect(wrapper.find("input[type='date']").exists()).toBe(false);
     expect(planner.createTask).toHaveBeenCalledWith("Scheduled task", "2026-05-22", null, ["tag-personal"]);
+  });
+
+  it("leaves current-month calendar days empty when no tasks are scheduled", () => {
+    const planner = usePlannerStore();
+    planner.refresh = vi.fn();
+
+    const wrapper = mountSchedule();
+
+    expect(wrapper.text()).not.toContain("0 tasks");
   });
 
   it("keeps out-of-month calendar days visible but unselectable without task counts", async () => {
