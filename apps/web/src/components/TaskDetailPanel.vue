@@ -14,6 +14,7 @@ import { usePlannerStore } from "../stores/planner.js";
 
 const planner = usePlannerStore();
 const title = ref("");
+const dueDate = ref("");
 const notes = ref("");
 const selectedTagIds = ref<string[]>([]);
 const linkUrl = ref("");
@@ -46,6 +47,7 @@ watch(task, (value) => {
   const changedTask = value?.id !== syncedTaskId;
   syncedTaskId = value?.id ?? null;
   title.value = value?.title ?? "";
+  dueDate.value = value?.dueDate ?? "";
   notes.value = value?.notes ?? "";
   selectedTagIds.value = value?.tagIds ?? (value?.tagId ? [value.tagId] : []);
   if (value?.recurrence.type === "every_n_days") {
@@ -78,7 +80,7 @@ onBeforeUnmount(() => {
 
 async function save() {
   if (!task.value) return;
-  await planner.updateTask(task.value.id, { title: title.value, notes: notes.value });
+  await planner.updateTask(task.value.id, { title: title.value, dueDate: dueDate.value || task.value.dueDate, notes: notes.value });
 }
 
 async function assignTags(tagIds: string[]) {
@@ -127,9 +129,8 @@ async function updateRecurrenceEndDate(date: string) {
   await updateRecurrence(task.value.recurrence.type);
 }
 
-async function updateDueDate(dueDate: string | undefined) {
-  if (!task.value || !dueDate || dueDate === task.value.dueDate) return;
-  await planner.updateTask(task.value.id, { dueDate });
+function updateDueDate(value: string | undefined) {
+  dueDate.value = value ?? "";
 }
 
 async function addLink() {
@@ -172,7 +173,7 @@ function openSubtaskDialog() {
     <Button v-if="canAddSubtask" class="detail-add-subtask-button" label="Add subtask" @click="openSubtaskDialog" />
     <div class="field-stack">
       <label>Title<Textarea v-model="title" rows="2" auto-resize /></label>
-      <label>Due date<InputText :model-value="task.dueDate" type="date" :disabled="task.recurrence.type !== 'none' && recurrenceEnds.type === 'date'" @update:model-value="updateDueDate" /></label>
+      <label>Due date<InputText :model-value="dueDate" type="date" :disabled="task.recurrence.type !== 'none' && recurrenceEnds.type === 'date'" @update:model-value="updateDueDate" /></label>
       <label>Notes<Textarea v-model="notes" class="notes-textarea" rows="5" /></label>
       <label>Recurrence
         <Select
