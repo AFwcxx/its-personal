@@ -114,7 +114,7 @@ describe("TaskDetailPanel recurrence", () => {
     });
   });
 
-  it("saves due date edits from the detail editor", async () => {
+  it("waits until save before applying due date edits from the detail editor", async () => {
     const planner = usePlannerStore();
     planner.tasks = [baseTask];
     planner.selectedTaskId = baseTask.id;
@@ -122,7 +122,7 @@ describe("TaskDetailPanel recurrence", () => {
     const wrapper = mount(TaskDetailPanel, {
       global: {
         stubs: {
-          Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
           Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
           FileUpload: { template: "<div />" },
           InputText: { name: "InputText", props: ["modelValue", "type"], emits: ["update:modelValue"], template: "<input :type='type' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" },
@@ -139,7 +139,16 @@ describe("TaskDetailPanel recurrence", () => {
     await dueDateInput!.vm.$emit("update:modelValue", "2026-05-22");
     await flushPromises();
 
-    expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, { dueDate: "2026-05-22" });
+    expect(plannerApi.updateTask).not.toHaveBeenCalled();
+    expect(planner.selectedTask?.dueDate).toBe("2026-05-21");
+
+    const saveButton = wrapper.findAll("button").find((button) => button.text() === "Save");
+    expect(saveButton).toBeTruthy();
+
+    await saveButton!.trigger("click");
+    await flushPromises();
+
+    expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, { title: "Today", dueDate: "2026-05-22", notes: "" });
     expect(planner.selectedTask?.dueDate).toBe("2026-05-22");
   });
 
