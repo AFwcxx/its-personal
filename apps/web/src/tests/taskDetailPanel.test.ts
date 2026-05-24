@@ -177,6 +177,7 @@ describe("TaskDetailPanel recurrence", () => {
     await deleteButton!.trigger("click");
 
     expect(plannerApi.deleteTask).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("This task will be deleted: “Today”.");
 
     const confirmButton = wrapper.findAll("button").find((button) => button.text() === "Confirm");
     expect(confirmButton).toBeTruthy();

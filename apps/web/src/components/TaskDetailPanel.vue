@@ -251,7 +251,8 @@ function openSubtaskDialog() {
       <Button class="detail-delete-button" label="Delete task" severity="danger" @click="taskPendingRemoval = true" />
     </div>
     <Dialog :visible="taskPendingRemoval" modal header="Delete task" :style="{ width: 'min(420px, 92vw)' }" @update:visible="taskPendingRemoval = $event">
-      <p>This task will be deleted.</p>
+      <p class="delete-task-message" v-if="task.title.trim()">This task will be deleted: &ldquo;{{ task.title }}&rdquo;.</p>
+      <p class="delete-task-message" v-else>This task will be deleted.</p>
       <div class="dialog-actions">
         <Button label="Confirm" severity="danger" @click="confirmRemove" />
       </div>
