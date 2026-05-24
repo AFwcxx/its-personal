@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
-import InputText from "primevue/inputtext";
+import Textarea from "primevue/textarea";
 import { computed, ref, watch } from "vue";
 import { usePlannerStore } from "../stores/planner.js";
 
@@ -30,7 +30,7 @@ async function addSubtask(closeAfterAdd = false) {
 <template>
   <Dialog :visible="visible" modal header="Add subtask" :style="{ width: 'min(420px, 92vw)' }" @update:visible="planner.subtaskDialogTaskId = $event ? planner.subtaskDialogTaskId : null">
     <div class="dialog-form">
-      <InputText v-model="subtaskTitle" placeholder="New subtask" autofocus @keydown.enter.prevent="addSubtask(false)" />
+      <Textarea v-model="subtaskTitle" placeholder="New subtask" rows="2" auto-resize autofocus />
     </div>
     <div class="dialog-actions">
       <Button label="Add" @click="addSubtask(false)" />
