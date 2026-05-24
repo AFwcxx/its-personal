@@ -225,12 +225,12 @@ describe("TaskDetailPanel recurrence", () => {
         stubs: {
           Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
           Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
-          InputText: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<input :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+          Textarea: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<textarea :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
         }
       }
     });
 
-    await wrapper.find("input[placeholder='New subtask']").setValue("Use coupon");
+    await wrapper.find("textarea[placeholder='New subtask']").setValue("Use coupon");
 
     const addButton = wrapper.findAll("button").find((button) => button.text() === "Add");
     await addButton!.trigger("click");

@@ -2,7 +2,7 @@
 import type { Subtask } from "@its-personal/shared";
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
-import InputText from "primevue/inputtext";
+import Textarea from "primevue/textarea";
 import Sortable from "sortablejs";
 import { GripVertical, Square, SquareCheck, Trash2 } from "lucide-vue-next";
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
@@ -143,7 +143,7 @@ function requestRemoveEditedSubtask() {
   </div>
   <Dialog :visible="editingSubtask !== null" modal header="Edit subtask" :style="{ width: 'min(420px, 92vw)' }" @update:visible="editingSubtaskId = $event ? editingSubtaskId : null">
     <div class="dialog-form">
-      <InputText v-model="editedTitle" placeholder="Subtask" autofocus @keydown.enter.prevent="updateEditedSubtask" />
+      <Textarea v-model="editedTitle" placeholder="Subtask" rows="2" auto-resize autofocus />
     </div>
     <div class="dialog-actions subtask-edit-actions">
       <Button class="task-row-icon-button" title="Delete" aria-label="Delete" severity="danger" text @click="requestRemoveEditedSubtask">
