@@ -86,7 +86,7 @@ function selectDay(day: string) {
         @click="selectDay(day)"
       >
         <strong class="calendar-day-number">{{ Number(day.slice(8)) }}</strong>
-        <div v-if="isCurrentMonth(day)" class="muted">{{ dayTasks(day).length }} tasks</div>
+        <div v-if="isCurrentMonth(day) && dayTasks(day).length > 0" class="muted">{{ dayTasks(day).length }} tasks</div>
       </Button>
     </div>
     <TaskCreateForm :due-date="selected" :show-due-date="false" />
