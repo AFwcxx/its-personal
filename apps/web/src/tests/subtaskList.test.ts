@@ -159,6 +159,41 @@ describe("SubtaskList", () => {
     expect(wrapper.find("button[aria-label='Complete']").exists()).toBe(true);
   });
 
+  it("shows an inline delete action only for completed subtasks and confirms before deleting", async () => {
+    const planner = usePlannerStore();
+    planner.subtasks = [
+      subtask({ id: "open", title: "Open" }),
+      subtask({ id: "done", title: "Done", completedAt: "2026-05-21T01:00:00.000Z" })
+    ];
+    const wrapper = mount(SubtaskList, {
+      props: {
+        taskId: "task",
+        subtasks: planner.subtasks
+      },
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\", $event)'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" }
+        }
+      }
+    });
+
+    const rows = wrapper.findAll(".subtask-row");
+    expect(rows[0]!.find("button[aria-label='Delete subtask']").exists()).toBe(false);
+    expect(rows[1]!.find("button[aria-label='Delete subtask']").exists()).toBe(true);
+
+    await rows[1]!.find("button[aria-label='Delete subtask']").trigger("click");
+
+    expect(plannerApi.deleteSubtask).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('Delete "Done"?');
+
+    await wrapper.findAll("button").find((button) => button.text() === "Confirm")!.trigger("click");
+    await flushPromises();
+
+    expect(plannerApi.deleteSubtask).toHaveBeenCalledWith("done");
+  });
+
   it("asks for confirmation before deleting from the edit dialog", async () => {
     const planner = usePlannerStore();
     planner.subtasks = [subtask({ id: "first", title: "First" })];
