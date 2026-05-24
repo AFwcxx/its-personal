@@ -60,3 +60,7 @@ If you genuinely think a convention is harmful, surface it. Don't fork silently.
 "Completed" is wrong if anything was skipped silently.
 "Tests pass" is wrong if any were skipped.
 Default to surfacing uncertainty, not hiding it.
+
+## Rule 13 — Use App Dialogs
+Do not use browser-native confirmation or prompt UI such as `window.confirm`, `window.alert`, or `window.prompt` for product interactions.
+Use the app's existing PrimeVue `Dialog` pattern with `.dialog-actions` so confirmations match the designed modal experience.

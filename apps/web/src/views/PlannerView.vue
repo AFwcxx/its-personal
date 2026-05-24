@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { completedPlannerTasksForDate, sortPlannerItems, type Task } from "@its-personal/shared";
 import Button from "primevue/button";
+import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import { computed, onMounted, ref } from "vue";
@@ -14,6 +15,7 @@ const tab = ref("today");
 const search = ref("");
 const newDueDate = ref(planner.dateForTab(tab.value));
 const completedExpanded = ref(localStorage.getItem("its-personal-completed-expanded") === "true");
+const overdueMovePending = ref<{ date: string; tasks: Task[] } | null>(null);
 const tabs = [
   { key: "overdue", label: "Overdue" },
   { key: "today", label: "Today" },
@@ -112,14 +114,17 @@ function tasksWithDescendants(tasks: Task[]) {
   return [...byId.values()];
 }
 
-async function moveGroupToToday(tasks: Task[]) {
+function requestMoveGroupToToday(date: string, tasks: Task[]) {
   const updates = tasksWithDescendants(tasks).filter((task) => task.dueDate !== planner.today);
-  if (updates.length === 0) return;
-  const label = updates.length === 1 ? "task" : "tasks";
-  if (!window.confirm(`Move ${updates.length} ${label} to today (${planner.today})?`)) return;
+  overdueMovePending.value = updates.length > 0 ? { date, tasks: updates } : null;
+}
+
+async function confirmMoveGroupToToday() {
+  const updates = overdueMovePending?.value?.tasks ?? [];
   for (const task of updates) {
     await planner.updateTask(task.id, { dueDate: planner.today });
   }
+  overdueMovePending.value = null;
 }
 </script>
 
@@ -147,7 +152,7 @@ async function moveGroupToToday(tasks: Task[]) {
             aria-label="Move overdue group to today"
             title="Move overdue group to today"
             :disabled="planner.status === 'offline'"
-            @click="moveGroupToToday(group.tasks)"
+            @click="requestMoveGroupToToday(group.date, group.tasks)"
           >
             <i class="pi pi-sun" aria-hidden="true" />
           </button>
@@ -170,5 +175,19 @@ async function moveGroupToToday(tasks: Task[]) {
       </template>
       <TaskList v-else-if="completedExpanded" :tasks="completedTasks" />
     </section>
+    <Dialog
+      :visible="overdueMovePending !== null"
+      modal
+      header="Move overdue tasks"
+      :style="{ width: 'min(420px, 92vw)' }"
+      @update:visible="overdueMovePending = $event ? overdueMovePending : null"
+    >
+      <p v-if="overdueMovePending">
+        Move {{ overdueMovePending.tasks.length }} task{{ overdueMovePending.tasks.length === 1 ? "" : "s" }} from {{ overdueMovePending.date }} to today ({{ planner.today }})?
+      </p>
+      <div class="dialog-actions">
+        <Button label="Confirm" @click="confirmMoveGroupToToday" />
+      </div>
+    </Dialog>
   </AppShell>
 </template>

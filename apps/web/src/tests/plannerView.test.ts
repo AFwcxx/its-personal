@@ -46,6 +46,7 @@ function mountPlanner() {
         AppShell: { template: "<main><slot /></main>" },
         Button: { props: ["label", "icon"], template: "<button @click='$emit(\"click\")'><i v-if='icon' :class='icon'></i>{{ label }}<slot /></button>" },
         Card: { template: "<section><slot name='content' /></section>" },
+        Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
         InputText: { props: ["modelValue"], emits: ["update:modelValue"], template: "<input :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" },
         Message: { template: "<div><slot /></div>" },
         MultiSelect: {
@@ -137,7 +138,7 @@ describe("PlannerView", () => {
     expect(wrapper.find("button[aria-label='Move overdue group to today']").exists()).toBe(false);
   });
 
-  it("confirms the overdue group move and updates matching tasks plus child task records to today's planner date", async () => {
+  it("opens the project confirmation dialog before moving overdue group tasks to today's planner date", async () => {
     const planner = usePlannerStore();
     planner.currentDate = "2026-05-21";
     planner.tasks = [
@@ -153,7 +154,6 @@ describe("PlannerView", () => {
       planner.tasks = planner.tasks.map((task) => task.id === id ? updated : task);
       return updated;
     });
-    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const wrapper = mountPlanner();
     const overdueButton = wrapper.findAll("button").find((button) => button.text() === "Overdue");
@@ -162,7 +162,11 @@ describe("PlannerView", () => {
     if (!firstGroup) throw new Error("Expected an overdue date group");
     await firstGroup.find("button[aria-label='Move overdue group to today']").trigger("click");
 
-    expect(confirm).toHaveBeenCalledWith("Move 2 tasks to today (2026-05-21)?");
+    expect(wrapper.text()).toContain("Move 2 tasks from 2026-05-18 to today (2026-05-21)?");
+    expect(planner.updateTask).not.toHaveBeenCalled();
+
+    await wrapper.findAll("button").find((button) => button.text() === "Confirm")?.trigger("click");
+
     expect(planner.updateTask).toHaveBeenCalledWith("parent", { dueDate: "2026-05-21" });
     expect(planner.updateTask).toHaveBeenCalledWith("child", { dueDate: "2026-05-21" });
     expect(planner.updateTask).not.toHaveBeenCalledWith("other", expect.anything());
