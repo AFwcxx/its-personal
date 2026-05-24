@@ -354,6 +354,10 @@
   cursor: default;
 }
 
+.subtask-row-editable {
+  cursor: pointer;
+}
+
 .subtask-title {
   background: transparent;
   border: 0;
@@ -366,20 +370,6 @@
   text-overflow: ellipsis;
   user-select: text;
   white-space: nowrap;
-}
-
-.subtask-title-toggle:enabled {
-  cursor: pointer;
-}
-
-.subtask-title-toggle:disabled {
-  cursor: default;
-}
-
-.subtask-title-expanded {
-  overflow: visible;
-  white-space: normal;
-  overflow-wrap: anywhere;
 }
 
 .subtask-row-complete .subtask-title {
@@ -1154,6 +1144,10 @@
   gap: 0.5rem;
   justify-content: flex-end;
   margin-top: 1rem;
+}
+
+.subtask-edit-actions {
+  justify-content: space-between;
 }
 
 .dialog-form {

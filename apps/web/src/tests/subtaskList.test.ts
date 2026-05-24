@@ -1,8 +1,9 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Subtask } from "@its-personal/shared";
 import SubtaskList from "../components/SubtaskList.vue";
+import { plannerApi } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
 const sortable = vi.hoisted(() => ({
@@ -23,8 +24,8 @@ vi.mock("../services/api.js", () => ({
   loadSnapshot: vi.fn(async () => ({ tasks: [], subtasks: [], tags: [], links: [], attachments: [] })),
   cachedSnapshot: vi.fn(() => null),
   plannerApi: {
-    deleteSubtask: vi.fn(),
-    updateSubtask: vi.fn()
+    deleteSubtask: vi.fn(async () => undefined),
+    updateSubtask: vi.fn(async (id: string, patch: Partial<Subtask>) => subtask({ id, ...patch }))
   }
 }));
 
@@ -39,77 +40,12 @@ const subtask = (patch: Partial<Subtask>): Subtask => ({
   deletedAt: patch.deletedAt ?? null
 });
 
-async function renderWithWidths(widths: Record<string, { clientWidth: number; scrollWidth: number }>) {
-  const wrapper = mount(SubtaskList, {
-    props: {
-      taskId: "task",
-      subtasks: [
-        subtask({ id: "short", title: "Short" }),
-        subtask({ id: "long", title: "Long subtask title that exceeds the available row width", order: 2000 })
-      ]
-    },
-    global: {
-      stubs: {
-        Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
-        Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" }
-      }
-    },
-    attachTo: document.body
-  });
-
-  for (const button of wrapper.findAll<HTMLButtonElement>(".subtask-title-toggle")) {
-    const width = widths[button.text()];
-    if (!width) continue;
-    Object.defineProperty(button.element, "clientWidth", { configurable: true, value: width.clientWidth });
-    Object.defineProperty(button.element, "scrollWidth", { configurable: true, value: width.scrollWidth });
-  }
-
-  window.dispatchEvent(new Event("resize"));
-  await wrapper.vm.$nextTick();
-  return wrapper;
-}
-
 describe("SubtaskList", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    vi.clearAllMocks();
     sortable.options = null;
     sortable.sort.mockReset();
-  });
-
-  it("expands only subtasks whose title is truncated", async () => {
-    const wrapper = await renderWithWidths({
-      Short: { clientWidth: 120, scrollWidth: 80 },
-      "Long subtask title that exceeds the available row width": { clientWidth: 120, scrollWidth: 240 }
-    });
-
-    const shortTitle = wrapper.findAll<HTMLButtonElement>(".subtask-title-toggle").find((button) => button.text() === "Short");
-    const longTitle = wrapper.findAll<HTMLButtonElement>(".subtask-title-toggle").find((button) => button.text().startsWith("Long subtask"));
-
-    expect(shortTitle?.element.disabled).toBe(true);
-    expect(longTitle?.element.disabled).toBe(false);
-
-    await longTitle!.trigger("click");
-    expect(longTitle!.classes()).toContain("subtask-title-expanded");
-    expect(longTitle!.attributes("aria-expanded")).toBe("true");
-
-    await longTitle!.trigger("click");
-    expect(longTitle!.classes()).not.toContain("subtask-title-expanded");
-    expect(longTitle!.attributes("aria-expanded")).toBe("false");
-  });
-
-  it("does not expand truncated subtasks while selecting the title text", async () => {
-    const wrapper = await renderWithWidths({
-      Short: { clientWidth: 120, scrollWidth: 80 },
-      "Long subtask title that exceeds the available row width": { clientWidth: 120, scrollWidth: 240 }
-    });
-
-    const longTitle = wrapper.findAll<HTMLButtonElement>(".subtask-title-toggle").find((button) => button.text().startsWith("Long subtask"));
-
-    await longTitle!.trigger("pointerdown", { clientX: 10, clientY: 10 });
-    await longTitle!.trigger("click", { clientX: 40, clientY: 10 });
-
-    expect(longTitle!.classes()).not.toContain("subtask-title-expanded");
-    expect(longTitle!.attributes("aria-expanded")).toBe("false");
   });
 
   it("reorders subtasks from the DOM order after Sortable moves rows", async () => {
@@ -145,5 +81,111 @@ describe("SubtaskList", () => {
       expect.objectContaining({ id: "first" })
     ]);
     expect(sortable.sort).toHaveBeenLastCalledWith(["second", "third", "first"]);
+  });
+
+  it("updates an incomplete subtask from the edit dialog and closes it", async () => {
+    const planner = usePlannerStore();
+    planner.subtasks = [subtask({ id: "first", title: "First" })];
+    const wrapper = mount(SubtaskList, {
+      props: {
+        taskId: "task",
+        subtasks: planner.subtasks
+      },
+      global: {
+        stubs: {
+          Button: { props: ["label", "disabled"], emits: ["click"], template: "<button type='button' :disabled='disabled' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          InputText: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<input :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+        }
+      }
+    });
+
+    await wrapper.find(".subtask-row").trigger("click");
+    await wrapper.find("input[placeholder='Subtask']").setValue("  Updated  ");
+    await wrapper.find("input[placeholder='Subtask']").trigger("keydown", { key: "Enter" });
+    await flushPromises();
+
+    expect(plannerApi.updateSubtask).toHaveBeenCalledWith("first", { title: "Updated" });
+    expect(wrapper.find("input[placeholder='Subtask']").exists()).toBe(false);
+  });
+
+  it("blocks empty subtask title updates", async () => {
+    const planner = usePlannerStore();
+    planner.subtasks = [subtask({ id: "first", title: "First" })];
+    const wrapper = mount(SubtaskList, {
+      props: {
+        taskId: "task",
+        subtasks: planner.subtasks
+      },
+      global: {
+        stubs: {
+          Button: { props: ["label", "disabled"], emits: ["click"], template: "<button type='button' :disabled='disabled' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          InputText: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<input :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+        }
+      }
+    });
+
+    await wrapper.find(".subtask-row").trigger("click");
+    await wrapper.find("input[placeholder='Subtask']").setValue("   ");
+    const updateButton = wrapper.findAll("button").find((button) => button.text() === "Update");
+
+    expect(updateButton?.element.disabled).toBe(true);
+
+    await wrapper.find("input[placeholder='Subtask']").trigger("keydown", { key: "Enter" });
+    await flushPromises();
+
+    expect(plannerApi.updateSubtask).not.toHaveBeenCalled();
+  });
+
+  it("does not open the edit dialog for completed subtasks", async () => {
+    const wrapper = mount(SubtaskList, {
+      props: {
+        taskId: "task",
+        subtasks: [subtask({ id: "done", title: "Done", completedAt: "2026-05-21T01:00:00.000Z" })]
+      },
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" }
+        }
+      }
+    });
+
+    await wrapper.find(".subtask-row").trigger("click");
+
+    expect(wrapper.find("input[placeholder='Subtask']").exists()).toBe(false);
+    expect(wrapper.find("button[aria-label='Complete']").exists()).toBe(true);
+  });
+
+  it("asks for confirmation before deleting from the edit dialog", async () => {
+    const planner = usePlannerStore();
+    planner.subtasks = [subtask({ id: "first", title: "First" })];
+    const wrapper = mount(SubtaskList, {
+      props: {
+        taskId: "task",
+        subtasks: planner.subtasks
+      },
+      global: {
+        stubs: {
+          Button: { props: ["label", "disabled"], emits: ["click"], template: "<button type='button' :disabled='disabled' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          InputText: { props: ["modelValue", "placeholder"], emits: ["update:modelValue"], template: "<input :placeholder='placeholder' :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+        }
+      }
+    });
+
+    await wrapper.find(".subtask-row").trigger("click");
+    await wrapper.find("button[aria-label='Delete']").trigger("click");
+
+    expect(plannerApi.deleteSubtask).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain('Delete "First"?');
+
+    await wrapper.findAll("button").find((button) => button.text() === "Confirm")!.trigger("click");
+    await flushPromises();
+
+    expect(plannerApi.deleteSubtask).toHaveBeenCalledWith("first");
+    expect(wrapper.find("input[placeholder='Subtask']").exists()).toBe(false);
   });
 });
