@@ -65,6 +65,7 @@ const visibleTasks = computed(() => {
 });
 
 const visibleGroups = computed(() => groupTasksByDueDate(visibleTasks.value));
+const canMoveOverdueGroupsToToday = computed(() => tab.value === "overdue" && search.value.trim() === "");
 
 const completedTasks = computed(() => {
   const q = search.value.toLowerCase();
@@ -92,6 +93,34 @@ function toggleCompleted() {
 async function reorder(tasks: Task[]) {
   await planner.reorderTasks(tasks);
 }
+
+function tasksWithDescendants(tasks: Task[]) {
+  const byParentId = new Map<string, Task[]>();
+  for (const task of planner.tasks) {
+    if (task.parentId === null || task.deletedAt !== null) continue;
+    byParentId.set(task.parentId, [...(byParentId.get(task.parentId) ?? []), task]);
+  }
+
+  const byId = new Map<string, Task>();
+  const queue = [...tasks];
+  while (queue.length > 0) {
+    const task = queue.shift();
+    if (!task || byId.has(task.id)) continue;
+    byId.set(task.id, task);
+    queue.push(...(byParentId.get(task.id) ?? []));
+  }
+  return [...byId.values()];
+}
+
+async function moveGroupToToday(tasks: Task[]) {
+  const updates = tasksWithDescendants(tasks).filter((task) => task.dueDate !== planner.today);
+  if (updates.length === 0) return;
+  const label = updates.length === 1 ? "task" : "tasks";
+  if (!window.confirm(`Move ${updates.length} ${label} to today (${planner.today})?`)) return;
+  for (const task of updates) {
+    await planner.updateTask(task.id, { dueDate: planner.today });
+  }
+}
 </script>
 
 <template>
@@ -109,7 +138,20 @@ async function reorder(tasks: Task[]) {
     <TaskCreateForm v-if="canCreateTask" v-model:due-date="newDueDate" />
     <template v-if="tab === 'overdue'">
       <section v-for="group in visibleGroups" :key="group.date" class="date-group">
-        <h3 class="date-heading">Date: {{ group.date }}</h3>
+        <div class="date-heading-row">
+          <h3 class="date-heading">Date: {{ group.date }}</h3>
+          <button
+            v-if="canMoveOverdueGroupsToToday"
+            class="date-move-today-button"
+            type="button"
+            aria-label="Move overdue group to today"
+            title="Move overdue group to today"
+            :disabled="planner.status === 'offline'"
+            @click="moveGroupToToday(group.tasks)"
+          >
+            <i class="pi pi-sun" aria-hidden="true" />
+          </button>
+        </div>
         <TaskList :tasks="group.tasks" :reorderable="canReorder" @reorder="reorder" />
       </section>
     </template>

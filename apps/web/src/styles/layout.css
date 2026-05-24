@@ -1089,8 +1089,41 @@
   margin-block: 1.5rem;
 }
 
-.date-heading {
+.date-heading-row {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
   margin-block: 0 0.75rem;
+}
+
+.date-heading {
+  margin-block: 0;
+}
+
+.date-move-today-button {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: var(--text);
+  cursor: pointer;
+  flex: 0 0 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  width: 44px;
+}
+
+.date-move-today-button:hover,
+.date-move-today-button:active {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.date-move-today-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .all-tasks-toolbar,
