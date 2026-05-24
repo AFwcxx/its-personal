@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent } from "vue";
@@ -102,5 +102,29 @@ describe("AllTasksView", () => {
       "Date: 2026-05-24",
       "Date: 2026-05-26"
     ]);
+  });
+
+  it("resets the default date range from the refreshed current date when opened", async () => {
+    const planner = usePlannerStore();
+    planner.refresh = vi.fn(async () => {
+      planner.currentDate = "2026-05-22";
+    });
+
+    const wrapper = mount(AllTasksView, {
+      global: {
+        stubs: {
+          AppShell: { template: "<main><slot /></main>" },
+          Checkbox: { template: "<input type='checkbox' />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          TaskList: { props: ["tasks"], template: "<div />" }
+        }
+      }
+    });
+
+    await flushPromises();
+
+    const inputs = wrapper.findAll("input");
+    expect((inputs[1]!.element as HTMLInputElement).value).toBe("2026-05-22");
+    expect((inputs[2]!.element as HTMLInputElement).value).toBe("2026-06-22");
   });
 });
