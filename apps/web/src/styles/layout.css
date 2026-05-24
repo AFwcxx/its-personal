@@ -1152,6 +1152,11 @@
   justify-self: end;
 }
 
+.delete-task-message {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .completed-section {
   border-top: 1px solid var(--border);
   margin-top: 1.5rem;
