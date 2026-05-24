@@ -1228,6 +1228,10 @@
   }
 }
 
+:root[data-theme="dark"] :is(.sidebar-header h1, .unlock h1) {
+  animation: app-title-neon-pulse 8s ease-in-out infinite;
+}
+
 @media (max-width: 900px) {
   .app-shell,
   .app-shell.has-detail {
@@ -1252,10 +1256,6 @@
   .sidebar h1 {
     font-size: 1.5rem;
     margin: 0;
-  }
-
-  :root[data-theme="dark"] .sidebar h1 {
-    animation: app-title-neon-pulse 8s ease-in-out infinite;
   }
 
   .sidebar-header {
@@ -1385,8 +1385,8 @@
   }
 }
 
-@media (max-width: 900px) and (prefers-reduced-motion: reduce) {
-  :root[data-theme="dark"] .sidebar h1 {
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="dark"] :is(.sidebar-header h1, .unlock h1) {
     animation: none;
     color: var(--text);
     text-shadow: 0 0 6px rgb(244 244 245 / 45%), 0 0 16px rgb(244 244 245 / 24%);
