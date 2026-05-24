@@ -123,6 +123,17 @@ function requestRemoveEditedSubtask() {
         {{ subtask.title }}
       </span>
       <div v-if="!readonly" class="row-actions">
+        <Button
+          v-if="subtask.completedAt"
+          class="task-row-icon-button"
+          title="Delete subtask"
+          aria-label="Delete subtask"
+          severity="danger"
+          text
+          @click.stop="pendingRemovalId = subtask.id"
+        >
+          <Trash2 :size="16" />
+        </Button>
         <Button class="task-row-icon-button" title="Complete" aria-label="Complete" severity="secondary" text @click.stop="planner.toggleSubtask(subtask.id)">
           <SquareCheck v-if="subtask.completedAt" :size="18" />
           <Square v-else :size="18" />
