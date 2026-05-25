@@ -129,6 +129,30 @@ describe("planner store live refresh", () => {
   });
 });
 
+describe("planner store task update ordering", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it("does not let an older note save response overwrite a newer local note edit", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [task({ notes: "" })];
+    const responses: Array<(value: Task) => void> = [];
+    vi.mocked(plannerApi.updateTask).mockImplementation(() => new Promise<Task>((resolve) => responses.push(resolve)));
+
+    const firstSave = planner.updateTask("task", { notes: "Keep deleted words" });
+    const secondSave = planner.updateTask("task", { notes: "Keep words" });
+
+    responses[1]!(task({ notes: "Keep words" }));
+    await secondSave;
+    responses[0]!(task({ notes: "Keep deleted words" }));
+    await firstSave;
+
+    expect(planner.tasks[0]?.notes).toBe("Keep words");
+  });
+});
+
 describe("planner store pending projection replay", () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
