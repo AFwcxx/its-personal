@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from "pinia";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Subtask, Task } from "@its-personal/shared";
 import { cachedSnapshot, loadSnapshot, plannerApi } from "../services/api.js";
 import { clearPendingOperations, pendingOperations, savePendingOperation } from "../services/offline.js";
@@ -217,5 +217,41 @@ describe("planner store session-expired pending writes", () => {
     expect(operations).toHaveLength(1);
     expect(operations[0]).toMatchObject({ state: "pending", retryable: true });
     expect(useSessionStore().isUnlocked).toBe(false);
+  });
+});
+
+describe("planner store offline write responsiveness", () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.useFakeTimers();
+    await clearPendingOperations();
+    Object.defineProperty(window.navigator, "userAgent", { value: "Chrome", configurable: true });
+    Object.defineProperty(window.navigator, "onLine", { value: true, configurable: true });
+    (window as unknown as { __forceMemoryOutbox: boolean }).__forceMemoryOutbox = true;
+    const session = useSessionStore();
+    session.token = "token";
+    session.lastActivityAt = Date.now();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("does not block task creation when the immediate offline write never settles", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => undefined)));
+    const planner = usePlannerStore();
+
+    const create = planner.createTask("Offline task", "2026-05-25");
+    await vi.advanceTimersByTimeAsync(1500);
+    const task = await create;
+
+    expect(task.title).toBe("Offline task");
+    expect(planner.tasks.map((candidate) => candidate.title)).toEqual(["Offline task"]);
+    expect(planner.savedOfflineDialogVisible).toBe(true);
+    const operations = await pendingOperations();
+    expect(operations).toHaveLength(1);
+    expect(operations[0]).toMatchObject({ state: "pending", retryable: true });
   });
 });

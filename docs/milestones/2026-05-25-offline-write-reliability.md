@@ -134,6 +134,7 @@ Status: Complete
 - 2026-05-25: Closed the remaining review gaps: pending outbox operations now replay over cached or empty local planner state after refresh/reload, pending deletes stay hidden after replay, repeated pending PATCH operations merge fields instead of dropping earlier edits, and fields that return to their original synced value are removed from the queued PATCH.
 - 2026-05-25: Added focused tests for pending projection replay, offline-created task visibility without a cached snapshot, pending delete replay, multi-field PATCH compaction, and original-value field dropping. `npm run typecheck`, `npm test`, `npm run build`, and `npm run e2e` pass.
 - 2026-05-25: Fixed session-expiry handling for pending writes: `401` responses now lock the local session but keep outbox operations retryable so they can sync after unlock. Added planner store regression coverage for both user-initiated writes and background retry hitting `401`.
+- 2026-05-25: Fixed offline write responsiveness: after a write is durably queued, the foreground create/update flow no longer waits indefinitely on a stuck immediate network attempt. Added regression coverage for a task create whose write request never settles.
 
 ## Next Actions
 
