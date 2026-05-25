@@ -748,6 +748,23 @@
   color: var(--accent) !important;
 }
 
+.detail-linked-item {
+  align-items: end;
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: minmax(0, max-content) auto;
+  justify-content: start;
+}
+
+.detail-linked-item a {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.detail-linked-item .task-row-icon-button.p-button {
+  align-self: end;
+}
+
 .p-inputtext,
 .p-textarea,
 .p-select,
