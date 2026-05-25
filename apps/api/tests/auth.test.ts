@@ -267,6 +267,35 @@ describe("auth and database", () => {
       });
   });
 
+  it("increments the planner change version after planner mutations", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    const server = createServer(config, db);
+
+    await request(server)
+      .get("/api/planner/changes")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.version).toBe(0);
+      });
+
+    await request(server)
+      .post("/api/planner/tasks")
+      .set("authorization", `Bearer ${token}`)
+      .send({ title: "Live task", dueDate: "2026-05-20" })
+      .expect(201);
+
+    await request(server)
+      .get("/api/planner/snapshot")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.changeVersion).toBe(1);
+        expect(response.body.tasks.map((task: { title: string }) => task.title)).toEqual(["Live task"]);
+      });
+  });
+
   it("appends new subtasks after the last active sibling order", async () => {
     const db = openDatabase(":memory:");
     const token = issueSession(config, db, "test-device").token;

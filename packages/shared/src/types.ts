@@ -78,6 +78,7 @@ export interface PlannerSnapshot {
   attachments: Attachment[];
   today?: string;
   timezone?: string;
+  changeVersion?: number;
 }
 
 export interface FieldValue<T = unknown> {
