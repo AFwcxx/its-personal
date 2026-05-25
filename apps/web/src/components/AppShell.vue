@@ -93,6 +93,10 @@ async function discardFailedSync() {
   discardFailedSyncDialogVisible.value = false;
   syncRecoveryDialogVisible.value = false;
 }
+
+function closeTaskDetail() {
+  planner.selectedTaskId = null;
+}
 </script>
 
 <template>
@@ -143,6 +147,13 @@ async function discardFailedSync() {
     <main class="main">
       <slot />
     </main>
+    <button
+      v-if="hasDetail"
+      type="button"
+      class="detail-backdrop"
+      aria-label="Close task menu"
+      @click="closeTaskDetail"
+    />
     <Transition name="detail-panel" @before-leave="detailLeaving = true" @after-leave="detailLeaving = false">
       <TaskDetailPanel v-if="hasDetail" />
     </Transition>
