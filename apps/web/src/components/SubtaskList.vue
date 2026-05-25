@@ -18,6 +18,7 @@ let sortable: Sortable | null = null;
 
 const activeSubtasks = computed(() => props.subtasks.filter((subtask) => subtask.taskId === props.taskId && subtask.deletedAt === null));
 const sortedSubtasks = computed(() => [...activeSubtasks.value].sort((a, b) => a.order - b.order || a.createdAt.localeCompare(b.createdAt)));
+const sortableSignature = computed(() => `${props.readonly ? "readonly" : "editable"}:${sortedSubtasks.value.map((subtask) => subtask.id).join(",")}`);
 const editingSubtask = computed(() => sortedSubtasks.value.find((subtask) => subtask.id === editingSubtaskId.value && subtask.completedAt === null) ?? null);
 const pendingRemoval = computed(() => sortedSubtasks.value.find((subtask) => subtask.id === pendingRemovalId.value) ?? null);
 const canUpdateSubtask = computed(() => Boolean(editingSubtask.value && editedTitle.value.trim()));
@@ -43,7 +44,7 @@ function orderedSubtasksFromDom() {
 }
 
 watch(
-  () => [props.readonly, sortedSubtasks.value.map((subtask) => subtask.id).join(",")],
+  sortableSignature,
   async () => {
     await nextTick();
     destroySortable();
@@ -130,7 +131,6 @@ function requestRemoveEditedSubtask() {
         {{ subtask.title }}
       </span>
       <div v-if="!readonly" class="row-actions">
-        <span v-if="!subtask.completedAt" class="task-row-action-placeholder" aria-hidden="true" />
         <Button
           v-if="subtask.completedAt"
           class="task-row-icon-button"

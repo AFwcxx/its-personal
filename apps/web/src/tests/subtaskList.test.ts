@@ -2,6 +2,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Subtask } from "@its-personal/shared";
+import Sortable from "sortablejs";
 import SubtaskList from "../components/SubtaskList.vue";
 import { plannerApi } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
@@ -81,6 +82,31 @@ describe("SubtaskList", () => {
       expect.objectContaining({ id: "first" })
     ]);
     expect(sortable.sort).toHaveBeenLastCalledWith(["second", "third", "first"]);
+  });
+
+  it("does not recreate Sortable when only subtask completion changes", async () => {
+    const wrapper = mount(SubtaskList, {
+      props: {
+        taskId: "task",
+        subtasks: [subtask({ id: "first", title: "First", completedAt: null })]
+      },
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" }
+        }
+      }
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(Sortable.create).toHaveBeenCalledTimes(1);
+
+    await wrapper.setProps({
+      subtasks: [subtask({ id: "first", title: "First", completedAt: "2026-05-21T01:00:00.000Z" })]
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(Sortable.create).toHaveBeenCalledTimes(1);
   });
 
   it("updates an incomplete subtask from the edit dialog and closes it", async () => {
@@ -208,9 +234,7 @@ describe("SubtaskList", () => {
 
     const rows = wrapper.findAll(".subtask-row");
     expect(rows[0]!.find("button[aria-label='Delete subtask']").exists()).toBe(false);
-    expect(rows[0]!.find(".task-row-action-placeholder").exists()).toBe(true);
     expect(rows[1]!.find("button[aria-label='Delete subtask']").exists()).toBe(true);
-    expect(rows[1]!.find(".task-row-action-placeholder").exists()).toBe(false);
 
     await rows[1]!.find("button[aria-label='Delete subtask']").trigger("click");
 
