@@ -5,37 +5,10 @@ const idleTimeoutKey = "its-personal-idle-timeout-seconds";
 const lastActivityKey = "its-personal-last-activity-at";
 const deviceKey = "its-personal-device-id";
 const themeKey = "its-personal-theme";
-const systemThemeQuery = "(prefers-color-scheme: dark)";
 const heartbeatMs = 5 * 60 * 1000;
-const lightThemeColor = "#f1f3f1";
-const darkThemeColor = "#09090b";
+const themeColor = "#070710";
 
 let activityTrackingStarted = false;
-let activeSystemThemeQuery: MediaQueryList | null = null;
-let appTheme: ThemePreference = "dark";
-
-type ThemePreference = "system" | "light" | "dark";
-
-function readThemePreference(): ThemePreference {
-  if (appTheme !== "system") return appTheme;
-
-  const theme = localStorage.getItem(themeKey);
-  return theme === "light" || theme === "dark" || theme === "system" ? theme : "system";
-}
-
-function resolveTheme(theme: ThemePreference): "light" | "dark" {
-  if (theme === "light" || theme === "dark") return theme;
-  return window.matchMedia(systemThemeQuery).matches ? "dark" : "light";
-}
-
-function applyTheme(theme: ThemePreference) {
-  const resolvedTheme = resolveTheme(theme);
-  document.documentElement.dataset.theme = resolvedTheme;
-  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute(
-    "content",
-    resolvedTheme === "dark" ? darkThemeColor : lightThemeColor
-  );
-}
 
 function createDeviceId() {
   const existing = localStorage.getItem(deviceKey);
@@ -51,21 +24,9 @@ function createDeviceId() {
 }
 
 export function initializeTheme() {
-  applyTheme(readThemePreference());
-
-  const query = window.matchMedia(systemThemeQuery);
-  if (activeSystemThemeQuery === query) return;
-  activeSystemThemeQuery = query;
-
-  query.addEventListener("change", () => {
-    const theme = readThemePreference();
-    if (theme === "system") applyTheme(theme);
-  });
-}
-
-export function configureAppTheme(theme: ThemePreference) {
-  appTheme = theme;
-  applyTheme(readThemePreference());
+  localStorage.removeItem(themeKey);
+  document.documentElement.dataset.theme = "dark";
+  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute("content", themeColor);
 }
 
 export const useSessionStore = defineStore("session", {
@@ -75,7 +36,6 @@ export const useSessionStore = defineStore("session", {
     lastActivityAt: Number(sessionStorage.getItem(lastActivityKey) ?? 0),
     lastHeartbeatAt: 0,
     deviceId: createDeviceId(),
-    theme: readThemePreference(),
     error: "",
     offline: false
   }),
@@ -150,11 +110,6 @@ export const useSessionStore = defineStore("session", {
       window.setInterval(() => {
         if (this.token && !this.isUnlocked) this.lockLocal();
       }, 30_000);
-    },
-    setTheme(theme: ThemePreference) {
-      this.theme = theme;
-      localStorage.setItem(themeKey, theme);
-      applyTheme(readThemePreference());
     },
     async lock() {
       const token = this.token;

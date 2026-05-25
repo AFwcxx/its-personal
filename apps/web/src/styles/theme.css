@@ -1,29 +1,32 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --bg: #f1f3f1;
-  --panel: #f1f3f1;
-  --surface: #f1f3f1;
-  --surface-raised: #f1f3f1;
-  --text: #3e3e3e;
-  --muted: #71717a;
-  --border: #9ca3af;
-  --active: #f1f3f1;
-  --active-border: #3e3e3e;
-  --accent: #3e3e3e;
-  --accent-strong: #3e3e3e;
-  --accent-alt: #404c54;
-  --focus-ring: #3e3e3e;
-  --danger: #b42318;
+  --bg: #070710;
+  --panel: #0d0d18;
+  --surface: #141425;
+  --surface-raised: #1d1b33;
+  --text: #f8fbff;
+  --muted: #a7b1c7;
+  --border: #2f3152;
+  --active: rgb(0 245 255 / 14%);
+  --active-border: #00f5ff;
+  --accent: #00f5ff;
+  --accent-strong: #39ff14;
+  --accent-alt: #ff2bd6;
+  --focus-ring: rgb(0 245 255 / 30%);
+  --danger: #ff4d6d;
   --radius-control: 9px;
   --radius-panel: 12px;
   --radius-soft: 16px;
   --control-shadow: none;
-  --shadow: 0 10px 28px rgb(62 62 62 / 14%);
+  --shadow: 0 18px 48px rgb(0 0 0 / 55%);
+  --neon-cyan-glow: 0 0 16px rgb(0 245 255 / 22%);
+  --neon-green-glow: 0 0 16px rgb(57 255 20 / 20%);
+  --neon-magenta-glow: 0 0 18px rgb(255 43 214 / 18%);
   --p-primary-color: var(--accent-strong);
   --p-primary-hover-color: var(--accent-strong);
   --p-primary-active-color: var(--accent-strong);
-  --p-primary-contrast-color: #ffffff;
+  --p-primary-contrast-color: #041006;
   --p-content-background: var(--surface);
   --p-content-color: var(--text);
   --p-content-border-color: var(--border);
@@ -34,109 +37,16 @@
   --p-form-field-focus-border-color: var(--border);
   --p-form-field-placeholder-color: var(--muted);
   --p-form-field-shadow: none;
-  --p-surface-0: #f1f3f1;
-  --p-surface-50: #f1f3f1;
-  --p-surface-100: #f3f0e8;
-  --p-surface-700: #3f3f46;
-  --p-surface-800: #27272a;
-  --p-surface-900: #18181b;
+  --p-surface-0: #141425;
+  --p-surface-50: #17172a;
+  --p-surface-100: #1d1b33;
+  --p-surface-700: #2f3152;
+  --p-surface-800: #17172a;
+  --p-surface-900: #070710;
   --p-text-color: var(--text);
   --p-text-muted-color: var(--muted);
   --p-button-border-radius: var(--radius-control);
   --p-form-field-border-radius: var(--radius-control);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #09090b;
-    --panel: #101014;
-    --surface: #18181b;
-    --surface-raised: #202026;
-    --text: #f4f4f5;
-    --muted: #a1a1aa;
-    --border: #33333f;
-    --active: rgb(34 197 94 / 14%);
-    --active-border: #34d399;
-    --accent: #34d399;
-    --accent-strong: #22c55e;
-    --accent-alt: #a78bfa;
-    --focus-ring: rgb(52 211 153 / 24%);
-    --danger: #fb7185;
-    --control-shadow: none;
-    --shadow: 0 18px 48px rgb(0 0 0 / 45%);
-    --p-content-background: var(--surface);
-    --p-content-color: var(--text);
-    --p-content-border-color: var(--border);
-    --p-form-field-background: var(--surface);
-    --p-form-field-color: var(--text);
-    --p-form-field-border-color: var(--border);
-    --p-form-field-hover-border-color: var(--border);
-    --p-form-field-focus-border-color: var(--border);
-    --p-form-field-placeholder-color: var(--muted);
-    --p-form-field-shadow: var(--control-shadow);
-    --p-text-color: var(--text);
-    --p-text-muted-color: var(--muted);
-  }
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
-  --bg: #f1f3f1;
-  --panel: #f1f3f1;
-  --surface: #f1f3f1;
-  --surface-raised: #f1f3f1;
-  --text: #3e3e3e;
-  --muted: #71717a;
-  --border: #9ca3af;
-  --active: #f1f3f1;
-  --active-border: #3e3e3e;
-  --accent: #3e3e3e;
-  --accent-strong: #3e3e3e;
-  --accent-alt: #404c54;
-  --focus-ring: #3e3e3e;
-  --danger: #b42318;
-  --control-shadow: none;
-  --shadow: 0 10px 28px rgb(62 62 62 / 14%);
-  --p-primary-color: var(--accent-strong);
-  --p-primary-hover-color: var(--accent-strong);
-  --p-primary-active-color: var(--accent-strong);
-  --p-primary-contrast-color: #ffffff;
-  --p-surface-0: #f1f3f1;
-  --p-surface-50: #f1f3f1;
-  --p-surface-100: #f3f0e8;
-  --p-form-field-background: var(--surface);
-  --p-form-field-color: var(--text);
-  --p-form-field-border-color: var(--border);
-  --p-form-field-hover-border-color: var(--border);
-  --p-form-field-focus-border-color: var(--border);
-  --p-form-field-placeholder-color: var(--muted);
-  --p-form-field-shadow: var(--control-shadow);
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #09090b;
-  --panel: #101014;
-  --surface: #18181b;
-  --surface-raised: #202026;
-  --text: #f4f4f5;
-  --muted: #a1a1aa;
-  --border: #33333f;
-  --active: rgb(34 197 94 / 14%);
-  --active-border: #34d399;
-  --accent: #34d399;
-  --accent-strong: #22c55e;
-  --accent-alt: #a78bfa;
-  --focus-ring: rgb(52 211 153 / 24%);
-  --danger: #fb7185;
-  --control-shadow: none;
-  --p-form-field-background: var(--surface);
-  --p-form-field-color: var(--text);
-  --p-form-field-border-color: var(--border);
-  --p-form-field-hover-border-color: var(--border);
-  --p-form-field-focus-border-color: var(--border);
-  --p-form-field-placeholder-color: var(--muted);
-  --p-form-field-shadow: var(--control-shadow);
 }
 
 * {

@@ -11,7 +11,7 @@ Status: Not started
 
 ## Known Requirements
 
-- Improve planner UI toward `docs/design/gui.png`, `sample-light.png`, and `sample-dark.png`.
+- Improve planner UI toward `docs/design/gui.png` and the dark cyberpunk neon direction.
 - Complete task workflows: subtasks, parent completion restrictions, pinned ordering, manual ordering, completed sections, overdue stability, archive grouping.
 - Complete recurrence UI, including custom repeat every `N` days and inclusive recurrence end dates.
 - Complete tag management with counts, rename, archive/delete, and filtering.

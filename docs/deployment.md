@@ -6,7 +6,6 @@
 2. Set `APP_PASSWORD` and `SESSION_SECRET`.
    If either value contains `$`, escape each `$` as `$$` because Docker Compose interpolates environment files.
    Optionally set `APP_TITLE`; the default is `Its Personal`.
-   Optionally set `APP_THEME` to `dark`, `light`, or `system`; the default is `dark`.
    Optionally set `SESSION_IDLE_TIMEOUT_SECONDS`; the default is `10800` seconds.
 3. Start the app:
 

@@ -10,7 +10,6 @@ test("unlock page renders", async ({ page }) => {
 test("planner mobile layout fits the viewport", async ({ page }) => {
   await page.addInitScript(() => {
     sessionStorage.clear();
-    localStorage.setItem("its-personal-theme", "dark");
     (window as unknown as { __forceMemoryOutbox: boolean }).__forceMemoryOutbox = true;
     const originalFetch = window.fetch.bind(window);
     (window as unknown as { __offlineWrites: boolean }).__offlineWrites = false;
@@ -97,7 +96,6 @@ test("task detail backdrop covers the full left side and closes the menu", async
   await page.setViewportSize({ width: 1792, height: 1536 });
   await page.addInitScript(() => {
     sessionStorage.clear();
-    localStorage.setItem("its-personal-theme", "dark");
   });
   await page.route("**/api/auth/unlock", (route) => route.fulfill({
     status: 200,
@@ -176,7 +174,6 @@ test("offline task create stays pending and syncs once without duplicates", asyn
 
   await page.addInitScript(() => {
     sessionStorage.clear();
-    localStorage.setItem("its-personal-theme", "dark");
   });
   await page.route("/api/auth/unlock", (route) => route.fulfill({
     status: 200,

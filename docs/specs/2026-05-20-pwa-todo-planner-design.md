@@ -11,7 +11,6 @@ The MVP is end-to-end and intentionally lean: it should be usable as a personal 
 ## Inputs
 
 - Planner mockup: `docs/plan/gui.excalidraw`, `docs/plan/gui.png`
-- Light theme sample: `docs/design/sample-light.png`
 - Dark theme sample: `docs/design/sample-dark.png`
 
 ## Goals
@@ -179,7 +178,7 @@ The PWA stores an offline projection in IndexedDB:
 - list order,
 - sync cursors,
 - local outbox operations,
-- local device/session/theme preferences,
+- local device/session preferences,
 - cached attachment file entries where the browser permits.
 
 ## Sync Design
@@ -239,18 +238,17 @@ The implementation uses the approved responsive direction:
 - Mobile: top app bar, compact day tabs, list-first workflow, slide-over drawers for navigation and task details.
 - Tablet/desktop: persistent left navigation, central planner/schedule content, right-side task detail panel.
 
-The visual baseline comes from `docs/design/sample-light.png` and `docs/design/sample-dark.png`: quiet productivity UI, strong typography, generous spacing, soft row/button highlights, subtle borders, and first-class light/dark modes. The app should adapt the design language to the planner and must not copy ChatGPT branding.
+The visual baseline comes from `docs/design/sample-dark.png`: quiet productivity UI, strong typography, generous spacing, soft row/button highlights, subtle borders, and a dark cyberpunk neon tone. The app should adapt the design language to the planner and must not copy ChatGPT branding.
 
 Theme tone:
 
-- Light theme should stay paper-like, restrained, and low-glow.
-- Dark theme should lean cyberpunk-ish with controlled neon accents that do not distract from repeated planning work.
+- The app is dark-only.
+- Neon accents should use cyberpunk cyan, magenta, and acid green on state and affordance without distracting from repeated planning work.
 
 Theme behavior:
 
-- Default follows system preference.
-- User can override light/dark per device.
-- Theme preference is stored locally and does not need server sync in the MVP.
+- The app always renders in dark mode and ignores system color-scheme preference.
+- Stale local theme preferences from earlier builds are cleared on startup.
 
 Interaction behavior:
 
@@ -322,7 +320,7 @@ The MVP is complete when:
 - Offline task edits work and sync later.
 - Two devices converge to the same state using deterministic last-write-wins sync.
 - Attachments upload to the server volume and can be cached after first open or marked keep-offline.
-- Light and dark modes follow the provided design samples.
+- Dark cyberpunk neon mode follows the provided dark design direction.
 - Backup export downloads the database export and attachments.
 - Core automated tests and smoke tests pass.
 

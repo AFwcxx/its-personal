@@ -1,31 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import { configureAppTheme, initializeTheme, useSessionStore } from "../stores/session.js";
-
-function stubSystemTheme(prefersDark = false) {
-  const listeners = new Set<(event: MediaQueryListEvent) => void>();
-  const query = {
-    matches: prefersDark,
-    media: "(prefers-color-scheme: dark)",
-    onchange: null,
-    addEventListener: vi.fn((_event: "change", listener: (event: MediaQueryListEvent) => void) => listeners.add(listener)),
-    removeEventListener: vi.fn((_event: "change", listener: (event: MediaQueryListEvent) => void) => listeners.delete(listener)),
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    dispatchEvent: vi.fn()
-  };
-
-  vi.stubGlobal("matchMedia", vi.fn(() => query as unknown as MediaQueryList));
-
-  return {
-    query,
-    setMatches(matches: boolean) {
-      query.matches = matches;
-      const event = { matches, media: query.media } as MediaQueryListEvent;
-      for (const listener of listeners) listener(event);
-    }
-  };
-}
+import { initializeTheme, useSessionStore } from "../stores/session.js";
 
 describe("session store", () => {
   beforeEach(() => {
@@ -34,7 +9,6 @@ describe("session store", () => {
     sessionStorage.clear();
     document.documentElement.removeAttribute("data-theme");
     vi.restoreAllMocks();
-    configureAppTheme("dark");
   });
 
   it("keeps unlock state tab scoped and expires it after local idle timeout", async () => {
@@ -49,50 +23,13 @@ describe("session store", () => {
     expect(session.isUnlocked).toBe(false);
   });
 
-  it("defaults the app theme to dark", () => {
-    stubSystemTheme(false);
+  it("initializes dark theme and clears stale theme preferences", () => {
+    localStorage.setItem("its-personal-theme", "light");
 
     initializeTheme();
 
     expect(document.documentElement.dataset.theme).toBe("dark");
-  });
-
-  it("updates the active theme when the configured app theme follows the system", () => {
-    const systemTheme = stubSystemTheme(false);
-
-    configureAppTheme("system");
-    initializeTheme();
-    expect(document.documentElement.dataset.theme).toBe("light");
-
-    systemTheme.setMatches(true);
-    expect(document.documentElement.dataset.theme).toBe("dark");
-
-    systemTheme.setMatches(false);
-    expect(document.documentElement.dataset.theme).toBe("light");
-  });
-
-  it("keeps explicit theme overrides when the configured app theme follows the system", () => {
-    const systemTheme = stubSystemTheme(false);
-    const session = useSessionStore();
-
-    configureAppTheme("system");
-    initializeTheme();
-    session.setTheme("dark");
-    systemTheme.setMatches(false);
-
-    expect(document.documentElement.dataset.theme).toBe("dark");
-  });
-
-  it("ignores local theme overrides when the configured app theme is authoritative", () => {
-    const systemTheme = stubSystemTheme(false);
-    const session = useSessionStore();
-
-    configureAppTheme("light");
-    initializeTheme();
-    session.setTheme("dark");
-    systemTheme.setMatches(true);
-
-    expect(document.documentElement.dataset.theme).toBe("light");
+    expect(localStorage.getItem("its-personal-theme")).toBeNull();
   });
 
   it("creates a device id when native UUIDs are unavailable outside secure contexts", () => {
