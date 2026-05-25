@@ -244,7 +244,11 @@ export const usePlannerStore = defineStore("planner", {
       await this.refreshPendingStatus();
       try {
         const session = useSessionStore();
-        const response = await sendPendingOperation(compacted, session);
+        if (typeof navigator !== "undefined" && navigator.onLine === false) {
+          if (shouldShowOfflineDialog()) this.savedOfflineDialogVisible = true;
+          return undefined;
+        }
+        const response = await sendPendingOperationWithTimeout(compacted, session);
         if (response.status === 401) {
           session.lockLocal();
           await this.refreshPendingStatus();
@@ -401,6 +405,15 @@ export const usePlannerStore = defineStore("planner", {
 
 function baseForPatch<T extends Record<string, unknown>>(current: T, patch: Partial<T>): Record<string, unknown> {
   return Object.fromEntries(Object.keys(patch).map((key) => [key, current[key]]));
+}
+
+const immediateWriteTimeoutMs = 1500;
+
+async function sendPendingOperationWithTimeout(operation: PendingOperation, session: ReturnType<typeof useSessionStore>): Promise<Response> {
+  return await Promise.race([
+    sendPendingOperation(operation, session),
+    new Promise<Response>((_, reject) => setTimeout(() => reject(new Error("Write attempt timed out")), immediateWriteTimeoutMs))
+  ]);
 }
 
 function bodyWithoutOperationId(body: Record<string, unknown>): Record<string, unknown> {
