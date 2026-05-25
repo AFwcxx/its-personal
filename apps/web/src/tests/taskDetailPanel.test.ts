@@ -180,6 +180,32 @@ describe("TaskDetailPanel recurrence", () => {
     expect(planner.updateTask).toHaveBeenCalledWith(baseTask.id, { notes: "Keep this note" });
   });
 
+  it("does not overwrite active note edits when the same task refreshes with older notes", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = baseTask.id;
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], emits: ["update:modelValue"], template: "<textarea :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+        }
+      }
+    });
+
+    await wrapper.findAll("textarea")[1]!.setValue("Keep words");
+    planner.tasks = [{ ...baseTask, notes: "Keep deleted words", updatedAt: "2026-05-21T00:00:01.000Z" }];
+    await flushPromises();
+
+    expect((wrapper.findAll("textarea")[1]!.element as HTMLTextAreaElement).value).toBe("Keep words");
+  });
+
   it("asks for confirmation before deleting the selected task", async () => {
     const planner = usePlannerStore();
     planner.tasks = [baseTask];

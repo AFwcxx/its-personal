@@ -24,6 +24,7 @@ const taskPendingRemoval = ref(false);
 const pendingItemRemoval = ref<{ type: "link"; item: TaskLink } | { type: "attachment"; item: Attachment } | null>(null);
 let notesSaveTimer: ReturnType<typeof setTimeout> | null = null;
 let syncedTaskId: string | null = null;
+let syncedNotes = "";
 const recurrenceOptions = [
   { label: "None", value: "none" },
   { label: "Daily", value: "daily" },
@@ -47,9 +48,13 @@ const tagsById = computed(() => new Map(planner.activeTags.map((tag) => [tag.id,
 watch(task, (value) => {
   const changedTask = value?.id !== syncedTaskId;
   syncedTaskId = value?.id ?? null;
+  const nextNotes = value?.notes ?? "";
   title.value = value?.title ?? "";
   dueDate.value = value?.dueDate ?? "";
-  notes.value = value?.notes ?? "";
+  if (changedTask || notes.value === syncedNotes || notes.value === nextNotes) {
+    notes.value = nextNotes;
+    syncedNotes = nextNotes;
+  }
   selectedTagIds.value = value?.tagIds ?? (value?.tagId ? [value.tagId] : []);
   if (value?.recurrence.type === "every_n_days") {
     customIntervalDays.value = value.recurrence.intervalDays;
