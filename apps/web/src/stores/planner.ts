@@ -1,7 +1,7 @@
 import { addDays, normalizeRecurrence, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Subtask, type Tag, type Task, type TaskLink } from "@its-personal/shared";
 import { defineStore } from "pinia";
 import { cachedSnapshot, loadSnapshot, plannerApi } from "../services/api.js";
-import { generateLocalId, hasDurableOutbox, markPendingOperationFailed, pendingOperations, removePendingOperation, saveCompactedPendingOperation, sendPendingOperation, shouldShowOfflineDialog, type PendingOperation, type PendingState } from "../services/offline.js";
+import { generateLocalId, hasDurableOutbox, markPendingOperationFailed, pendingOperations, removeFailedPendingOperations, removePendingOperation, saveCompactedPendingOperation, sendPendingOperation, shouldShowOfflineDialog, type PendingOperation, type PendingState } from "../services/offline.js";
 import { useSessionStore } from "./session.js";
 
 export const usePlannerStore = defineStore("planner", {
@@ -19,6 +19,7 @@ export const usePlannerStore = defineStore("planner", {
     pendingEntityStates: {} as Record<string, PendingState>,
     pendingCount: 0,
     failedSyncCount: 0,
+    retryableFailedSyncCount: 0,
     savedOfflineDialogVisible: false
   }),
   getters: {
@@ -295,7 +296,12 @@ export const usePlannerStore = defineStore("planner", {
       const operations = await pendingOperations();
       this.pendingCount = operations.length;
       this.failedSyncCount = operations.filter((operation) => operation.state === "failed").length;
+      this.retryableFailedSyncCount = operations.filter((operation) => operation.state === "failed" && operation.retryable !== false).length;
       this.pendingEntityStates = Object.fromEntries(operations.map((operation) => [operation.entityId, operation.state]));
+    },
+    async discardFailedSyncOperations() {
+      await removeFailedPendingOperations();
+      await this.refresh();
     },
     async applyPendingProjection() {
       const operations = await pendingOperations();

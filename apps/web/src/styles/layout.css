@@ -428,13 +428,23 @@
 }
 
 .sync-status {
+  appearance: none;
+  background: transparent;
+  border: 0;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   color: #facc15;
+  cursor: pointer;
+  font: inherit;
   font-size: 0.85rem;
   margin: 0.4rem 0 0.75rem;
+  padding: 0;
   text-shadow: 0 0 8px rgba(250, 204, 21, 0.45);
+}
+
+.sync-status:hover {
+  text-decoration: underline;
 }
 
 .sync-status-error {

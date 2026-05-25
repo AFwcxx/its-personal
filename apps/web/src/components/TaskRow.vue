@@ -45,7 +45,7 @@ async function toggleSubtasksCollapsed() {
           v-if="pendingState"
           class="pi pi-exclamation-triangle pending-sync-icon"
           :class="{ 'pending-sync-icon-error': pendingState === 'failed' }"
-          :title="pendingState === 'failed' ? 'Sync failed, will retry' : 'Pending sync'"
+          :title="pendingState === 'failed' ? 'Sync failed' : 'Pending sync'"
           aria-hidden="true"
         />
         <i v-if="isRecurring" class="pi pi-replay task-recurrence-icon" aria-hidden="true" />
