@@ -110,6 +110,32 @@ describe("SubtaskList", () => {
     expect(wrapper.find("textarea[placeholder='Subtask']").exists()).toBe(false);
   });
 
+  it("does not autofocus the existing subtask edit textarea when opening the dialog", async () => {
+    const planner = usePlannerStore();
+    planner.subtasks = [subtask({ id: "first", title: "First" })];
+    const wrapper = mount(SubtaskList, {
+      props: {
+        taskId: "task",
+        subtasks: planner.subtasks
+      },
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          Textarea: {
+            inheritAttrs: false,
+            props: ["modelValue", "placeholder"],
+            template: "<textarea v-bind='$attrs' :placeholder='placeholder' :value='modelValue' />"
+          }
+        }
+      }
+    });
+
+    await wrapper.find(".subtask-row").trigger("click");
+
+    expect(wrapper.find("textarea[placeholder='Subtask']").attributes("autofocus")).toBeUndefined();
+  });
+
   it("blocks empty subtask title updates", async () => {
     const planner = usePlannerStore();
     planner.subtasks = [subtask({ id: "first", title: "First" })];
