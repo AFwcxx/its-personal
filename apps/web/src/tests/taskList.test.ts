@@ -1,7 +1,7 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import type { Task } from "@its-personal/shared";
+import type { Subtask, Task } from "@its-personal/shared";
 import TaskList from "../components/TaskList.vue";
 import TaskRow from "../components/TaskRow.vue";
 import { plannerApi } from "../services/api.js";
@@ -38,6 +38,17 @@ const task = (patch: Partial<Task>): Task => ({
   tagIds: patch.tagIds ?? [],
   notes: patch.notes ?? "",
   recurrence: patch.recurrence ?? { type: "none" },
+  order: patch.order ?? 1000,
+  createdAt: patch.createdAt ?? "2026-05-21T00:00:00.000Z",
+  updatedAt: patch.updatedAt ?? "2026-05-21T00:00:00.000Z",
+  deletedAt: patch.deletedAt ?? null
+});
+
+const subtask = (patch: Partial<Subtask>): Subtask => ({
+  id: patch.id ?? "subtask",
+  taskId: patch.taskId ?? "task",
+  title: patch.title ?? "Subtask",
+  completedAt: patch.completedAt ?? null,
   order: patch.order ?? 1000,
   createdAt: patch.createdAt ?? "2026-05-21T00:00:00.000Z",
   updatedAt: patch.updatedAt ?? "2026-05-21T00:00:00.000Z",
@@ -200,5 +211,28 @@ describe("TaskList", () => {
 
     const labels = wrapper.findAll(".row-actions button").map((button) => button.attributes("aria-label"));
     expect(labels).toEqual(["Collapse subtasks", "Complete"]);
+  });
+
+  it("shows a dialog instead of completing a task with an open subtask", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [task({ id: "parent", title: "Parent" })];
+    planner.subtasks = [subtask({ id: "open-subtask", taskId: "parent" })];
+
+    const wrapper = mount(TaskRow, {
+      props: { task: planner.tasks[0]! },
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\", $event)'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" }
+        }
+      }
+    });
+
+    await wrapper.find("button[aria-label='Complete']").trigger("click");
+    await flushPromises();
+
+    expect(planner.tasks[0]?.completedAt).toBeNull();
+    expect(plannerApi.completeTask).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("This task cannot be completed until every subtask is complete.");
   });
 });
