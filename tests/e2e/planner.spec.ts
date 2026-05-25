@@ -93,6 +93,77 @@ test("planner mobile layout fits the viewport", async ({ page }) => {
   expect(overflow.visibleOverflowingElements).toEqual([]);
 });
 
+test("task detail backdrop covers the full left side and closes the menu", async ({ page }) => {
+  await page.setViewportSize({ width: 1792, height: 1536 });
+  await page.addInitScript(() => {
+    sessionStorage.clear();
+    localStorage.setItem("its-personal-theme", "dark");
+  });
+  await page.route("**/api/auth/unlock", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ token: "e2e-token", idleTimeoutSeconds: 10800 })
+  }));
+  await page.route("**/api/auth/activity", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ idleTimeoutSeconds: 10800 })
+  }));
+  await page.route("**/api/planner/snapshot", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({
+      tasks: [{
+        id: "task-1",
+        title: "Its personal",
+        dueDate: "2026-05-25",
+        completedAt: null,
+        deletedAt: null,
+        parentId: null,
+        pinned: false,
+        subtasksCollapsed: false,
+        order: 1,
+        tagIds: [],
+        tagId: null,
+        notes: "",
+        recurrence: { type: "none" },
+        createdAt: "2026-05-25T00:00:00.000Z",
+        updatedAt: "2026-05-25T00:00:00.000Z"
+      }],
+      subtasks: [],
+      tags: [],
+      links: [],
+      attachments: [],
+      today: "2026-05-25"
+    })
+  }));
+
+  await page.goto("/unlock");
+  if (await page.getByPlaceholder("Password").isVisible()) {
+    await page.getByPlaceholder("Password").fill("secret");
+    await page.getByRole("button", { name: "Unlock" }).click();
+  }
+  await expect(page.getByRole("heading", { name: "Planner" })).toBeVisible();
+  await page.locator(".task-row").first().click();
+
+  const backdrop = page.locator(".detail-backdrop");
+  await expect(backdrop).toBeVisible();
+  await expect(page.locator(".detail")).toBeVisible();
+
+  const coverage = await page.evaluate(() => ({
+    backdropAtBottomLeft: document.elementFromPoint(30, window.innerHeight - 30)?.className,
+    panelAtRight: document.elementFromPoint(window.innerWidth - 80, 80)?.className
+  }));
+
+  expect(coverage.backdropAtBottomLeft).toContain("detail-backdrop");
+  expect(coverage.panelAtRight).toContain("detail");
+
+  await page.mouse.click(30, 30);
+
+  await expect(backdrop).toHaveCount(0);
+  await expect(page.locator(".detail")).toHaveCount(0);
+});
+
 test("offline task create stays pending and syncs once without duplicates", async ({ page }) => {
   let serverTasks: unknown[] = [];
   let simulateOffline = true;
