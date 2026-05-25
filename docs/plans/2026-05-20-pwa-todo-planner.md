@@ -46,7 +46,7 @@ Create these paths and keep responsibilities narrow:
 - `apps/web/src/main.ts`: Vue entrypoint.
 - `apps/web/src/App.vue`: root layout.
 - `apps/web/src/router.ts`: routes.
-- `apps/web/src/styles/theme.css`: design tokens and light/dark theme.
+- `apps/web/src/styles/theme.css`: dark cyberpunk neon design tokens.
 - `apps/web/src/styles/layout.css`: responsive app shell.
 - `apps/web/src/services/db.ts`: Dexie stores.
 - `apps/web/src/services/device.ts`: device id and local settings.
@@ -702,7 +702,7 @@ Test:
 - no token means locked,
 - successful unlock stores token, expiry, and device id,
 - expired token is treated as locked,
-- theme override is local-only.
+- stale local theme preferences are cleared on startup.
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -716,10 +716,10 @@ Configure Vue, PWA manifest, app shell caching, and `/api` proxy for development
 
 - [ ] **Step 4: Implement theme CSS**
 
-Use CSS variables matching the light/dark samples:
+Use CSS variables matching the dark cyberpunk neon direction:
 
-- light background `#ffffff`,
-- dark background `#000000`,
+- dark background near black,
+- cyan, magenta, and acid green neon accents,
 - subtle border colors,
 - soft active row background,
 - readable large text,

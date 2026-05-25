@@ -44,8 +44,7 @@ Status: Complete
 - Pending indicator states:
   - pending sync: yellow,
   - sync failed and will retry: red.
-- Dark mode pending/error indicators should glow enough to fit the existing dark theme.
-- Light mode pending/error indicators should use pastel crayon-like colors that fit the paper-like theme.
+- Pending/error indicators should glow enough to fit the dark cyberpunk neon theme without overpowering task text.
 - Offline-created tasks should appear like normal tasks plus the pending indicator and remain mostly usable.
 - Deleting an offline-created pending task can remove its local create operation instead of queueing create plus delete.
 - Offline deletes should disappear from normal lists immediately, while preserving recoverability in pending operation state.
