@@ -150,7 +150,7 @@ function requestRemoveEditedSubtask() {
   </div>
   <Dialog :visible="editingSubtask !== null" modal header="Edit subtask" :style="{ width: 'min(420px, 92vw)' }" @update:visible="editingSubtaskId = $event ? editingSubtaskId : null">
     <div class="dialog-form">
-      <Textarea v-model="editedTitle" placeholder="Subtask" rows="2" auto-resize autofocus />
+      <Textarea v-model="editedTitle" placeholder="Subtask" rows="2" auto-resize />
     </div>
     <div class="dialog-actions subtask-edit-actions">
       <Button class="task-row-icon-button" title="Delete" aria-label="Delete" severity="danger" text @click="requestRemoveEditedSubtask">
