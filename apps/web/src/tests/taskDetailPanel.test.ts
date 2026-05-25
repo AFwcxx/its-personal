@@ -152,6 +152,32 @@ describe("TaskDetailPanel recurrence", () => {
     expect(planner.selectedTask?.dueDate).toBe("2026-05-22");
   });
 
+  it("queues note edits immediately for pending tasks so offline notes survive refresh", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = baseTask.id;
+    planner.pendingEntityStates = { [baseTask.id]: "pending" };
+    planner.updateTask = vi.fn(async (_id: string, patch: Partial<Task>) => ({ ...baseTask, ...patch }));
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], emits: ["update:modelValue"], template: "<textarea :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" }
+        }
+      }
+    });
+
+    await wrapper.findAll("textarea")[1]!.setValue("Keep this note");
+
+    expect(planner.updateTask).toHaveBeenCalledWith(baseTask.id, { notes: "Keep this note" });
+  });
+
   it("asks for confirmation before deleting the selected task", async () => {
     const planner = usePlannerStore();
     planner.tasks = [baseTask];
