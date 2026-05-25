@@ -1,7 +1,7 @@
 # Milestone 3A: Offline Write Reliability
 
 Date: 2026-05-25
-Status: Not started
+Status: Complete
 
 ## Current Understanding
 
@@ -24,7 +24,7 @@ Status: Not started
 ## Known Requirements
 
 - Use Dexie/IndexedDB for local projection metadata and the outbox from the start.
-- Generate stable opaque prefixed IDs with `nanoid`, matching the codebase's existing ID style.
+- Generate stable opaque prefixed IDs, matching the codebase's existing ID style.
 - Generate both:
   - client entity IDs, such as `task_<id>` or `subtask_<id>`,
   - operation IDs, such as `op_<id>`.
@@ -95,12 +95,10 @@ Status: Not started
 - For Milestone 3A, the existing REST endpoints remain the write surface, but they become idempotent and accept client IDs.
 - Milestone 3B should replace or wrap these REST writes with canonical operation-log sync.
 
-## Open Questions
+## Deferred Questions
 
-- Exact database schema for processed REST operation IDs and replayed responses.
-- Exact periodic retry interval and backoff policy.
-- Whether the global status should expose a manual retry action in this milestone.
-- Whether pending indicators need tooltips, screen-reader-only text, or both.
+- Whether the global status should expose a manual retry action in a later milestone.
+- Whether non-retryable failed operations need a dedicated recovery UI beyond the current failed indicator/count.
 
 ## Decisions Made
 
@@ -128,12 +126,16 @@ Status: Not started
 ## Progress Log
 
 - 2026-05-25: Milestone created after investigating silent offline submissions and duplicate creates from repeated taps/retries.
+- 2026-05-25: Implemented the core reliability slice: REST operation ID replay storage, client-provided create IDs, Dexie outbox service, optimistic planner writes, automatic retry hooks, saved-offline dialog, global pending counts, direct task/subtask row indicators, and offline task creation from the add form.
+- 2026-05-25: Verified existing unit/API/web tests, typecheck, production build, and existing Playwright smoke tests. Dedicated offline Playwright regression and operation compaction tests remain to be added.
+- 2026-05-25: Added API idempotency replay tests, outbox compaction tests, non-retryable failure state coverage, update/reorder compaction logic, and an add-task in-flight guard.
+- 2026-05-25: Fixed the browser regression by making pending-operation reads independent of a migrated Dexie secondary index and storing outbox bodies as plain JSON before IndexedDB persistence. The dedicated offline Playwright regression now passes on desktop and mobile.
+- 2026-05-25: Updated the existing planner layout Playwright smoke test to unlock through the mocked auth route before asserting the planner screen. `npm run typecheck`, `npm test`, `npm run build`, and `npm run e2e` pass; API/unit tests and Playwright require local socket permission in the current sandbox.
+- 2026-05-25: Closed the remaining review gaps: pending outbox operations now replay over cached or empty local planner state after refresh/reload, pending deletes stay hidden after replay, repeated pending PATCH operations merge fields instead of dropping earlier edits, and fields that return to their original synced value are removed from the queued PATCH.
+- 2026-05-25: Added focused tests for pending projection replay, offline-created task visibility without a cached snapshot, pending delete replay, multi-field PATCH compaction, and original-value field dropping. `npm run typecheck`, `npm test`, `npm run build`, and `npm run e2e` pass.
+- 2026-05-25: Fixed session-expiry handling for pending writes: `401` responses now lock the local session but keep outbox operations retryable so they can sync after unlock. Added planner store regression coverage for both user-initiated writes and background retry hitting `401`.
 
 ## Next Actions
 
-- Design the Dexie schema and operation envelope.
-- Design the server processed-operation table.
-- Add failing tests for duplicate create prevention and pending offline create visibility.
-- Implement task create first as the vertical slice.
-- Extend the same write wrapper to all non-attachment planner writes.
-- Add the offline Playwright regression.
+- Review whether non-retryable failed operations need a dedicated recovery UI in a later milestone.
+- Consider replacing the web-side browser-crypto ID helper with a shared ID helper if the app later wants one ID implementation across web and API.

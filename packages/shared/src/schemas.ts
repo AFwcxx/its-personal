@@ -16,6 +16,8 @@ export const recurrenceSchema = z.discriminatedUnion("type", [
 ]);
 
 export const taskInputSchema = z.object({
+  id: z.string().min(1).optional(),
+  operationId: z.string().min(1).optional(),
   title: z.string().min(1).max(500),
   parentId: z.string().nullable().optional(),
   dueDate: dateSchema,
@@ -34,6 +36,8 @@ export const taskPatchSchema = taskInputSchema.partial().extend({
 });
 
 export const subtaskInputSchema = z.object({
+  id: z.string().min(1).optional(),
+  operationId: z.string().min(1).optional(),
   taskId: z.string().min(1),
   title: z.string().min(1).max(500),
   order: z.number().optional()
@@ -49,6 +53,8 @@ export const subtaskPatchSchema = z.object({
 const tagColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 
 export const tagInputSchema = z.object({
+  id: z.string().min(1).optional(),
+  operationId: z.string().min(1).optional(),
   name: z.string().min(1).max(80),
   color: tagColorSchema.nullable().optional()
 });
@@ -59,6 +65,8 @@ export const tagPatchSchema = tagInputSchema.partial().extend({
 });
 
 export const linkInputSchema = z.object({
+  id: z.string().min(1).optional(),
+  operationId: z.string().min(1).optional(),
   taskId: z.string().min(1),
   url: z.string().url(),
   label: z.string().nullable().optional()

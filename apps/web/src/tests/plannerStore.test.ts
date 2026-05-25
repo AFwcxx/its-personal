@@ -1,8 +1,10 @@
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Subtask, Task } from "@its-personal/shared";
-import { plannerApi } from "../services/api.js";
+import { cachedSnapshot, loadSnapshot, plannerApi } from "../services/api.js";
+import { clearPendingOperations, pendingOperations, savePendingOperation } from "../services/offline.js";
 import { usePlannerStore } from "../stores/planner.js";
+import { useSessionStore } from "../stores/session.js";
 
 vi.mock("../services/api.js", () => ({
   loadSnapshot: vi.fn(async () => ({ tasks: [], subtasks: [], tags: [], links: [], attachments: [] })),
@@ -88,5 +90,132 @@ describe("planner store subtask ordering", () => {
 
     expect(planner.tasks[0]?.subtasksCollapsed).toBe(true);
     expect(plannerApi.updateTask).not.toHaveBeenCalled();
+  });
+});
+
+describe("planner store pending projection replay", () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    await clearPendingOperations();
+  });
+
+  it("replays pending creates over a cached snapshot after an offline refresh", async () => {
+    vi.mocked(loadSnapshot).mockRejectedValue(new TypeError("offline"));
+    vi.mocked(cachedSnapshot).mockReturnValue({ tasks: [task({ id: "task-1", title: "Cached" })], subtasks: [], tags: [], links: [], attachments: [], today: "2026-05-25" });
+    await savePendingOperation({
+      operationId: "op-create",
+      entityType: "task",
+      entityId: "task-local",
+      method: "POST",
+      path: "/api/planner/tasks",
+      body: { id: "task-local", operationId: "op-create", title: "Offline task", dueDate: "2026-05-25", parentId: null, tagIds: [] },
+      state: "pending",
+      retryable: true,
+      createdAt: "2026-05-25T00:00:00.000Z",
+      updatedAt: "2026-05-25T00:00:00.000Z"
+    });
+
+    const planner = usePlannerStore();
+    await planner.refresh();
+
+    expect(planner.status).toBe("offline");
+    expect(planner.tasks.map((candidate) => candidate.title)).toEqual(["Cached", "Offline task"]);
+    expect(planner.pendingEntityStates["task-local"]).toBeDefined();
+  });
+
+  it("keeps pending deletes hidden after replaying over a cached snapshot", async () => {
+    vi.mocked(loadSnapshot).mockRejectedValue(new TypeError("offline"));
+    vi.mocked(cachedSnapshot).mockReturnValue({ tasks: [task({ id: "task-1", title: "Cached" })], subtasks: [], tags: [], links: [], attachments: [], today: "2026-05-25" });
+    await savePendingOperation({
+      operationId: "op-delete",
+      entityType: "task",
+      entityId: "task-1",
+      method: "DELETE",
+      path: "/api/planner/tasks/task-1",
+      body: { operationId: "op-delete" },
+      state: "pending",
+      retryable: true,
+      createdAt: "2026-05-25T00:00:00.000Z",
+      updatedAt: "2026-05-25T00:00:00.000Z"
+    });
+
+    const planner = usePlannerStore();
+    await planner.refresh();
+
+    expect(planner.allVisible().map((candidate) => candidate.id)).toEqual([]);
+    expect(planner.pendingEntityStates["task-1"]).toBeDefined();
+  });
+
+  it("shows reconstructable pending creates even when no cached snapshot exists", async () => {
+    vi.mocked(loadSnapshot).mockRejectedValue(new TypeError("offline"));
+    vi.mocked(cachedSnapshot).mockReturnValue(null);
+    await savePendingOperation({
+      operationId: "op-create",
+      entityType: "task",
+      entityId: "task-local",
+      method: "POST",
+      path: "/api/planner/tasks",
+      body: { id: "task-local", operationId: "op-create", title: "Offline task", dueDate: "2026-05-25", parentId: null, tagIds: [] },
+      state: "pending",
+      retryable: true,
+      createdAt: "2026-05-25T00:00:00.000Z",
+      updatedAt: "2026-05-25T00:00:00.000Z"
+    });
+
+    const planner = usePlannerStore();
+    await planner.refresh();
+
+    expect(planner.status).toBe("offline");
+    expect(planner.tasks.map((candidate) => candidate.title)).toEqual(["Offline task"]);
+  });
+});
+
+describe("planner store session-expired pending writes", () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    await clearPendingOperations();
+    Object.defineProperty(window.navigator, "userAgent", { value: "Chrome", configurable: true });
+    (window as unknown as { __forceMemoryOutbox: boolean }).__forceMemoryOutbox = true;
+    const session = useSessionStore();
+    session.token = "expired-token";
+    session.lastActivityAt = Date.now();
+  });
+
+  it("keeps a user write retryable when the server returns 401", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ error: "expired" }), { status: 401 })));
+    const planner = usePlannerStore();
+
+    await planner.createTask("After expiry", "2026-05-25");
+
+    const operations = await pendingOperations();
+    expect(operations).toHaveLength(1);
+    expect(operations[0]).toMatchObject({ state: "pending", retryable: true });
+    expect(useSessionStore().isUnlocked).toBe(false);
+  });
+
+  it("does not make an existing pending operation non-retryable when sync hits 401", async () => {
+    await savePendingOperation({
+      operationId: "op-create",
+      entityType: "task",
+      entityId: "task-local",
+      method: "POST",
+      path: "/api/planner/tasks",
+      body: { id: "task-local", operationId: "op-create", title: "After expiry", dueDate: "2026-05-25", parentId: null, tagIds: [] },
+      state: "pending",
+      retryable: true,
+      createdAt: "2026-05-25T00:00:00.000Z",
+      updatedAt: "2026-05-25T00:00:00.000Z"
+    });
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ error: "expired" }), { status: 401 })));
+
+    await usePlannerStore().syncPending();
+
+    const operations = await pendingOperations();
+    expect(operations).toHaveLength(1);
+    expect(operations[0]).toMatchObject({ state: "pending", retryable: true });
+    expect(useSessionStore().isUnlocked).toBe(false);
   });
 });

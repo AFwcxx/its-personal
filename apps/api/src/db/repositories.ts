@@ -21,6 +21,12 @@ export type SessionRow = {
   last_seen_at: string;
   invalidated_at: string | null;
 };
+export type ProcessedOperationRow = {
+  operation_id: string;
+  status_code: number;
+  response_json: string | null;
+  created_at: string;
+};
 
 export function rowToTask(row: TaskRow, tagIds: string[] = []): Task {
   const taskTagIds = tagIds.length > 0 ? tagIds : row.tag_id ? [row.tag_id] : [];
@@ -184,4 +190,16 @@ export function invalidateSession(db: Db, id: string, now: string): void {
 
 export function softDelete(db: Db, table: "tasks" | "subtasks" | "tags" | "links" | "attachments", id: string, now: string): void {
   db.prepare(`UPDATE ${table} SET deleted_at = ? WHERE id = ?`).run(now, id);
+}
+
+export function getProcessedOperation(db: Db, operationId: string): ProcessedOperationRow | null {
+  const row = db.prepare("SELECT * FROM processed_operations WHERE operation_id = ?").get(operationId) as ProcessedOperationRow | undefined;
+  return row ?? null;
+}
+
+export function insertProcessedOperation(db: Db, operationId: string, statusCode: number, response: unknown, now = new Date().toISOString()): void {
+  db.prepare(`
+    INSERT OR IGNORE INTO processed_operations (operation_id, status_code, response_json, created_at)
+    VALUES (?, ?, ?, ?)
+  `).run(operationId, statusCode, response === undefined ? null : JSON.stringify(response), now);
 }
