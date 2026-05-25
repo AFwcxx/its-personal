@@ -144,6 +144,7 @@ test("task detail backdrop covers the full left side and closes the menu", async
     await page.getByRole("button", { name: "Unlock" }).click();
   }
   await expect(page.getByRole("heading", { name: "Planner" })).toBeVisible();
+  const mainBeforeOpen = await page.locator(".main").boundingBox();
   await page.locator(".task-row").first().click();
 
   const backdrop = page.locator(".detail-backdrop");
@@ -155,6 +156,10 @@ test("task detail backdrop covers the full left side and closes the menu", async
     panelAtRight: document.elementFromPoint(window.innerWidth - 80, 80)?.className
   }));
 
+  const mainAfterOpen = await page.locator(".main").boundingBox();
+
+  expect(mainAfterOpen?.x).toBe(mainBeforeOpen?.x);
+  expect(mainAfterOpen?.width).toBe(mainBeforeOpen?.width);
   expect(coverage.backdropAtBottomLeft).toContain("detail-backdrop");
   expect(coverage.panelAtRight).toContain("detail");
 
