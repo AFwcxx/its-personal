@@ -66,6 +66,11 @@ export async function openAttachment(id: string): Promise<void> {
   }
 }
 
+export async function deleteAttachment(id: string): Promise<void> {
+  const response = await authenticatedFetch(`/api/attachments/${id}`, { method: "DELETE" });
+  if (!response.ok) throw new Error(await response.text());
+}
+
 async function authenticatedFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const session = useSessionStore();
   const response = await fetch(path, {
