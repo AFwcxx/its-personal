@@ -83,6 +83,28 @@ describe("offline outbox compaction", () => {
     expect(operations[0]?.body.operationId).toBe("op-create");
   });
 
+  it("folds task tag and notes edits into an offline-created task", async () => {
+    await saveCompactedPendingOperation(operation({
+      operationId: "op-create",
+      method: "POST",
+      path: "/api/planner/tasks",
+      body: { id: "task-1", operationId: "op-create", title: "Draft", dueDate: "2026-05-25", tagIds: [] }
+    }));
+    await saveCompactedPendingOperation(operation({ operationId: "op-tags", body: { operationId: "op-tags", tagIds: ["tag-1"] } }));
+    await saveCompactedPendingOperation(operation({ operationId: "op-notes", body: { operationId: "op-notes", notes: "Keep this note" } }));
+
+    const operations = await pendingOperations();
+
+    expect(operations).toHaveLength(1);
+    expect(operations[0]?.method).toBe("POST");
+    expect(operations[0]?.operationId).toBe("op-create");
+    expect(operations[0]?.body).toMatchObject({
+      operationId: "op-create",
+      tagIds: ["tag-1"],
+      notes: "Keep this note"
+    });
+  });
+
   it("drops a pending create when the same entity is deleted before sync", async () => {
     await saveCompactedPendingOperation(operation({
       operationId: "op-create",
