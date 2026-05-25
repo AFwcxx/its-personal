@@ -65,6 +65,11 @@ watch(notes, (value) => {
   if (!task.value || value === task.value.notes) return;
   if (notesSaveTimer) clearTimeout(notesSaveTimer);
   const taskId = task.value.id;
+  if (shouldQueueNotesImmediately(taskId)) {
+    void planner.updateTask(taskId, { notes: value });
+    notesSaveTimer = null;
+    return;
+  }
   notesSaveTimer = setTimeout(() => {
     planner.updateTask(taskId, { notes: value });
     notesSaveTimer = null;
@@ -131,6 +136,11 @@ async function updateRecurrenceEndDate(date: string) {
 
 function updateDueDate(value: string | undefined) {
   dueDate.value = value ?? "";
+}
+
+function shouldQueueNotesImmediately(taskId: string): boolean {
+  if (planner.pendingEntityStates[taskId]) return true;
+  return typeof navigator !== "undefined" && navigator.onLine === false;
 }
 
 async function addLink() {

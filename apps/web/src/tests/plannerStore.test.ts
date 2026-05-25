@@ -267,4 +267,21 @@ describe("planner store offline write responsiveness", () => {
     expect(operations).toHaveLength(1);
     expect(operations[0]).toMatchObject({ state: "pending", retryable: true });
   });
+
+  it("keeps tag and note edits folded into an offline-created task", async () => {
+    Object.defineProperty(window.navigator, "onLine", { value: false, configurable: true });
+    const planner = usePlannerStore();
+
+    const task = await planner.createTask("Offline task", "2026-05-25");
+    await planner.updateTask(task.id, { tagIds: ["tag-1"], notes: "Keep this note" });
+
+    const operations = await pendingOperations();
+    expect(operations).toHaveLength(1);
+    expect(operations[0]?.method).toBe("POST");
+    expect(operations[0]?.body).toMatchObject({
+      operationId: operations[0]?.operationId,
+      tagIds: ["tag-1"],
+      notes: "Keep this note"
+    });
+  });
 });
