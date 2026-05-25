@@ -1,6 +1,6 @@
 import { addDays, normalizeRecurrence, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Subtask, type Tag, type Task, type TaskLink } from "@its-personal/shared";
 import { defineStore } from "pinia";
-import { cachedSnapshot, deleteAttachment as deleteAttachmentRequest, loadSnapshot, plannerApi } from "../services/api.js";
+import { cachedSnapshot, deleteAttachment as deleteAttachmentRequest, loadPlannerChangeVersion, loadSnapshot, plannerApi } from "../services/api.js";
 import { generateLocalId, hasDurableOutbox, markPendingOperationFailed, pendingOperations, removeFailedPendingOperations, removePendingOperation, saveCompactedPendingOperation, sendPendingOperation, shouldShowOfflineDialog, type PendingOperation, type PendingState } from "../services/offline.js";
 import { useSessionStore } from "./session.js";
 
@@ -20,7 +20,8 @@ export const usePlannerStore = defineStore("planner", {
     pendingCount: 0,
     failedSyncCount: 0,
     retryableFailedSyncCount: 0,
-    savedOfflineDialogVisible: false
+    savedOfflineDialogVisible: false,
+    changeVersion: null as number | null
   }),
   getters: {
     selectedTask: (state) => state.tasks.find((task) => task.id === state.selectedTaskId) ?? null,
@@ -41,6 +42,7 @@ export const usePlannerStore = defineStore("planner", {
       this.tags = snapshot.tags;
       this.links = snapshot.links;
       this.attachments = snapshot.attachments;
+      this.changeVersion = snapshotChangeVersion(snapshot) ?? this.changeVersion;
     },
     async refresh() {
       this.status = "loading";
@@ -303,6 +305,14 @@ export const usePlannerStore = defineStore("planner", {
       this.retryableFailedSyncCount = operations.filter((operation) => operation.state === "failed" && operation.retryable !== false).length;
       this.pendingEntityStates = Object.fromEntries(operations.map((operation) => [operation.entityId, operation.state]));
     },
+    async refreshIfChanged() {
+      const version = await loadPlannerChangeVersion();
+      if (this.changeVersion === null) {
+        this.changeVersion = version;
+        return;
+      }
+      if (version !== this.changeVersion) await this.refresh();
+    },
     async discardFailedSyncOperations() {
       await removeFailedPendingOperations();
       await this.refresh();
@@ -520,4 +530,9 @@ function booleanValue(value: unknown, fallback: boolean): boolean {
 
 function numberValue(value: unknown, fallback: number): number {
   return typeof value === "number" ? value : fallback;
+}
+
+function snapshotChangeVersion(snapshot: PlannerSnapshot): number | undefined {
+  const candidate = snapshot as PlannerSnapshot & { changeVersion?: unknown };
+  return typeof candidate.changeVersion === "number" ? candidate.changeVersion : undefined;
 }
