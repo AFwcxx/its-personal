@@ -208,7 +208,9 @@ describe("SubtaskList", () => {
 
     const rows = wrapper.findAll(".subtask-row");
     expect(rows[0]!.find("button[aria-label='Delete subtask']").exists()).toBe(false);
+    expect(rows[0]!.find(".task-row-action-placeholder").exists()).toBe(true);
     expect(rows[1]!.find("button[aria-label='Delete subtask']").exists()).toBe(true);
+    expect(rows[1]!.find(".task-row-action-placeholder").exists()).toBe(false);
 
     await rows[1]!.find("button[aria-label='Delete subtask']").trigger("click");
 

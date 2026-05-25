@@ -130,6 +130,7 @@ function requestRemoveEditedSubtask() {
         {{ subtask.title }}
       </span>
       <div v-if="!readonly" class="row-actions">
+        <span v-if="!subtask.completedAt" class="task-row-action-placeholder" aria-hidden="true" />
         <Button
           v-if="subtask.completedAt"
           class="task-row-icon-button"
