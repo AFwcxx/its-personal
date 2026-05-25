@@ -486,6 +486,11 @@
   width: 44px;
 }
 
+.task-row-action-placeholder {
+  flex: 0 0 44px;
+  height: 44px;
+}
+
 .drag-handle {
   cursor: grab;
 }
@@ -1460,6 +1465,11 @@
   .row-actions .p-button {
     width: 40px;
     min-width: 40px;
+  }
+
+  .task-row-action-placeholder {
+    flex-basis: 40px;
+    height: 40px;
   }
 }
 
