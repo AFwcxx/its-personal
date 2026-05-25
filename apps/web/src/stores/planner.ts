@@ -74,6 +74,9 @@ export const usePlannerStore = defineStore("planner", {
     scheduledTasksFor(date: string) {
       return scheduledTasksForDate(this.tasks, date);
     },
+    hasOpenSubtasks(taskId: string) {
+      return this.subtasks.some((subtask) => subtask.taskId === taskId && subtask.completedAt === null && subtask.deletedAt === null);
+    },
     overdue() {
       return overdueTasks(this.tasks, this.currentDate);
     },
@@ -149,12 +152,13 @@ export const usePlannerStore = defineStore("planner", {
     },
     async completeTask(id: string) {
       const current = this.tasks.find((candidate) => candidate.id === id);
-      if (!current) return;
+      if (!current || this.hasOpenSubtasks(id)) return false;
       const completedAt = new Date().toISOString();
       this.tasks = this.tasks.map((candidate) => candidate.id === id ? { ...candidate, completedAt, updatedAt: completedAt } : candidate);
       const operationId = generateLocalId("op");
       const task = await this.writeOperation<Task>({ operationId, entityType: "task", entityId: id, method: "POST", path: `/api/planner/tasks/${id}/complete`, body: { operationId, completedAt }, state: "pending", retryable: true, createdAt: completedAt, updatedAt: completedAt });
       if (task) this.tasks = this.tasks.map((candidate) => candidate.id === id ? task : candidate);
+      return true;
     },
     async toggleSubtask(id: string) {
       const subtask = this.subtasks.find((candidate) => candidate.id === id);
@@ -310,6 +314,7 @@ export const usePlannerStore = defineStore("planner", {
     applyPendingTaskOperation(operation: PendingOperation) {
       const existing = this.tasks.find((task) => task.id === operation.entityId);
       if (operation.method === "POST" && operation.path.endsWith("/complete")) {
+        if (this.hasOpenSubtasks(operation.entityId)) return;
         if (existing) this.tasks = this.tasks.map((task) => task.id === operation.entityId ? { ...task, completedAt: operation.body.completedAt as string ?? task.completedAt, updatedAt: operation.updatedAt } : task);
         return;
       }

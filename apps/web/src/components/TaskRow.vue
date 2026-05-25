@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { Task } from "@its-personal/shared";
 import Button from "primevue/button";
+import Dialog from "primevue/dialog";
 import { ChevronDown, ChevronRight, GripVertical, Pin, Square, SquareCheck } from "lucide-vue-next";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { usePlannerStore } from "../stores/planner.js";
 
 const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean; hidePin?: boolean; canCollapseSubtasks?: boolean }>();
 const planner = usePlannerStore();
+const incompleteSubtasksDialogVisible = ref(false);
 const isSelected = computed(() => planner.selectedTaskId === props.task.id);
 const isRecurring = computed(() => props.task.recurrence.type !== "none");
 const pendingState = computed(() => planner.pendingEntityStates[props.task.id] ?? null);
@@ -22,7 +24,8 @@ async function toggleCompleted() {
     await planner.updateTask(props.task.id, { completedAt: null });
     return;
   }
-  await planner.completeTask(props.task.id);
+  const completed = await planner.completeTask(props.task.id);
+  if (!completed) incompleteSubtasksDialogVisible.value = true;
 }
 
 async function toggleSubtasksCollapsed() {
@@ -75,5 +78,11 @@ async function toggleSubtasksCollapsed() {
         <Square v-else :size="18" />
       </Button>
     </div>
+    <Dialog v-model:visible="incompleteSubtasksDialogVisible" modal header="Complete subtasks first" :style="{ width: 'min(420px, 92vw)' }">
+      <p>This task cannot be completed until every subtask is complete.</p>
+      <div class="dialog-actions">
+        <Button label="OK" @click="incompleteSubtasksDialogVisible = false" />
+      </div>
+    </Dialog>
   </div>
 </template>
