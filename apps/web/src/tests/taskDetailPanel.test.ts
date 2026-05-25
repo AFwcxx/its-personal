@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
 import SubtaskCreateDialog from "../components/SubtaskCreateDialog.vue";
 import TaskDetailPanel from "../components/TaskDetailPanel.vue";
-import { plannerApi } from "../services/api.js";
+import { deleteAttachment, plannerApi } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
 const baseTask: Task = {
@@ -26,6 +26,7 @@ const baseTask: Task = {
 };
 
 vi.mock("../services/api.js", () => ({
+  deleteAttachment: vi.fn(async () => undefined),
   openAttachment: vi.fn(),
   uploadAttachment: vi.fn(),
   plannerApi: {
@@ -40,6 +41,7 @@ vi.mock("../services/api.js", () => ({
       updatedAt: "2026-05-21T00:00:00.000Z",
       deletedAt: null
     })),
+    deleteLink: vi.fn(async () => undefined),
     deleteTask: vi.fn(async () => undefined),
     updateTask: vi.fn(async (_id: string, patch: Partial<Task>) => ({ ...baseTask, ...patch }))
   }
@@ -213,6 +215,73 @@ describe("TaskDetailPanel recurrence", () => {
 
     expect(plannerApi.deleteTask).toHaveBeenCalledWith(baseTask.id);
     expect(planner.selectedTaskId).toBeNull();
+  });
+
+  it("asks for confirmation with the item value before deleting links and attachments", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = baseTask.id;
+    planner.links = [{
+      id: "link-1",
+      taskId: baseTask.id,
+      url: "https://example.com/invoice",
+      label: null,
+      createdAt: "2026-05-21T00:00:00.000Z",
+      deletedAt: null
+    }];
+    planner.attachments = [{
+      id: "attachment-1",
+      taskId: baseTask.id,
+      originalName: "receipt.pdf",
+      storedName: "stored-receipt.pdf",
+      mimeType: "application/pdf",
+      size: 123,
+      checksum: "checksum",
+      createdAt: "2026-05-21T00:00:00.000Z",
+      deletedAt: null
+    }];
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    await wrapper.find("button[aria-label='Delete link']").trigger("click");
+
+    expect(plannerApi.deleteLink).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("Delete this link: “https://example.com/invoice”?");
+
+    let confirmButton = wrapper.findAll("button").find((button) => button.text() === "Confirm");
+    expect(confirmButton).toBeTruthy();
+
+    await confirmButton!.trigger("click");
+    await flushPromises();
+
+    expect(plannerApi.deleteLink).toHaveBeenCalledWith("link-1");
+    expect(planner.links[0]?.deletedAt).not.toBeNull();
+
+    await wrapper.find("button[aria-label='Delete attachment']").trigger("click");
+
+    expect(deleteAttachment).not.toHaveBeenCalled();
+    expect(wrapper.text()).toContain("Delete this attachment: “receipt.pdf”?");
+
+    confirmButton = wrapper.findAll("button").find((button) => button.text() === "Confirm");
+    expect(confirmButton).toBeTruthy();
+
+    await confirmButton!.trigger("click");
+    await flushPromises();
+
+    expect(deleteAttachment).toHaveBeenCalledWith("attachment-1");
+    expect(planner.attachments[0]?.deletedAt).not.toBeNull();
   });
 
   it("opens the subtask dialog and closes the task detail menu", async () => {
