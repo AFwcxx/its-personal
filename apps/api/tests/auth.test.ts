@@ -192,6 +192,56 @@ describe("auth and database", () => {
       .expect(400);
   });
 
+  it("replays task create operation IDs without duplicating submitted tasks", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    const server = createServer(config, db);
+    const body = {
+      id: "task-client-1",
+      operationId: "op-create-task-1",
+      title: "Queued task",
+      dueDate: "2026-05-20"
+    };
+
+    const first = await request(server)
+      .post("/api/planner/tasks")
+      .set("authorization", `Bearer ${token}`)
+      .send(body)
+      .expect(201);
+
+    const second = await request(server)
+      .post("/api/planner/tasks")
+      .set("authorization", `Bearer ${token}`)
+      .send({ ...body, title: "Different replay title" })
+      .expect(201);
+
+    expect(second.body).toEqual(first.body);
+    expect(listTasks(db).filter((task) => task.id === "task-client-1")).toHaveLength(1);
+    expect(listTasks(db).find((task) => task.id === "task-client-1")?.title).toBe("Queued task");
+  });
+
+  it("replays task update operation IDs with the original response", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    const server = createServer(config, db);
+    upsertTask(db, taskFixture("task-1"));
+
+    const first = await request(server)
+      .patch("/api/planner/tasks/task-1")
+      .set("authorization", `Bearer ${token}`)
+      .send({ operationId: "op-update-task-1", title: "First update" })
+      .expect(200);
+
+    const second = await request(server)
+      .patch("/api/planner/tasks/task-1")
+      .set("authorization", `Bearer ${token}`)
+      .send({ operationId: "op-update-task-1", title: "Replay update" })
+      .expect(200);
+
+    expect(second.body).toEqual(first.body);
+    expect(listTasks(db).find((task) => task.id === "task-1")?.title).toBe("First update");
+  });
+
   it("persists subtasks separately from task rows and returns them in snapshots", async () => {
     const db = openDatabase(":memory:");
     const token = issueSession(config, db, "test-device").token;

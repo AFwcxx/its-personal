@@ -21,15 +21,21 @@ const planner = usePlannerStore();
 const newTitle = ref("");
 const newTagIds = ref<string[]>([]);
 const expanded = ref(false);
+const submitting = ref(false);
 
 const tagOptions = computed(() => planner.activeTags);
 const tagsById = computed(() => new Map(planner.activeTags.map((tag) => [tag.id, tag])));
 
 async function createTask() {
-  if (!newTitle.value.trim() || !props.dueDate || planner.status === "offline") return;
-  await planner.createTask(newTitle.value.trim(), props.dueDate, null, newTagIds.value);
-  newTitle.value = "";
-  newTagIds.value = [];
+  if (submitting.value || !newTitle.value.trim() || !props.dueDate) return;
+  submitting.value = true;
+  try {
+    await planner.createTask(newTitle.value.trim(), props.dueDate, null, newTagIds.value);
+    newTitle.value = "";
+    newTagIds.value = [];
+  } finally {
+    submitting.value = false;
+  }
 }
 
 function tagStyle(tagId: string) {
@@ -62,7 +68,7 @@ function toggleExpanded() {
             <InputText v-model="newTitle" placeholder="New task" @keydown.enter.prevent="createTask" />
             <div class="task-create-actions" :class="{ 'task-create-actions-no-date': !showDueDate }">
               <InputText v-if="showDueDate" class="task-create-date" :model-value="dueDate" type="date" aria-label="Due date" @update:model-value="updateDueDate" @keydown.enter.prevent="createTask" />
-              <Button :disabled="planner.status === 'offline'" label="Add" @click="createTask" />
+              <Button :disabled="submitting" label="Add" @click="createTask" />
               <MultiSelect
                 class="tag-multiselect task-create-tags"
                 v-model="newTagIds"

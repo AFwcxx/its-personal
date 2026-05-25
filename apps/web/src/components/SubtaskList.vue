@@ -120,6 +120,13 @@ function requestRemoveEditedSubtask() {
       </Button>
       <span v-else class="task-row-spacer" aria-hidden="true" />
       <span class="subtask-title">
+        <i
+          v-if="planner.pendingEntityStates[subtask.id]"
+          class="pi pi-exclamation-triangle pending-sync-icon"
+          :class="{ 'pending-sync-icon-error': planner.pendingEntityStates[subtask.id] === 'failed' }"
+          :title="planner.pendingEntityStates[subtask.id] === 'failed' ? 'Sync failed, will retry' : 'Pending sync'"
+          aria-hidden="true"
+        />
         {{ subtask.title }}
       </span>
       <div v-if="!readonly" class="row-actions">

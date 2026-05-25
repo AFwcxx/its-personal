@@ -9,7 +9,7 @@ import Textarea from "primevue/textarea";
 import type { Recurrence, RecurrenceEnd } from "@its-personal/shared";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { X } from "lucide-vue-next";
-import { openAttachment, uploadAttachment, plannerApi } from "../services/api.js";
+import { openAttachment, uploadAttachment } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
 const planner = usePlannerStore();
@@ -135,7 +135,7 @@ function updateDueDate(value: string | undefined) {
 
 async function addLink() {
   if (!task.value || !linkUrl.value.trim()) return;
-  planner.links.push(await plannerApi.createLink({ taskId: task.value.id, url: linkUrl.value.trim() }));
+  await planner.createLink(task.value.id, linkUrl.value.trim());
   linkUrl.value = "";
 }
 
