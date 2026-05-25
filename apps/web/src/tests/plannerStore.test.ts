@@ -10,6 +10,7 @@ vi.mock("../services/api.js", () => ({
   loadSnapshot: vi.fn(async () => ({ tasks: [], subtasks: [], tags: [], links: [], attachments: [] })),
   cachedSnapshot: vi.fn(() => null),
   plannerApi: {
+    completeTask: vi.fn(),
     createSubtask: vi.fn(),
     updateTask: vi.fn(),
     updateSubtask: vi.fn()
@@ -90,6 +91,18 @@ describe("planner store subtask ordering", () => {
 
     expect(planner.tasks[0]?.subtasksCollapsed).toBe(true);
     expect(plannerApi.updateTask).not.toHaveBeenCalled();
+  });
+
+  it("refuses to complete a task while an active subtask is still open", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [task({ id: "parent" })];
+    planner.subtasks = [subtask({ id: "open-subtask", taskId: "parent" })];
+
+    const completed = await planner.completeTask("parent");
+
+    expect(completed).toBe(false);
+    expect(planner.tasks[0]?.completedAt).toBeNull();
+    expect(plannerApi.completeTask).not.toHaveBeenCalled();
   });
 });
 
