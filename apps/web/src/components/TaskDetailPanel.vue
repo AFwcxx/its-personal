@@ -270,7 +270,7 @@ function openSubtaskDialog() {
       <label>Add link<InputText v-model="linkUrl" placeholder="https://example.com" @keydown.enter.prevent="addLink" /></label>
       <Button label="Add Link" @click="addLink" />
       <ul>
-        <li v-for="link in taskLinks" :key="link.id">
+        <li v-for="link in taskLinks" :key="link.id" class="detail-linked-item">
           <a :href="link.url" target="_blank" rel="noreferrer">{{ link.url }}</a>
           <Button class="task-row-icon-button" title="Delete link" aria-label="Delete link" severity="danger" text @click="requestLinkRemoval(link)">
             <Trash2 :size="16" />
@@ -279,7 +279,7 @@ function openSubtaskDialog() {
       </ul>
       <label>Attachment<FileUpload class="attachment-upload" mode="basic" custom-upload auto choose-label="Choose File" @select="addFile" /></label>
       <ul>
-        <li v-for="attachment in taskAttachments" :key="attachment.id">
+        <li v-for="attachment in taskAttachments" :key="attachment.id" class="detail-linked-item">
           <a class="attachment-link" href="#" @click.prevent="openTaskAttachment(attachment.id)">{{ attachment.originalName }}</a>
           <Button class="task-row-icon-button" title="Delete attachment" aria-label="Delete attachment" severity="danger" text @click="requestAttachmentRemoval(attachment)">
             <Trash2 :size="16" />
