@@ -23,6 +23,15 @@ export async function loadSnapshot(): Promise<PlannerSnapshot> {
   return snapshot;
 }
 
+export async function loadPlannerChangeVersion(): Promise<number> {
+  const session = useSessionStore();
+  const response = await fetch("/api/planner/changes", { headers: session.authHeaders() });
+  if (response.status === 401) session.lockLocal();
+  if (!response.ok) throw new Error(await response.text());
+  const body = await response.json() as { version: number };
+  return body.version;
+}
+
 export function cachedSnapshot(): PlannerSnapshot | null {
   const raw = localStorage.getItem("its-personal-last-snapshot");
   return raw ? JSON.parse(raw) as PlannerSnapshot : null;

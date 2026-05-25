@@ -3,8 +3,9 @@ import { Router, type Response } from "express";
 import { nanoid } from "nanoid";
 import type { Db } from "../db/connection.js";
 import { getProcessedOperation, insertProcessedOperation, listAttachments, listLinks, listSubtasks, listTags, listTasks, softDelete, softDeleteSubtasksForTask, upsertLink, upsertSubtask, upsertTag, upsertTask } from "../db/repositories.js";
+import type { PlannerChanges } from "../plannerChanges.js";
 
-export function plannerRouter(db: Db, timezone = "UTC"): Router {
+export function plannerRouter(db: Db, timezone = "UTC", changes?: PlannerChanges): Router {
   const router = Router();
 
   function replayOperation(operationId: unknown, res: Response): boolean {
@@ -25,7 +26,11 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
   }
 
   router.get("/snapshot", (_req, res) => {
-    res.json({ tasks: listTasks(db), subtasks: listSubtasks(db), tags: listTags(db), links: listLinks(db), attachments: listAttachments(db), today: todayISO(new Date(), timezone), timezone });
+    res.json({ tasks: listTasks(db), subtasks: listSubtasks(db), tags: listTags(db), links: listLinks(db), attachments: listAttachments(db), today: todayISO(new Date(), timezone), timezone, changeVersion: changes?.current() ?? 0 });
+  });
+
+  router.get("/changes", (_req, res) => {
+    res.json({ version: changes?.current() ?? 0 });
   });
 
   router.post("/tasks", (req, res) => {
@@ -61,6 +66,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
       return;
     }
     const created = upsertTask(db, task);
+    changes?.bump();
     rememberOperation(operationId, 201, created);
     res.status(201).json(created);
   });
@@ -100,6 +106,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
       return;
     }
     const saved = upsertTask(db, updated);
+    changes?.bump();
     rememberOperation(operationId, 200, saved);
     res.json(saved);
   });
@@ -135,6 +142,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
         });
       }
     }
+    changes?.bump();
     rememberOperation(req.body?.operationId, 200, completed);
     res.json(completed);
   });
@@ -144,6 +152,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
     const now = new Date().toISOString();
     softDelete(db, "tasks", req.params.id, now);
     softDeleteSubtasksForTask(db, req.params.id, now);
+    changes?.bump();
     rememberOperation(req.body?.operationId, 204);
     res.status(204).end();
   });
@@ -177,6 +186,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
       deletedAt: null
     };
     const created = upsertSubtask(db, subtask);
+    changes?.bump();
     rememberOperation(operationId, 201, created);
     res.status(201).json(created);
   });
@@ -204,6 +214,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
       updatedAt: new Date().toISOString()
     };
     const saved = upsertSubtask(db, updated);
+    changes?.bump();
     rememberOperation(operationId, 200, saved);
     res.json(saved);
   });
@@ -211,6 +222,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
   router.delete("/subtasks/:id", (req, res) => {
     if (replayOperation(req.body?.operationId, res)) return;
     softDelete(db, "subtasks", req.params.id, new Date().toISOString());
+    changes?.bump();
     rememberOperation(req.body?.operationId, 204);
     res.status(204).end();
   });
@@ -223,6 +235,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
     const now = new Date().toISOString();
     const tag: Tag = { id: submittedId ?? nanoid(), name: input.name, color: input.color ?? null, archivedAt: null, createdAt: now, updatedAt: now, deletedAt: null };
     const created = upsertTag(db, tag);
+    changes?.bump();
     rememberOperation(operationId, 201, created);
     res.status(201).json(created);
   });
@@ -246,6 +259,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
       deletedAt,
       updatedAt: new Date().toISOString()
     });
+    changes?.bump();
     rememberOperation(operationId, 200, saved);
     res.json(saved);
   });
@@ -253,6 +267,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
   router.delete("/tags/:id", (req, res) => {
     if (replayOperation(req.body?.operationId, res)) return;
     softDelete(db, "tags", req.params.id, new Date().toISOString());
+    changes?.bump();
     rememberOperation(req.body?.operationId, 204);
     res.status(204).end();
   });
@@ -264,6 +279,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
     const input = linkInputSchema.parse(req.body) as ReturnType<typeof linkInputSchema.parse> & { id?: string; operationId?: string };
     const link: TaskLink = { id: submittedId ?? nanoid(), taskId: input.taskId, url: input.url, label: input.label ?? null, createdAt: new Date().toISOString(), deletedAt: null };
     const created = upsertLink(db, link);
+    changes?.bump();
     rememberOperation(operationId, 201, created);
     res.status(201).json(created);
   });
@@ -271,6 +287,7 @@ export function plannerRouter(db: Db, timezone = "UTC"): Router {
   router.delete("/links/:id", (req, res) => {
     if (replayOperation(req.body?.operationId, res)) return;
     softDelete(db, "links", req.params.id, new Date().toISOString());
+    changes?.bump();
     rememberOperation(req.body?.operationId, 204);
     res.status(204).end();
   });

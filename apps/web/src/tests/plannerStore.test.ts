@@ -1,13 +1,14 @@
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Subtask, Task } from "@its-personal/shared";
-import { cachedSnapshot, loadSnapshot, plannerApi } from "../services/api.js";
+import { cachedSnapshot, loadPlannerChangeVersion, loadSnapshot, plannerApi } from "../services/api.js";
 import { clearPendingOperations, pendingOperations, savePendingOperation } from "../services/offline.js";
 import { usePlannerStore } from "../stores/planner.js";
 import { useSessionStore } from "../stores/session.js";
 
 vi.mock("../services/api.js", () => ({
   loadSnapshot: vi.fn(async () => ({ tasks: [], subtasks: [], tags: [], links: [], attachments: [] })),
+  loadPlannerChangeVersion: vi.fn(async () => 0),
   cachedSnapshot: vi.fn(() => null),
   plannerApi: {
     completeTask: vi.fn(),
@@ -103,6 +104,28 @@ describe("planner store subtask ordering", () => {
     expect(completed).toBe(false);
     expect(planner.tasks[0]?.completedAt).toBeNull();
     expect(plannerApi.completeTask).not.toHaveBeenCalled();
+  });
+});
+
+describe("planner store live refresh", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it("refreshes snapshots only when the server change version moves", async () => {
+    const planner = usePlannerStore();
+    planner.changeVersion = 1;
+    vi.mocked(loadPlannerChangeVersion).mockResolvedValueOnce(1).mockResolvedValueOnce(2);
+    vi.mocked(loadSnapshot).mockResolvedValueOnce({ tasks: [task({ id: "remote", title: "Remote task" })], subtasks: [], tags: [], links: [], attachments: [], changeVersion: 2 } as Awaited<ReturnType<typeof loadSnapshot>>);
+
+    await planner.refreshIfChanged();
+    expect(loadSnapshot).not.toHaveBeenCalled();
+
+    await planner.refreshIfChanged();
+    expect(loadSnapshot).toHaveBeenCalledTimes(1);
+    expect(planner.tasks.map((candidate) => candidate.title)).toEqual(["Remote task"]);
+    expect(planner.changeVersion).toBe(2);
   });
 });
 

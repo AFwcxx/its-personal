@@ -8,8 +8,9 @@ import type { Attachment } from "@its-personal/shared";
 import type { AppConfig } from "../config.js";
 import type { Db } from "../db/connection.js";
 import { getAttachment, insertAttachment, softDelete } from "../db/repositories.js";
+import type { PlannerChanges } from "../plannerChanges.js";
 
-export function attachmentsRouter(config: AppConfig, db: Db): Router {
+export function attachmentsRouter(config: AppConfig, db: Db, changes?: PlannerChanges): Router {
   fs.mkdirSync(config.ATTACHMENT_DIR, { recursive: true });
   const upload = multer({ dest: config.ATTACHMENT_DIR, limits: { fileSize: config.MAX_ATTACHMENT_BYTES } });
   const router = Router();
@@ -33,7 +34,9 @@ export function attachmentsRouter(config: AppConfig, db: Db): Router {
       createdAt: new Date().toISOString(),
       deletedAt: null
     };
-    res.status(201).json(insertAttachment(db, attachment));
+    const created = insertAttachment(db, attachment);
+    changes?.bump();
+    res.status(201).json(created);
   });
 
   router.get("/:id", (req, res) => {
@@ -48,6 +51,7 @@ export function attachmentsRouter(config: AppConfig, db: Db): Router {
 
   router.delete("/:id", (req, res) => {
     softDelete(db, "attachments", req.params.id, new Date().toISOString());
+    changes?.bump();
     res.status(204).end();
   });
 
