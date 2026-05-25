@@ -30,6 +30,8 @@ const syncStatusLabel = computed(() => {
 });
 const detailLeaving = ref(false);
 const hardRefreshInProgress = ref(false);
+const syncRecoveryDialogVisible = ref(false);
+const discardFailedSyncDialogVisible = ref(false);
 const updateServiceWorker = registerSW({ immediate: true });
 
 onMounted(() => {
@@ -77,6 +79,17 @@ async function hardRefresh() {
     window.location.reload();
   }
 }
+
+async function retryFailedSync() {
+  await planner.refresh();
+  if (planner.failedSyncCount === 0) syncRecoveryDialogVisible.value = false;
+}
+
+async function discardFailedSync() {
+  await planner.discardFailedSyncOperations();
+  discardFailedSyncDialogVisible.value = false;
+  syncRecoveryDialogVisible.value = false;
+}
 </script>
 
 <template>
@@ -96,10 +109,16 @@ async function hardRefresh() {
           <Button aria-label="Lock" icon="pi pi-lock" rounded text @click="lock" />
         </div>
       </div>
-      <div v-if="syncStatusLabel" class="sync-status" :class="{ 'sync-status-error': planner.failedSyncCount > 0 }">
+      <button
+        v-if="syncStatusLabel"
+        type="button"
+        class="sync-status"
+        :class="{ 'sync-status-error': planner.failedSyncCount > 0 }"
+        @click="syncRecoveryDialogVisible = true"
+      >
         <i class="pi pi-exclamation-triangle" aria-hidden="true" />
         <span>{{ syncStatusLabel }}</span>
-      </div>
+      </button>
       <nav>
         <RouterLink v-for="item in navItems" :key="item.to" v-slot="{ navigate, isActive }" :to="item.to" custom>
           <Button :class="{ active: isActive }" :label="item.label" text @click="navigate" />
@@ -125,6 +144,53 @@ async function hardRefresh() {
       <TaskDetailPanel v-if="hasDetail" />
     </Transition>
     <SubtaskCreateDialog />
+    <Dialog
+      v-model:visible="syncRecoveryDialogVisible"
+      modal
+      header="Sync status"
+      :style="{ width: 'min(480px, 92vw)' }"
+    >
+      <p v-if="planner.failedSyncCount > 0">
+        {{ planner.failedSyncCount }} local change{{ planner.failedSyncCount === 1 ? "" : "s" }} failed to sync from this device. Other devices will not show this unless they have their own failed local changes.
+      </p>
+      <p v-else-if="planner.pendingCount > 0">
+        {{ planner.pendingCount }} local change{{ planner.pendingCount === 1 ? "" : "s" }} pending sync from this device.
+      </p>
+      <p v-else-if="planner.status === 'offline'">
+        This device is offline or the server could not be reached.
+      </p>
+      <p v-if="planner.failedSyncCount > 0 && planner.retryableFailedSyncCount === 0">
+        These failed changes are not being retried because the server rejected them. Discard them only if the local edits are no longer needed.
+      </p>
+      <div class="dialog-actions">
+        <Button
+          v-if="planner.retryableFailedSyncCount > 0 || planner.pendingCount > planner.failedSyncCount"
+          label="Retry now"
+          icon="pi pi-sync"
+          @click="retryFailedSync"
+        />
+        <Button
+          v-if="planner.failedSyncCount > 0"
+          label="Discard failed changes"
+          severity="danger"
+          outlined
+          @click="discardFailedSyncDialogVisible = true"
+        />
+        <Button label="Close" severity="secondary" text @click="syncRecoveryDialogVisible = false" />
+      </div>
+    </Dialog>
+    <Dialog
+      v-model:visible="discardFailedSyncDialogVisible"
+      modal
+      header="Discard failed changes?"
+      :style="{ width: 'min(420px, 92vw)' }"
+    >
+      <p>This clears the failed local sync queue on this device. Changes that never reached the server will be lost.</p>
+      <div class="dialog-actions">
+        <Button label="Cancel" severity="secondary" text @click="discardFailedSyncDialogVisible = false" />
+        <Button label="Discard" severity="danger" @click="discardFailedSync" />
+      </div>
+    </Dialog>
     <Dialog
       :visible="planner.savedOfflineDialogVisible"
       modal

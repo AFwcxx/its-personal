@@ -233,6 +233,70 @@ describe("planner store session-expired pending writes", () => {
   });
 });
 
+describe("planner store failed sync recovery", () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    await clearPendingOperations();
+    vi.mocked(loadSnapshot).mockResolvedValue({ tasks: [], subtasks: [], tags: [], links: [], attachments: [] });
+  });
+
+  it("tracks retryable failed writes separately from rejected writes", async () => {
+    await savePendingOperation({
+      operationId: "op-retryable",
+      entityType: "task",
+      entityId: "task-retryable",
+      method: "PATCH",
+      path: "/api/planner/tasks/task-retryable",
+      body: { operationId: "op-retryable", title: "Retryable" },
+      state: "failed",
+      retryable: true,
+      createdAt: "2026-05-25T00:00:00.000Z",
+      updatedAt: "2026-05-25T00:00:00.000Z"
+    });
+    await savePendingOperation({
+      operationId: "op-rejected",
+      entityType: "task",
+      entityId: "task-rejected",
+      method: "PATCH",
+      path: "/api/planner/tasks/task-rejected",
+      body: { operationId: "op-rejected", title: "Rejected" },
+      state: "failed",
+      retryable: false,
+      createdAt: "2026-05-25T00:00:01.000Z",
+      updatedAt: "2026-05-25T00:00:01.000Z"
+    });
+
+    const planner = usePlannerStore();
+    await planner.refreshPendingStatus();
+
+    expect(planner.failedSyncCount).toBe(2);
+    expect(planner.retryableFailedSyncCount).toBe(1);
+  });
+
+  it("discards failed local writes when the user confirms recovery", async () => {
+    await savePendingOperation({
+      operationId: "op-rejected",
+      entityType: "task",
+      entityId: "task-rejected",
+      method: "PATCH",
+      path: "/api/planner/tasks/task-rejected",
+      body: { operationId: "op-rejected", title: "Rejected" },
+      state: "failed",
+      retryable: false,
+      createdAt: "2026-05-25T00:00:00.000Z",
+      updatedAt: "2026-05-25T00:00:00.000Z"
+    });
+
+    const planner = usePlannerStore();
+    await planner.discardFailedSyncOperations();
+
+    expect(await pendingOperations()).toEqual([]);
+    expect(planner.failedSyncCount).toBe(0);
+  });
+});
+
 describe("planner store offline write responsiveness", () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
