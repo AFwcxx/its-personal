@@ -135,6 +135,7 @@ Status: Complete
 - 2026-05-25: Added focused tests for pending projection replay, offline-created task visibility without a cached snapshot, pending delete replay, multi-field PATCH compaction, and original-value field dropping. `npm run typecheck`, `npm test`, `npm run build`, and `npm run e2e` pass.
 - 2026-05-25: Fixed session-expiry handling for pending writes: `401` responses now lock the local session but keep outbox operations retryable so they can sync after unlock. Added planner store regression coverage for both user-initiated writes and background retry hitting `401`.
 - 2026-05-25: Fixed offline write responsiveness: after a write is durably queued, the foreground create/update flow no longer waits indefinitely on a stuck immediate network attempt. Added regression coverage for a task create whose write request never settles.
+- 2026-05-25: Fixed pending task detail edits: notes on offline/pending tasks are now queued immediately instead of waiting for the normal debounce, so a reconnect refresh cannot overwrite them before they enter the outbox. Added coverage for pending create plus tag/note edits folding into the queued create body.
 
 ## Next Actions
 
