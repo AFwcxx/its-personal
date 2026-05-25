@@ -1,6 +1,6 @@
 import { addDays, normalizeRecurrence, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Subtask, type Tag, type Task, type TaskLink } from "@its-personal/shared";
 import { defineStore } from "pinia";
-import { cachedSnapshot, loadSnapshot, plannerApi } from "../services/api.js";
+import { cachedSnapshot, deleteAttachment as deleteAttachmentRequest, loadSnapshot, plannerApi } from "../services/api.js";
 import { generateLocalId, hasDurableOutbox, markPendingOperationFailed, pendingOperations, removePendingOperation, saveCompactedPendingOperation, sendPendingOperation, shouldShowOfflineDialog, type PendingOperation, type PendingState } from "../services/offline.js";
 import { useSessionStore } from "./session.js";
 
@@ -236,6 +236,10 @@ export const usePlannerStore = defineStore("planner", {
       const operationId = generateLocalId("op");
       await this.writeOperation<void>({ operationId, entityType: "link", entityId: id, method: "DELETE", path: `/api/planner/links/${id}`, body: { operationId }, state: "pending", retryable: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
       this.links = this.links.map((link) => link.id === id ? { ...link, deletedAt: new Date().toISOString() } : link);
+    },
+    async deleteAttachment(id: string) {
+      await deleteAttachmentRequest(id);
+      this.attachments = this.attachments.map((attachment) => attachment.id === id ? { ...attachment, deletedAt: new Date().toISOString() } : attachment);
     },
     async writeOperation<T>(operation: PendingOperation) {
       const isJsdom = typeof navigator !== "undefined" && navigator.userAgent.includes("jsdom");

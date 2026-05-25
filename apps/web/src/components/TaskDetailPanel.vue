@@ -6,9 +6,9 @@ import InputText from "primevue/inputtext";
 import MultiSelect from "primevue/multiselect";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
-import type { Recurrence, RecurrenceEnd } from "@its-personal/shared";
+import type { Attachment, Recurrence, RecurrenceEnd, TaskLink } from "@its-personal/shared";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
-import { X } from "lucide-vue-next";
+import { Trash2, X } from "lucide-vue-next";
 import { openAttachment, uploadAttachment } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
@@ -21,6 +21,7 @@ const linkUrl = ref("");
 const customIntervalDays = ref(1);
 const recurrenceEnds = ref<RecurrenceEnd>({ type: "eternity" });
 const taskPendingRemoval = ref(false);
+const pendingItemRemoval = ref<{ type: "link"; item: TaskLink } | { type: "attachment"; item: Attachment } | null>(null);
 let notesSaveTimer: ReturnType<typeof setTimeout> | null = null;
 let syncedTaskId: string | null = null;
 const recurrenceOptions = [
@@ -160,6 +161,25 @@ async function openTaskAttachment(id: string) {
   await openAttachment(id);
 }
 
+function requestLinkRemoval(link: TaskLink) {
+  pendingItemRemoval.value = { type: "link", item: link };
+}
+
+function requestAttachmentRemoval(attachment: Attachment) {
+  pendingItemRemoval.value = { type: "attachment", item: attachment };
+}
+
+async function confirmItemRemoval() {
+  const pending = pendingItemRemoval.value;
+  if (!pending) return;
+  if (pending.type === "link") {
+    await planner.deleteLink(pending.item.id);
+  } else {
+    await planner.deleteAttachment(pending.item.id);
+  }
+  pendingItemRemoval.value = null;
+}
+
 async function confirmRemove() {
   if (!task.value) return;
   await planner.deleteTask(task.value.id);
@@ -250,16 +270,31 @@ function openSubtaskDialog() {
       <label>Add link<InputText v-model="linkUrl" placeholder="https://example.com" @keydown.enter.prevent="addLink" /></label>
       <Button label="Add Link" @click="addLink" />
       <ul>
-        <li v-for="link in taskLinks" :key="link.id"><a :href="link.url" target="_blank" rel="noreferrer">{{ link.url }}</a></li>
+        <li v-for="link in taskLinks" :key="link.id">
+          <a :href="link.url" target="_blank" rel="noreferrer">{{ link.url }}</a>
+          <Button class="task-row-icon-button" title="Delete link" aria-label="Delete link" severity="danger" text @click="requestLinkRemoval(link)">
+            <Trash2 :size="16" />
+          </Button>
+        </li>
       </ul>
       <label>Attachment<FileUpload class="attachment-upload" mode="basic" custom-upload auto choose-label="Choose File" @select="addFile" /></label>
       <ul>
         <li v-for="attachment in taskAttachments" :key="attachment.id">
           <a class="attachment-link" href="#" @click.prevent="openTaskAttachment(attachment.id)">{{ attachment.originalName }}</a>
+          <Button class="task-row-icon-button" title="Delete attachment" aria-label="Delete attachment" severity="danger" text @click="requestAttachmentRemoval(attachment)">
+            <Trash2 :size="16" />
+          </Button>
         </li>
       </ul>
       <Button class="detail-delete-button" label="Delete task" severity="danger" @click="taskPendingRemoval = true" />
     </div>
+    <Dialog :visible="pendingItemRemoval !== null" modal :header="pendingItemRemoval?.type === 'link' ? 'Delete link' : 'Delete attachment'" :style="{ width: 'min(420px, 92vw)' }" @update:visible="pendingItemRemoval = $event ? pendingItemRemoval : null">
+      <p v-if="pendingItemRemoval?.type === 'link'">Delete this link: &ldquo;{{ pendingItemRemoval.item.url }}&rdquo;?</p>
+      <p v-else-if="pendingItemRemoval?.type === 'attachment'">Delete this attachment: &ldquo;{{ pendingItemRemoval.item.originalName }}&rdquo;?</p>
+      <div class="dialog-actions">
+        <Button label="Confirm" severity="danger" @click="confirmItemRemoval" />
+      </div>
+    </Dialog>
     <Dialog :visible="taskPendingRemoval" modal header="Delete task" :style="{ width: 'min(420px, 92vw)' }" @update:visible="taskPendingRemoval = $event">
       <p class="delete-task-message" v-if="task.title.trim()">This task will be deleted: &ldquo;{{ task.title }}&rdquo;.</p>
       <p class="delete-task-message" v-else>This task will be deleted.</p>
