@@ -88,6 +88,13 @@ export function migrate(db: Db): void {
       invalidated_at TEXT
     );
     CREATE INDEX IF NOT EXISTS idx_sessions_last_seen_at ON sessions(last_seen_at);
+
+    CREATE TABLE IF NOT EXISTS processed_operations (
+      operation_id TEXT PRIMARY KEY,
+      status_code INTEGER NOT NULL,
+      response_json TEXT,
+      created_at TEXT NOT NULL
+    );
   `);
   const taskColumns = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
   if (!taskColumns.some((column) => column.name === "subtasks_collapsed")) {

@@ -9,6 +9,7 @@ const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean;
 const planner = usePlannerStore();
 const isSelected = computed(() => planner.selectedTaskId === props.task.id);
 const isRecurring = computed(() => props.task.recurrence.type !== "none");
+const pendingState = computed(() => planner.pendingEntityStates[props.task.id] ?? null);
 const tags = computed(() => {
   const ids = props.task.tagIds ?? (props.task.tagId ? [props.task.tagId] : []);
   return ids
@@ -37,6 +38,13 @@ async function toggleSubtasksCollapsed() {
     <span v-else class="task-row-spacer" aria-hidden="true" />
     <div>
       <strong class="task-title">
+        <i
+          v-if="pendingState"
+          class="pi pi-exclamation-triangle pending-sync-icon"
+          :class="{ 'pending-sync-icon-error': pendingState === 'failed' }"
+          :title="pendingState === 'failed' ? 'Sync failed, will retry' : 'Pending sync'"
+          aria-hidden="true"
+        />
         <i v-if="isRecurring" class="pi pi-replay task-recurrence-icon" aria-hidden="true" />
         <span>{{ task.title }}</span>
       </strong>
