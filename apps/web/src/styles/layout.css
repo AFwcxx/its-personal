@@ -367,6 +367,12 @@
   cursor: default;
 }
 
+.subtask-row .row-actions {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  width: calc(88px + 0.5rem);
+}
+
 .subtask-row-editable {
   cursor: pointer;
 }
@@ -484,11 +490,6 @@
 
 .task-row-spacer {
   width: 44px;
-}
-
-.task-row-action-placeholder {
-  flex: 0 0 44px;
-  height: 44px;
 }
 
 .drag-handle {
@@ -1461,15 +1462,14 @@
     gap: 0.25rem;
   }
 
+  .subtask-row .row-actions {
+    width: calc(80px + 0.25rem);
+  }
+
   .p-button:has(svg),
   .row-actions .p-button {
     width: 40px;
     min-width: 40px;
-  }
-
-  .task-row-action-placeholder {
-    flex-basis: 40px;
-    height: 40px;
   }
 }
 

@@ -252,10 +252,10 @@ export const usePlannerStore = defineStore("planner", {
         await this.refreshPendingStatus();
         return undefined;
       }
-      await this.refreshPendingStatus();
       try {
         const session = useSessionStore();
         if (typeof navigator !== "undefined" && navigator.onLine === false) {
+          await this.refreshPendingStatus();
           if (shouldShowOfflineDialog()) this.savedOfflineDialogVisible = true;
           return undefined;
         }

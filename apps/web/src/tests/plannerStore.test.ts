@@ -355,6 +355,33 @@ describe("planner store offline write responsiveness", () => {
     expect(operations[0]).toMatchObject({ state: "pending", retryable: true });
   });
 
+  it("does not flash pending state for a successful online subtask toggle", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify(subtask({ id: "subtask", completedAt: "2026-05-25T00:00:00.000Z" })), {
+      status: 200,
+      headers: { "content-type": "application/json" }
+    })));
+    const planner = usePlannerStore();
+    planner.subtasks = [subtask({ id: "subtask", completedAt: null })];
+
+    await planner.toggleSubtask("subtask");
+
+    expect(planner.pendingCount).toBe(0);
+    expect(planner.pendingEntityStates).toEqual({});
+    expect(await pendingOperations()).toEqual([]);
+  });
+
+  it("shows pending state immediately for a known-offline subtask toggle", async () => {
+    Object.defineProperty(window.navigator, "onLine", { value: false, configurable: true });
+    const planner = usePlannerStore();
+    planner.subtasks = [subtask({ id: "subtask", completedAt: null })];
+
+    await planner.toggleSubtask("subtask");
+
+    expect(planner.pendingCount).toBe(1);
+    expect(planner.pendingEntityStates.subtask).toBe("pending");
+    expect(await pendingOperations()).toHaveLength(1);
+  });
+
   it("keeps tag and note edits folded into an offline-created task", async () => {
     Object.defineProperty(window.navigator, "onLine", { value: false, configurable: true });
     const planner = usePlannerStore();
