@@ -5,7 +5,6 @@ import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import { computed, onMounted, ref } from "vue";
 import AppShell from "../components/AppShell.vue";
-import { plannerApi } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
 const planner = usePlannerStore();
@@ -19,18 +18,16 @@ const pendingTagTaskCount = computed(() => pendingTag.value ? taskCount(pendingT
 
 async function createTag() {
   if (!name.value.trim()) return;
-  planner.tags.push(await plannerApi.createTag({ name: name.value.trim(), color: `#${color.value}` }));
+  await planner.createTag(name.value.trim(), `#${color.value}`);
   name.value = "";
 }
 
 async function rename(id: string, value: string) {
-  const tag = await plannerApi.updateTag(id, { name: value });
-  planner.tags = planner.tags.map((candidate) => candidate.id === id ? tag : candidate);
+  await planner.updateTag(id, { name: value });
 }
 
 async function recolor(id: string, value: string) {
-  const tag = await plannerApi.updateTag(id, { color: `#${value}` });
-  planner.tags = planner.tags.map((candidate) => candidate.id === id ? tag : candidate);
+  await planner.updateTag(id, { color: `#${value}` });
 }
 
 function taskCount(id: string) {
@@ -46,11 +43,9 @@ async function confirmRemove() {
   if (!tag) return;
   const now = new Date().toISOString();
   if (pendingTagTaskCount.value > 0) {
-    const archived = await plannerApi.updateTag(tag.id, { archivedAt: now });
-    planner.tags = planner.tags.map((candidate) => candidate.id === tag.id ? archived : candidate);
+    await planner.updateTag(tag.id, { archivedAt: now });
   } else {
-    await plannerApi.deleteTag(tag.id);
-    planner.tags = planner.tags.filter((candidate) => candidate.id !== tag.id);
+    await planner.deleteTag(tag.id);
   }
   tagPendingRemoval.value = null;
 }

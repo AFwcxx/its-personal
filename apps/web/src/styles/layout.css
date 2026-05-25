@@ -414,6 +414,34 @@
   text-shadow: 0 0 6px color-mix(in srgb, var(--accent-alt) 42%, transparent), 0 0 14px color-mix(in srgb, var(--accent-alt) 34%, transparent);
 }
 
+.pending-sync-icon {
+  color: #facc15;
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  margin-right: 0.1rem;
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.55);
+}
+
+.pending-sync-icon-error {
+  color: #fb7185;
+  text-shadow: 0 0 10px rgba(251, 113, 133, 0.65);
+}
+
+.sync-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #facc15;
+  font-size: 0.85rem;
+  margin: 0.4rem 0 0.75rem;
+  text-shadow: 0 0 8px rgba(250, 204, 21, 0.45);
+}
+
+.sync-status-error {
+  color: #fb7185;
+  text-shadow: 0 0 10px rgba(251, 113, 133, 0.55);
+}
+
 .task-row:hover {
   cursor: pointer;
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
@@ -1461,6 +1489,18 @@
   box-shadow: none !important;
   filter: none !important;
   text-shadow: none !important;
+}
+
+:root[data-theme="light"] .pending-sync-icon,
+:root[data-theme="light"] .sync-status {
+  color: #d9a441;
+  text-shadow: 0 0 1px rgba(217, 164, 65, 0.25);
+}
+
+:root[data-theme="light"] .pending-sync-icon-error,
+:root[data-theme="light"] .sync-status-error {
+  color: #df7b7b;
+  text-shadow: 0 0 1px rgba(223, 123, 123, 0.25);
 }
 
 :root[data-theme="light"] .p-button {

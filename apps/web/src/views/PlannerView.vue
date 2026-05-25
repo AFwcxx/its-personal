@@ -132,7 +132,7 @@ async function confirmMoveGroupToToday() {
   <AppShell>
     <div class="toolbar">
       <h2>Planner</h2>
-      <Message v-if="planner.status === 'offline'" severity="warn" size="small">Offline read-only</Message>
+      <Message v-if="planner.status === 'offline'" severity="warn" size="small">Offline changes will sync later</Message>
     </div>
     <div class="planner-filter-row">
       <div class="tabs">
