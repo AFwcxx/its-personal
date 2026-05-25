@@ -173,6 +173,16 @@ export async function removePendingOperation(operationId: string): Promise<void>
   await offlineDb.operations.delete(operationId);
 }
 
+export async function removeFailedPendingOperations(): Promise<void> {
+  if (!hasDurableOutbox()) {
+    for (const [operationId, operation] of memoryOperations) {
+      if (operation.state === "failed") memoryOperations.delete(operationId);
+    }
+    return;
+  }
+  await offlineDb.operations.where("state").equals("failed").delete();
+}
+
 export async function markPendingOperationFailed(operationId: string, retryable = true): Promise<void> {
   if (!hasDurableOutbox()) {
     const operation = memoryOperations.get(operationId);
