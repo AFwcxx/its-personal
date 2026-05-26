@@ -138,6 +138,23 @@ describe("ScheduleView", () => {
     expect(wrapper.text()).not.toContain("0 tasks");
   });
 
+  it("shows the magenta today marker only when today is not the selected calendar day", async () => {
+    const planner = usePlannerStore();
+    planner.refresh = vi.fn();
+
+    const wrapper = mountSchedule();
+    const today = () => wrapper.findAll("button").find((button) => button.text() === "21");
+    const day22 = wrapper.findAll("button").find((button) => button.text() === "22");
+
+    expect(today()?.classes()).toContain("active");
+    expect(today()?.classes()).not.toContain("today");
+
+    await day22?.trigger("click");
+
+    expect(today()?.classes()).toContain("today");
+    expect(today()?.classes()).not.toContain("active");
+  });
+
   it("keeps out-of-month calendar days visible but unselectable without task counts", async () => {
     const planner = usePlannerStore();
     planner.tasks = [{ ...baseTask, id: "previous-month", title: "Previous month", dueDate: "2026-04-26" }];
