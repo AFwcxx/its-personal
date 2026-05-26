@@ -337,6 +337,87 @@ describe("auth and database", () => {
       });
   });
 
+  it("reorders active sibling subtasks in one list-level operation", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    upsertTask(db, taskFixture("task-1"));
+    upsertTask(db, taskFixture("task-2"));
+    upsertSubtask(db, {
+      id: "subtask-1",
+      taskId: "task-1",
+      title: "First",
+      completedAt: null,
+      order: 1000,
+      createdAt: "2026-05-20T00:00:00.000Z",
+      updatedAt: "2026-05-20T00:00:00.000Z",
+      deletedAt: null
+    });
+    upsertSubtask(db, {
+      id: "subtask-2",
+      taskId: "task-1",
+      title: "Second",
+      completedAt: null,
+      order: 2000,
+      createdAt: "2026-05-20T00:01:00.000Z",
+      updatedAt: "2026-05-20T00:01:00.000Z",
+      deletedAt: null
+    });
+    upsertSubtask(db, {
+      id: "other-task-subtask",
+      taskId: "task-2",
+      title: "Other task",
+      completedAt: null,
+      order: 1000,
+      createdAt: "2026-05-20T00:02:00.000Z",
+      updatedAt: "2026-05-20T00:02:00.000Z",
+      deletedAt: null
+    });
+
+    await request(createServer(config, db))
+      .patch("/api/planner/tasks/task-1/subtasks/order")
+      .set("authorization", `Bearer ${token}`)
+      .send({ orderedIds: ["subtask-2", "subtask-1"] })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.map((subtask: { id: string; order: number }) => [subtask.id, subtask.order])).toEqual([["subtask-2", 1000], ["subtask-1", 2000]]);
+      });
+
+    expect(listSubtasks(db).filter((subtask) => subtask.taskId === "task-1").map((subtask) => subtask.id)).toEqual(["subtask-2", "subtask-1"]);
+    expect(listSubtasks(db).find((subtask) => subtask.id === "other-task-subtask")?.order).toBe(1000);
+  });
+
+  it("rejects subtask reorders that omit active siblings", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    upsertTask(db, taskFixture("task-1"));
+    upsertSubtask(db, {
+      id: "subtask-1",
+      taskId: "task-1",
+      title: "First",
+      completedAt: null,
+      order: 1000,
+      createdAt: "2026-05-20T00:00:00.000Z",
+      updatedAt: "2026-05-20T00:00:00.000Z",
+      deletedAt: null
+    });
+    upsertSubtask(db, {
+      id: "subtask-2",
+      taskId: "task-1",
+      title: "Second",
+      completedAt: null,
+      order: 2000,
+      createdAt: "2026-05-20T00:01:00.000Z",
+      updatedAt: "2026-05-20T00:01:00.000Z",
+      deletedAt: null
+    });
+
+    await request(createServer(config, db))
+      .patch("/api/planner/tasks/task-1/subtasks/order")
+      .set("authorization", `Bearer ${token}`)
+      .send({ orderedIds: ["subtask-2"] })
+      .expect(400);
+  });
+
   it("requires open subtasks to be completed before completing the parent task", async () => {
     const db = openDatabase(":memory:");
     const token = issueSession(config, db, "test-device").token;
