@@ -1,4 +1,4 @@
-import { normalizeRecurrence, type Attachment, type Subtask, type Tag, type Task, type TaskLink } from "@its-personal/shared";
+import { normalizeRecurrence, type Attachment, type Note, type NoteContentStyle, type NoteListItem, type Subtask, type Tag, type Task, type TaskLink } from "@its-personal/shared";
 import type { Db } from "./connection.js";
 
 type TaskRow = {
@@ -11,6 +11,10 @@ type SubtaskRow = {
   created_at: string; updated_at: string; deleted_at: string | null;
 };
 type TagRow = { id: string; name: string; color: string | null; archived_at: string | null; created_at: string; updated_at: string; deleted_at: string | null };
+type NoteRow = {
+  id: string; title: string; content: string; content_style: string; items_json: string; pinned: number; sort_order: number;
+  created_at: string; updated_at: string; deleted_at: string | null;
+};
 type LinkRow = { id: string; task_id: string; url: string; label: string | null; created_at: string; deleted_at: string | null };
 type AttachmentRow = { id: string; task_id: string; original_name: string; stored_name: string; mime_type: string; size: number; checksum: string; created_at: string; deleted_at: string | null };
 export type SessionRow = {
@@ -129,6 +133,56 @@ export function upsertTag(db: Db, tag: Tag): Tag {
   return tag;
 }
 
+export function rowToNote(row: NoteRow, tagIds: string[] = []): Note {
+  return {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    contentStyle: noteContentStyle(row.content_style),
+    items: noteItems(row.items_json),
+    pinned: row.pinned === 1,
+    tagIds,
+    order: row.sort_order,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at
+  };
+}
+
+export function listNotes(db: Db): Note[] {
+  const tagRows = db.prepare("SELECT note_id, tag_id FROM note_tags ORDER BY created_at ASC").all() as { note_id: string; tag_id: string }[];
+  const tagsByNote = new Map<string, string[]>();
+  for (const row of tagRows) {
+    tagsByNote.set(row.note_id, [...(tagsByNote.get(row.note_id) ?? []), row.tag_id]);
+  }
+  return db.prepare("SELECT * FROM notes ORDER BY pinned DESC, sort_order ASC, created_at ASC")
+    .all()
+    .map((row) => rowToNote(row as NoteRow, tagsByNote.get((row as NoteRow).id)));
+}
+
+export function upsertNote(db: Db, note: Note): Note {
+  db.prepare(`
+    INSERT INTO notes (id, title, content, content_style, items_json, pinned, sort_order, created_at, updated_at, deleted_at)
+    VALUES (@id, @title, @content, @contentStyle, @itemsJson, @pinned, @order, @createdAt, @updatedAt, @deletedAt)
+    ON CONFLICT(id) DO UPDATE SET title=@title, content=@content, content_style=@contentStyle, items_json=@itemsJson,
+      pinned=@pinned, sort_order=@order, updated_at=@updatedAt, deleted_at=@deletedAt
+  `).run({ ...note, pinned: note.pinned ? 1 : 0, itemsJson: JSON.stringify(note.items) });
+  db.prepare("DELETE FROM note_tags WHERE note_id = ?").run(note.id);
+  const insertTag = db.prepare("INSERT INTO note_tags (note_id, tag_id, created_at) VALUES (?, ?, ?)");
+  for (const tagId of note.tagIds) insertTag.run(note.id, tagId, note.updatedAt);
+  return note;
+}
+
+function noteContentStyle(value: string): NoteContentStyle {
+  return value === "checklist" || value === "ordered" || value === "unordered" ? value : "normal";
+}
+
+function noteItems(value: string): NoteListItem[] {
+  const parsed = JSON.parse(value) as unknown;
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter((item): item is NoteListItem => typeof item === "object" && item !== null && typeof (item as NoteListItem).id === "string" && typeof (item as NoteListItem).text === "string");
+}
+
 export function rowToLink(row: LinkRow): TaskLink {
   return { id: row.id, taskId: row.task_id, url: row.url, label: row.label, createdAt: row.created_at, deletedAt: row.deleted_at };
 }
@@ -188,7 +242,7 @@ export function invalidateSession(db: Db, id: string, now: string): void {
   db.prepare("UPDATE sessions SET invalidated_at = COALESCE(invalidated_at, ?) WHERE id = ?").run(now, id);
 }
 
-export function softDelete(db: Db, table: "tasks" | "subtasks" | "tags" | "links" | "attachments", id: string, now: string): void {
+export function softDelete(db: Db, table: "tasks" | "subtasks" | "tags" | "links" | "attachments" | "notes", id: string, now: string): void {
   db.prepare(`UPDATE ${table} SET deleted_at = ? WHERE id = ?`).run(now, id);
 }
 

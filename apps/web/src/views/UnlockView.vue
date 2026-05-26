@@ -12,7 +12,7 @@ const session = useSessionStore();
 const router = useRouter();
 
 async function submit() {
-  if (await session.unlock(password.value)) await router.push("/planner");
+  if (await session.unlock(password.value)) await router.push("/notes");
 }
 </script>
 
