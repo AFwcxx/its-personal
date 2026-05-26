@@ -112,17 +112,32 @@ function scheduleMasonryLayout() {
 
 function layoutNoteGrid(grid: HTMLElement | null) {
   if (!grid) return;
-  const style = getComputedStyle(grid);
-  const rowHeight = Number.parseFloat(style.getPropertyValue("grid-auto-rows"));
-  const rowGap = Number.parseFloat(style.rowGap);
-  if (!Number.isFinite(rowHeight) || rowHeight <= 0) return;
+  const gap = Number.parseFloat(getComputedStyle(grid).columnGap) || 16;
+  const gridWidth = grid.clientWidth;
+  const targetCardWidth = window.matchMedia("(max-width: 640px)").matches ? gridWidth : 240;
+  const columnCount = Math.max(1, Math.floor((gridWidth + gap) / (targetCardWidth + gap)));
+  const cardWidth = columnCount === 1 ? gridWidth : targetCardWidth;
+  const columnHeights = Array.from({ length: columnCount }, () => 0);
 
   for (const card of grid.querySelectorAll<HTMLElement>(".note-card")) {
-    card.style.removeProperty("--note-row-span");
-    const height = card.getBoundingClientRect().height;
-    const span = Math.max(1, Math.ceil((height + rowGap) / (rowHeight + rowGap)));
-    card.style.setProperty("--note-row-span", String(span));
+    card.style.width = `${cardWidth}px`;
+    card.style.transform = "translate(0, 0)";
+    card.style.removeProperty("grid-row-end");
   }
+
+  for (const card of grid.querySelectorAll<HTMLElement>(".note-card")) {
+    const columnIndex = shortestColumnIndex(columnHeights);
+    const x = columnIndex * (cardWidth + gap);
+    const y = columnHeights[columnIndex] ?? 0;
+    card.style.transform = `translate(${x}px, ${y}px)`;
+    const height = card.getBoundingClientRect().height;
+    columnHeights[columnIndex] = y + height + gap;
+  }
+  grid.style.height = `${Math.max(0, ...columnHeights) - gap}px`;
+}
+
+function shortestColumnIndex(columnHeights: number[]) {
+  return columnHeights.reduce((shortest, height, index) => height < columnHeights[shortest]! ? index : shortest, 0);
 }
 
 function notesLayoutKey(items: Note[]) {
