@@ -576,6 +576,7 @@
 .notes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 240px));
+  grid-auto-rows: 8px;
   align-items: start;
   gap: 1rem;
 }
@@ -593,6 +594,7 @@
   background: var(--surface);
   color: var(--text);
   cursor: pointer;
+  grid-row-end: span var(--note-row-span, 1);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
