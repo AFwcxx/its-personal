@@ -55,7 +55,11 @@ const editingNote = computed(() => notes.notes.find((note) => note.id === editin
 const canSave = computed(() => title.value.trim().length > 0 || content.value.trim().length > 0 || items.value.some((item) => item.text.trim().length > 0));
 
 onMounted(() => {
-  void notes.refresh();
+  void notes.refresh().finally(async () => {
+    await nextTick();
+    mountSortable();
+    scheduleMasonryLayout();
+  });
   window.addEventListener("resize", scheduleMasonryLayout);
   refreshTimer = setInterval(() => {
     void notes.refreshIfChanged().catch(() => undefined);
@@ -77,7 +81,7 @@ watch(
     mountSortable();
     scheduleMasonryLayout();
   },
-  { immediate: true }
+  { immediate: true, flush: "post" }
 );
 
 function setPinnedListEl(el: Element | ComponentPublicInstance | null) {
@@ -121,7 +125,8 @@ function layoutNoteGrid(grid: HTMLElement | null) {
 
   for (const card of grid.querySelectorAll<HTMLElement>(".note-card")) {
     card.style.width = `${cardWidth}px`;
-    card.style.transform = "translate(0, 0)";
+    card.style.left = "0";
+    card.style.top = "0";
     card.style.removeProperty("grid-row-end");
   }
 
@@ -129,7 +134,8 @@ function layoutNoteGrid(grid: HTMLElement | null) {
     const columnIndex = shortestColumnIndex(columnHeights);
     const x = columnIndex * (cardWidth + gap);
     const y = columnHeights[columnIndex] ?? 0;
-    card.style.transform = `translate(${x}px, ${y}px)`;
+    card.style.left = `${x}px`;
+    card.style.top = `${y}px`;
     const height = card.getBoundingClientRect().height;
     columnHeights[columnIndex] = y + height + gap;
   }

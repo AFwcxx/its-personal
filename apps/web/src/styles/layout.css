@@ -587,6 +587,7 @@
   gap: 0.75rem;
   max-width: 240px;
   min-height: 120px;
+  width: 240px;
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-panel);
@@ -596,7 +597,7 @@
   left: 0;
   position: absolute;
   top: 0;
-  transition: transform 150ms ease;
+  transition: border-color 150ms ease, background 150ms ease, left 150ms ease, top 150ms ease;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
