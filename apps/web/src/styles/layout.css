@@ -722,7 +722,7 @@
 
 .note-dialog-pin-button.active {
   border-color: var(--accent);
-  color: var(--accent-strong);
+  color: var(--accent);
 }
 
 .note-item-input-row {
