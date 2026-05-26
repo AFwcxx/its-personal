@@ -11,6 +11,7 @@ import SubtaskCreateDialog from "./SubtaskCreateDialog.vue";
 import TaskDetailPanel from "./TaskDetailPanel.vue";
 
 const navItems = [
+  { to: "/notes", label: "Notes" },
   { to: "/planner", label: "Planner" },
   { to: "/schedule", label: "Schedule" },
   { to: "/all", label: "All Tasks" },

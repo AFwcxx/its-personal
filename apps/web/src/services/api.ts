@@ -1,4 +1,4 @@
-import type { Attachment, PlannerSnapshot, Subtask, Tag, Task, TaskLink } from "@its-personal/shared";
+import type { Attachment, Note, NotesSnapshot, PlannerSnapshot, Subtask, Tag, Task, TaskLink } from "@its-personal/shared";
 import { useSessionStore } from "../stores/session.js";
 
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -37,6 +37,26 @@ export function cachedSnapshot(): PlannerSnapshot | null {
   return raw ? JSON.parse(raw) as PlannerSnapshot : null;
 }
 
+export async function loadNotesSnapshot(): Promise<NotesSnapshot> {
+  const snapshot = await apiJson<NotesSnapshot>("/api/notes/snapshot");
+  localStorage.setItem("its-personal-last-notes-snapshot", JSON.stringify(snapshot));
+  return snapshot;
+}
+
+export async function loadNotesChangeVersion(): Promise<number> {
+  const session = useSessionStore();
+  const response = await fetch("/api/notes/changes", { headers: session.authHeaders() });
+  if (response.status === 401) session.lockLocal();
+  if (!response.ok) throw new Error(await response.text());
+  const body = await response.json() as { version: number };
+  return body.version;
+}
+
+export function cachedNotesSnapshot(): NotesSnapshot | null {
+  const raw = localStorage.getItem("its-personal-last-notes-snapshot");
+  return raw ? JSON.parse(raw) as NotesSnapshot : null;
+}
+
 type WriteMeta = { id?: string; operationId?: string };
 
 export const plannerApi = {
@@ -53,6 +73,12 @@ export const plannerApi = {
   deleteTag: (id: string, body: { operationId?: string } = {}) => authenticatedFetch(`/api/planner/tags/${id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }),
   createLink: (body: Pick<TaskLink, "taskId" | "url"> & Partial<TaskLink> & WriteMeta) => apiJson<TaskLink>("/api/planner/links", { method: "POST", body: JSON.stringify(body) }),
   deleteLink: (id: string, body: { operationId?: string } = {}) => authenticatedFetch(`/api/planner/links/${id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })
+};
+
+export const notesApi = {
+  createNote: (body: Partial<Note> & Pick<Note, "title" | "content" | "contentStyle" | "items"> & WriteMeta) => apiJson<Note>("/api/notes", { method: "POST", body: JSON.stringify(body) }),
+  updateNote: (id: string, body: Partial<Note>) => apiJson<Note>(`/api/notes/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  deleteNote: (id: string, body: { operationId?: string } = {}) => authenticatedFetch(`/api/notes/${id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })
 };
 
 export async function uploadAttachment(taskId: string, file: File): Promise<Attachment> {

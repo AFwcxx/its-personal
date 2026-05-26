@@ -64,6 +64,34 @@ export const tagPatchSchema = tagInputSchema.partial().extend({
   deletedAt: z.string().datetime().nullable().optional()
 });
 
+export const noteContentStyleSchema = z.enum(["normal", "checklist", "ordered", "unordered"]);
+
+export const noteListItemSchema = z.object({
+  id: z.string().min(1),
+  text: z.string().max(500),
+  checked: z.boolean().optional()
+});
+
+const noteBaseSchema = z.object({
+  id: z.string().min(1).optional(),
+  operationId: z.string().min(1).optional(),
+  title: z.string().max(500),
+  content: z.string().max(20_000),
+  contentStyle: noteContentStyleSchema,
+  items: z.array(noteListItemSchema),
+  pinned: z.boolean().optional(),
+  tagIds: z.array(z.string()).optional(),
+  order: z.number().optional()
+});
+
+export const noteInputSchema = noteBaseSchema.refine((value) => value.title.trim().length > 0 || value.content.trim().length > 0 || value.items.some((item) => item.text.trim().length > 0), {
+  message: "Note requires a title or content"
+});
+
+export const notePatchSchema = noteBaseSchema.partial().extend({
+  deletedAt: z.string().datetime().nullable().optional()
+});
+
 export const linkInputSchema = z.object({
   id: z.string().min(1).optional(),
   operationId: z.string().min(1).optional(),
