@@ -69,7 +69,7 @@ describe("planner store subtask ordering", () => {
     expect(plannerApi.createSubtask).toHaveBeenCalledWith({ taskId: "task", title: "Third", order: 3000 });
   });
 
-  it("keeps a newer local subtask order when a completion response returns stale order", async () => {
+  it("keeps reordered subtasks when a completion response returns stale order", async () => {
     const planner = usePlannerStore();
     const first = subtask({ id: "first", order: 1000 });
     const second = subtask({ id: "second", order: 2000 });
@@ -79,10 +79,9 @@ describe("planner store subtask ordering", () => {
       order: id === "second" ? 2000 : 1000
     }));
     planner.subtasks = [first, second];
+    planner.subtasks = planner.subtasks.map((candidate) => candidate.id === "second" ? { ...candidate, order: 1000 } : { ...candidate, order: 2000 });
 
-    const toggle = planner.toggleSubtask("second");
-    planner.subtasks = planner.subtasks.map((candidate) => candidate.id === "second" ? { ...candidate, order: 1000 } : candidate);
-    await toggle;
+    await planner.toggleSubtask("second");
 
     expect(planner.subtasks.find((candidate) => candidate.id === "second")?.order).toBe(1000);
     expect(planner.subtasks.find((candidate) => candidate.id === "second")?.completedAt).not.toBeNull();

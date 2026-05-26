@@ -150,7 +150,7 @@ export const usePlannerStore = defineStore("planner", {
       this.subtasks = this.subtasks.map((candidate) => candidate.id === id ? optimistic : candidate);
       const operationId = generateLocalId("op");
       const subtask = await this.writeOperation<Subtask>({ operationId, entityType: "subtask", entityId: id, method: "PATCH", path: `/api/planner/subtasks/${id}`, body: { ...patch, operationId }, base: baseForPatch(current, patch), state: "pending", retryable: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-      if (subtask) this.subtasks = this.subtasks.map((candidate) => candidate.id === id ? reconcileSubtaskResponse(candidate, optimistic, subtask) : candidate);
+      if (subtask) this.subtasks = this.subtasks.map((candidate) => candidate.id === id ? reconcileSubtaskResponse(candidate, optimistic, subtask, patch) : candidate);
       return subtask ?? optimistic;
     },
     async completeTask(id: string) {
@@ -465,10 +465,10 @@ function reconcileTaskResponse(current: Task, optimistic: Task, response: Task):
   return normalizeTask(reconciled);
 }
 
-function reconcileSubtaskResponse(current: Subtask, optimistic: Subtask, response: Subtask): Subtask {
+function reconcileSubtaskResponse(current: Subtask, optimistic: Subtask, response: Subtask, patch: Partial<Subtask>): Subtask {
   const reconciled = { ...response };
   for (const key of Object.keys(current) as Array<keyof Subtask>) {
-    if (JSON.stringify(current[key]) !== JSON.stringify(optimistic[key])) {
+    if (!Object.prototype.hasOwnProperty.call(patch, key) || JSON.stringify(current[key]) !== JSON.stringify(optimistic[key])) {
       reconciled[key] = current[key] as never;
     }
   }
