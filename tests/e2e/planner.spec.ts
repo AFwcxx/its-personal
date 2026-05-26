@@ -242,11 +242,22 @@ test("subtask order stays after reordering then toggling completion", async ({ p
       today: "2026-05-25"
     })
   }));
+  await page.route("**/api/planner/tasks/task-1/subtasks/order", (route) => {
+    const body = route.request().postDataJSON();
+    for (const [index, id] of body.orderedIds.entries()) {
+      const subtask = serverSubtasks.find((candidate) => candidate.id === id);
+      if (subtask) subtask.order = (index + 1) * 1000;
+    }
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(body.orderedIds.map((id: string) => serverSubtasks.find((subtask) => subtask.id === id)))
+    });
+  });
   await page.route("**/api/planner/subtasks/*", (route) => {
     const id = route.request().url().split("/").pop();
     const body = route.request().postDataJSON();
     const current = serverSubtasks.find((subtask) => subtask.id === id)!;
-    if (body.order !== undefined) current.order = body.order;
     if (body.completedAt !== undefined) current.completedAt = body.completedAt;
     const response = body.completedAt !== undefined
       ? { ...current, order: id === "subtask-third" ? 3000 : current.order }
@@ -270,6 +281,7 @@ test("subtask order stays after reordering then toggling completion", async ({ p
   await expect(titles).toHaveText(["Second subtask", "Third subtask", "First subtask"]);
 
   await page.locator(".subtask-row").filter({ hasText: "Third subtask" }).getByRole("button", { name: "Complete" }).click();
+  await page.waitForTimeout(300);
 
   await expect(titles).toHaveText(["Second subtask", "Third subtask", "First subtask"]);
 });

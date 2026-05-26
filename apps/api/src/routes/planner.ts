@@ -1,9 +1,15 @@
 import { linkInputSchema, nextDueDate, normalizeRecurrence, recurrenceEndsBeforeDueDate, subtaskInputSchema, subtaskPatchSchema, taskInputSchema, taskPatchSchema, tagInputSchema, todayISO, type Recurrence, type Subtask, type Task, type Tag, type TaskLink } from "@its-personal/shared";
 import { Router, type Response } from "express";
 import { nanoid } from "nanoid";
+import { z } from "zod";
 import type { Db } from "../db/connection.js";
 import { getProcessedOperation, insertProcessedOperation, listAttachments, listLinks, listSubtasks, listTags, listTasks, softDelete, softDeleteSubtasksForTask, upsertLink, upsertSubtask, upsertTag, upsertTask } from "../db/repositories.js";
 import type { PlannerChanges } from "../plannerChanges.js";
+
+const subtaskReorderSchema = z.object({
+  operationId: z.string().min(1).optional(),
+  orderedIds: z.array(z.string().min(1)).min(1)
+});
 
 export function plannerRouter(db: Db, timezone = "UTC", changes?: PlannerChanges): Router {
   const router = Router();
@@ -189,6 +195,36 @@ export function plannerRouter(db: Db, timezone = "UTC", changes?: PlannerChanges
     changes?.bump();
     rememberOperation(operationId, 201, created);
     res.status(201).json(created);
+  });
+
+  router.patch("/tasks/:taskId/subtasks/order", (req, res) => {
+    const operationId = typeof req.body?.operationId === "string" ? req.body.operationId : undefined;
+    if (replayOperation(operationId, res)) return;
+    const task = listTasks(db).find((candidate) => candidate.id === req.params.taskId && candidate.deletedAt === null);
+    if (!task) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
+    const parsed = subtaskReorderSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid subtask reorder input", issues: parsed.error.issues });
+      return;
+    }
+    const input = parsed.data;
+    const activeSiblings = listSubtasks(db).filter((candidate) => candidate.taskId === req.params.taskId && candidate.deletedAt === null);
+    const siblingIds = new Set(activeSiblings.map((subtask) => subtask.id));
+    const requestedIds = new Set(input.orderedIds);
+    if (requestedIds.size !== input.orderedIds.length || requestedIds.size !== siblingIds.size || input.orderedIds.some((id) => !siblingIds.has(id))) {
+      res.status(400).json({ error: "Subtask reorder must include each active sibling exactly once" });
+      return;
+    }
+    const byId = new Map(activeSiblings.map((subtask) => [subtask.id, subtask]));
+    const now = new Date().toISOString();
+    const reorder = db.transaction((orderedIds: string[]) => orderedIds.map((id, index) => upsertSubtask(db, { ...byId.get(id)!, order: (index + 1) * 1000, updatedAt: now })));
+    const reordered = reorder(input.orderedIds);
+    changes?.bump();
+    rememberOperation(operationId, 200, reordered);
+    res.json(reordered);
   });
 
   router.patch("/subtasks/:id", (req, res) => {

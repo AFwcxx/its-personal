@@ -4,6 +4,10 @@ import { cachedSnapshot, deleteAttachment as deleteAttachmentRequest, loadPlanne
 import { generateLocalId, hasDurableOutbox, markPendingOperationFailed, pendingOperations, removeFailedPendingOperations, removePendingOperation, saveCompactedPendingOperation, sendPendingOperation, shouldShowOfflineDialog, type PendingOperation, type PendingState } from "../services/offline.js";
 import { useSessionStore } from "./session.js";
 
+const subtaskReorderDebounceMs = 250;
+let subtaskReorderRevision = 0;
+const pendingSubtaskReorders = new Map<string, { orderedIds: string[]; revision: number; timer: ReturnType<typeof setTimeout> | null; inFlight: boolean }>();
+
 export const usePlannerStore = defineStore("planner", {
   state: () => ({
     tasks: [] as Task[],
@@ -184,10 +188,10 @@ export const usePlannerStore = defineStore("planner", {
     },
     async reorderSubtasks(subtasks: Subtask[]) {
       const updates = subtasks.map((subtask, index) => ({ ...subtask, order: (index + 1) * 1000 }));
+      const taskId = updates[0]?.taskId;
       this.subtasks = this.subtasks.map((subtask) => updates.find((updated) => updated.id === subtask.id) ?? subtask);
-      for (const subtask of updates) {
-        await this.updateSubtask(subtask.id, { order: subtask.order });
-      }
+      if (!taskId || updates.some((subtask) => subtask.taskId !== taskId)) return;
+      queueSubtaskReorder(this, taskId, updates.map((subtask) => subtask.id));
     },
     async deleteTask(id: string) {
       const operationId = generateLocalId("op");
@@ -291,6 +295,7 @@ export const usePlannerStore = defineStore("planner", {
       if (operation.entityType === "subtask" && operation.method === "POST") return await plannerApi.createSubtask(body as Pick<Subtask, "taskId" | "title"> & Partial<Subtask>) as T;
       if (operation.entityType === "subtask" && operation.method === "PATCH") return await plannerApi.updateSubtask(operation.entityId, body as Partial<Subtask>) as T;
       if (operation.entityType === "subtask" && operation.method === "DELETE") return await plannerApi.deleteSubtask(operation.entityId) as T;
+      if (operation.entityType === "subtask-order" && operation.method === "PATCH") return await plannerApi.reorderSubtasks(operation.entityId, body as { orderedIds: string[] }) as T;
       if (operation.entityType === "tag" && operation.method === "POST") return await plannerApi.createTag(body as Pick<Tag, "name"> & Partial<Tag>) as T;
       if (operation.entityType === "tag" && operation.method === "PATCH") return await plannerApi.updateTag(operation.entityId, body as Partial<Tag>) as T;
       if (operation.entityType === "tag" && operation.method === "DELETE") return await plannerApi.deleteTag(operation.entityId) as T;
@@ -329,6 +334,8 @@ export const usePlannerStore = defineStore("planner", {
         this.applyPendingTaskOperation(operation);
       } else if (operation.entityType === "subtask") {
         this.applyPendingSubtaskOperation(operation);
+      } else if (operation.entityType === "subtask-order") {
+        this.applyPendingSubtaskOrderOperation(operation);
       } else if (operation.entityType === "tag") {
         this.applyPendingTagOperation(operation);
       } else if (operation.entityType === "link") {
@@ -370,6 +377,13 @@ export const usePlannerStore = defineStore("planner", {
       if (operation.method === "DELETE" && existing) {
         this.subtasks = this.subtasks.map((subtask) => subtask.id === operation.entityId ? { ...subtask, deletedAt: operation.updatedAt } : subtask);
       }
+    },
+    applyPendingSubtaskOrderOperation(operation: PendingOperation) {
+      if (operation.method !== "PATCH") return;
+      const orderedIds = Array.isArray(operation.body.orderedIds) ? operation.body.orderedIds.filter((id): id is string => typeof id === "string") : [];
+      if (orderedIds.length === 0) return;
+      const orderById = new Map(orderedIds.map((id, index) => [id, (index + 1) * 1000]));
+      this.subtasks = this.subtasks.map((subtask) => subtask.taskId === operation.entityId && orderById.has(subtask.id) ? { ...subtask, order: orderById.get(subtask.id)!, updatedAt: operation.updatedAt } : subtask);
     },
     applyPendingTagOperation(operation: PendingOperation) {
       const existing = this.tags.find((tag) => tag.id === operation.entityId);
@@ -427,6 +441,53 @@ export const usePlannerStore = defineStore("planner", {
     }
   }
 });
+
+function queueSubtaskReorder(planner: ReturnType<typeof usePlannerStore>, taskId: string, orderedIds: string[]): void {
+  const entry = pendingSubtaskReorders.get(taskId) ?? { orderedIds, revision: 0, timer: null, inFlight: false };
+  entry.orderedIds = orderedIds;
+  entry.revision = ++subtaskReorderRevision;
+  if (entry.timer) clearTimeout(entry.timer);
+  if (!entry.inFlight) {
+    entry.timer = setTimeout(() => {
+      void flushSubtaskReorder(planner, taskId);
+    }, subtaskReorderDebounceMs);
+  }
+  pendingSubtaskReorders.set(taskId, entry);
+}
+
+async function flushSubtaskReorder(planner: ReturnType<typeof usePlannerStore>, taskId: string): Promise<void> {
+  const entry = pendingSubtaskReorders.get(taskId);
+  if (!entry || entry.inFlight) return;
+  if (entry.timer) clearTimeout(entry.timer);
+  entry.timer = null;
+  entry.inFlight = true;
+  const revision = entry.revision;
+  const orderedIds = [...entry.orderedIds];
+  const now = new Date().toISOString();
+  const operationId = generateLocalId("op");
+  await planner.writeOperation<Subtask[]>({
+    operationId,
+    entityType: "subtask-order",
+    entityId: taskId,
+    method: "PATCH",
+    path: `/api/planner/tasks/${taskId}/subtasks/order`,
+    body: { orderedIds, operationId },
+    state: "pending",
+    retryable: true,
+    createdAt: now,
+    updatedAt: now
+  });
+  const latest = pendingSubtaskReorders.get(taskId);
+  if (!latest) return;
+  latest.inFlight = false;
+  if (latest.revision !== revision) {
+    latest.timer = setTimeout(() => {
+      void flushSubtaskReorder(planner, taskId);
+    }, 0);
+    return;
+  }
+  pendingSubtaskReorders.delete(taskId);
+}
 
 function baseForPatch<T extends Record<string, unknown>>(current: T, patch: Partial<T>): Record<string, unknown> {
   return Object.fromEntries(Object.keys(patch).map((key) => [key, current[key]]));
