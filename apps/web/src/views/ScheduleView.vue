@@ -80,7 +80,7 @@ function selectDay(day: string) {
       <Button
         v-for="day in days"
         :key="day"
-        :class="{ active: selected === day, today: planner.today === day, 'empty-day': dayTasks(day).length === 0, 'outside-month': !isCurrentMonth(day) }"
+        :class="{ active: selected === day, today: planner.today === day && selected !== day, 'empty-day': dayTasks(day).length === 0, 'outside-month': !isCurrentMonth(day) }"
         :disabled="!isCurrentMonth(day)"
         text
         @click="selectDay(day)"
