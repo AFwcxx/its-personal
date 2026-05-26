@@ -1,6 +1,6 @@
 # Backup And Restore
 
-Milestone 1 uses manual Docker volume backup/restore.
+Backups currently use manual Docker volume backup/restore.
 
 ## Backup
 

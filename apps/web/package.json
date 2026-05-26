@@ -1,6 +1,6 @@
 {
   "name": "@its-personal/web",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -9,7 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@its-personal/shared": "0.0.1",
+    "@its-personal/shared": "0.0.2",
     "@primeuix/themes": "^2.0.3",
     "@types/sortablejs": "^1.15.9",
     "@vite-pwa/assets-generator": "^0.2.6",
