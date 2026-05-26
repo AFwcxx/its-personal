@@ -10,11 +10,13 @@ import { attachmentsRouter } from "./routes/attachments.js";
 import { authRouter } from "./routes/auth.js";
 import { configRouter } from "./routes/config.js";
 import { healthRouter } from "./routes/health.js";
+import { notesRouter } from "./routes/notes.js";
 import { plannerRouter } from "./routes/planner.js";
 
 export function createServer(config: AppConfig, db: Db) {
   const app = express();
   const plannerChanges = createPlannerChanges();
+  const notesChanges = createPlannerChanges();
   app.use(cors());
   app.use(cookieParser());
   app.use(express.json({ limit: "2mb" }));
@@ -23,6 +25,7 @@ export function createServer(config: AppConfig, db: Db) {
   app.use("/api/config", configRouter(config));
   app.use("/api/auth", authRouter(config, db));
   app.use("/api/planner", authRequired(config, db), plannerRouter(db, config.APP_TIMEZONE, plannerChanges));
+  app.use("/api/notes", authRequired(config, db), notesRouter(db, notesChanges));
   app.use("/api/attachments", authRequired(config, db), attachmentsRouter(config, db, plannerChanges));
   app.get("/manifest.webmanifest", (_req, res) => {
     res.json({

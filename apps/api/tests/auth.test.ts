@@ -3,7 +3,7 @@ import request from "supertest";
 import { issueSession, verifyPassword, verifySession } from "../src/auth/session.js";
 import { loadConfig } from "../src/config.js";
 import { openDatabase } from "../src/db/connection.js";
-import { listSubtasks, listTasks, upsertSubtask, upsertTask } from "../src/db/repositories.js";
+import { listNotes, listSubtasks, listTasks, upsertSubtask, upsertTask } from "../src/db/repositories.js";
 import { createServer } from "../src/server.js";
 
 const config = loadConfig({
@@ -235,6 +235,67 @@ describe("auth and database", () => {
 
     expect(second.body).toEqual(first.body);
     expect(listTasks(db).find((task) => task.id === "task-1")?.title).toBe("First update");
+  });
+
+  it("persists notes through the separate notes API", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    const server = createServer(config, db);
+    const noteBody = {
+      id: "note-client-1",
+      operationId: "op-create-note-1",
+      title: "",
+      content: "Buy milk\nUse coupon",
+      contentStyle: "checklist",
+      items: [
+        { id: "item-1", text: "Buy milk", checked: false },
+        { id: "item-2", text: "Use coupon", checked: true }
+      ],
+      pinned: true,
+      tagIds: []
+    };
+
+    const created = await request(server)
+      .post("/api/notes")
+      .set("authorization", `Bearer ${token}`)
+      .send(noteBody)
+      .expect(201);
+
+    await request(server)
+      .post("/api/notes")
+      .set("authorization", `Bearer ${token}`)
+      .send({ ...noteBody, title: "Replay title" })
+      .expect(201)
+      .expect((response) => {
+        expect(response.body).toEqual(created.body);
+      });
+
+    await request(server)
+      .patch("/api/notes/note-client-1")
+      .set("authorization", `Bearer ${token}`)
+      .send({ operationId: "op-update-note-1", pinned: false, items: [{ id: "item-1", text: "Buy milk", checked: true }] })
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.pinned).toBe(false);
+        expect(response.body.items[0].checked).toBe(true);
+      });
+
+    await request(server)
+      .get("/api/notes/snapshot")
+      .set("authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.body.notes).toHaveLength(1);
+        expect(response.body.changeVersion).toBe(2);
+      });
+
+    await request(server)
+      .delete("/api/notes/note-client-1")
+      .set("authorization", `Bearer ${token}`)
+      .send({ operationId: "op-delete-note-1" })
+      .expect(204);
+
+    expect(listNotes(db).find((note) => note.id === "note-client-1")?.deletedAt).not.toBeNull();
   });
 
   it("persists subtasks separately from task rows and returns them in snapshots", async () => {

@@ -1,8 +1,14 @@
 import vue from "@vitejs/plugin-vue";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@its-personal/shared": fileURLToPath(new URL("../../packages/shared/src/index.ts", import.meta.url))
+    }
+  },
   plugins: [
     vue(),
     VitePWA({
@@ -23,6 +29,11 @@ export default defineConfig({
             urlPattern: /\/api\/planner\/snapshot/,
             handler: "NetworkFirst",
             options: { cacheName: "planner-snapshot" }
+          },
+          {
+            urlPattern: /\/api\/notes\/snapshot/,
+            handler: "NetworkFirst",
+            options: { cacheName: "notes-snapshot" }
           }
         ]
       }
