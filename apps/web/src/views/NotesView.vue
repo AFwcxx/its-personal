@@ -30,6 +30,7 @@ const unpinnedListEl = ref<HTMLElement | null>(null);
 let pinnedSortable: Sortable | null = null;
 let unpinnedSortable: Sortable | null = null;
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
+let layoutFrame: number | null = null;
 
 const styleOptions: Array<{ label: string; value: NoteContentStyle }> = [
   { label: "Text", value: "normal" },
@@ -55,6 +56,7 @@ const canSave = computed(() => title.value.trim().length > 0 || content.value.tr
 
 onMounted(() => {
   void notes.refresh();
+  window.addEventListener("resize", scheduleMasonryLayout);
   refreshTimer = setInterval(() => {
     void notes.refreshIfChanged().catch(() => undefined);
   }, 5_000);
@@ -63,14 +65,17 @@ onMounted(() => {
 onBeforeUnmount(() => {
   pinnedSortable?.destroy();
   unpinnedSortable?.destroy();
+  window.removeEventListener("resize", scheduleMasonryLayout);
+  if (layoutFrame !== null) cancelAnimationFrame(layoutFrame);
   if (refreshTimer) clearInterval(refreshTimer);
 });
 
 watch(
-  () => [pinnedNotes.value.map((note) => note.id).join(","), unpinnedNotes.value.map((note) => note.id).join(",")],
+  () => [notesLayoutKey(pinnedNotes.value), notesLayoutKey(unpinnedNotes.value)],
   async () => {
     await nextTick();
     mountSortable();
+    scheduleMasonryLayout();
   },
   { immediate: true }
 );
@@ -94,6 +99,42 @@ function mountSortable() {
   unpinnedSortable?.destroy();
   pinnedSortable = createSortable(pinnedListEl.value, pinnedNotes.value);
   unpinnedSortable = createSortable(unpinnedListEl.value, unpinnedNotes.value);
+}
+
+function scheduleMasonryLayout() {
+  if (layoutFrame !== null) cancelAnimationFrame(layoutFrame);
+  layoutFrame = requestAnimationFrame(() => {
+    layoutFrame = null;
+    layoutNoteGrid(pinnedListEl.value);
+    layoutNoteGrid(unpinnedListEl.value);
+  });
+}
+
+function layoutNoteGrid(grid: HTMLElement | null) {
+  if (!grid) return;
+  const style = getComputedStyle(grid);
+  const rowHeight = Number.parseFloat(style.getPropertyValue("grid-auto-rows"));
+  const rowGap = Number.parseFloat(style.rowGap);
+  if (!Number.isFinite(rowHeight) || rowHeight <= 0) return;
+
+  for (const card of grid.querySelectorAll<HTMLElement>(".note-card")) {
+    card.style.removeProperty("--note-row-span");
+    const height = card.getBoundingClientRect().height;
+    const span = Math.max(1, Math.ceil((height + rowGap) / (rowHeight + rowGap)));
+    card.style.setProperty("--note-row-span", String(span));
+  }
+}
+
+function notesLayoutKey(items: Note[]) {
+  return items.map((note) => [
+    note.id,
+    note.title,
+    note.content,
+    note.contentStyle,
+    note.items.map((item) => `${item.id}:${item.text}:${Boolean(item.checked)}`).join("|"),
+    note.tagIds.join(","),
+    note.order
+  ].join("~")).join("::");
 }
 
 function createSortable(el: HTMLElement | null, source: Note[]) {
