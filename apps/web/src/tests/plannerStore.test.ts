@@ -14,7 +14,8 @@ vi.mock("../services/api.js", () => ({
     completeTask: vi.fn(),
     createSubtask: vi.fn(),
     updateTask: vi.fn(),
-    updateSubtask: vi.fn()
+    updateSubtask: vi.fn(),
+    reorderSubtasks: vi.fn()
   }
 }));
 
@@ -53,20 +54,66 @@ describe("planner store subtask ordering", () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("creates the next subtask after the current optimistic sibling order", async () => {
+    vi.useFakeTimers();
     const planner = usePlannerStore();
     const first = subtask({ id: "first", order: 1000 });
     const second = subtask({ id: "second", order: 2000 });
     const created = subtask({ id: "third", title: "Third", order: 3000 });
-    vi.mocked(plannerApi.updateSubtask).mockResolvedValue(first);
+    vi.mocked(plannerApi.reorderSubtasks).mockResolvedValue([second, first]);
     vi.mocked(plannerApi.createSubtask).mockResolvedValue(created);
     planner.subtasks = [first, second];
 
     planner.reorderSubtasks([second, first]);
     await planner.createSubtask("task", "Third");
+    await vi.advanceTimersByTimeAsync(250);
 
-    expect(plannerApi.updateSubtask).toHaveBeenNthCalledWith(1, "second", { order: 1000 });
     expect(plannerApi.createSubtask).toHaveBeenCalledWith({ taskId: "task", title: "Third", order: 3000 });
+  });
+
+  it("coalesces rapid subtask reorders into the latest list-level sync", async () => {
+    vi.useFakeTimers();
+    const planner = usePlannerStore();
+    const first = subtask({ id: "first", order: 1000 });
+    const second = subtask({ id: "second", order: 2000 });
+    const third = subtask({ id: "third", order: 3000 });
+    vi.mocked(plannerApi.reorderSubtasks).mockResolvedValue([third, second, first]);
+    planner.subtasks = [first, second, third];
+
+    planner.reorderSubtasks([second, first, third]);
+    planner.reorderSubtasks([third, second, first]);
+    await vi.advanceTimersByTimeAsync(250);
+
+    expect(plannerApi.reorderSubtasks).toHaveBeenCalledTimes(1);
+    expect(plannerApi.reorderSubtasks).toHaveBeenCalledWith("task", { orderedIds: ["third", "second", "first"] });
+  });
+
+  it("sends the latest subtask order again after an older in-flight reorder finishes", async () => {
+    vi.useFakeTimers();
+    const planner = usePlannerStore();
+    const first = subtask({ id: "first", order: 1000 });
+    const second = subtask({ id: "second", order: 2000 });
+    const third = subtask({ id: "third", order: 3000 });
+    const responses: Array<(subtasks: Subtask[]) => void> = [];
+    vi.mocked(plannerApi.reorderSubtasks).mockImplementation(() => new Promise((resolve) => responses.push(resolve)));
+    planner.subtasks = [first, second, third];
+
+    planner.reorderSubtasks([second, first, third]);
+    await vi.advanceTimersByTimeAsync(250);
+    planner.reorderSubtasks([third, second, first]);
+
+    expect(plannerApi.reorderSubtasks).toHaveBeenCalledTimes(1);
+    expect(plannerApi.reorderSubtasks).toHaveBeenNthCalledWith(1, "task", { orderedIds: ["second", "first", "third"] });
+
+    responses[0]!([second, first, third]);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(plannerApi.reorderSubtasks).toHaveBeenCalledTimes(2);
+    expect(plannerApi.reorderSubtasks).toHaveBeenNthCalledWith(2, "task", { orderedIds: ["third", "second", "first"] });
   });
 
   it("keeps reordered subtasks when a completion response returns stale order", async () => {

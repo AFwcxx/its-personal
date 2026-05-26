@@ -46,6 +46,7 @@ export const plannerApi = {
   deleteTask: (id: string, body: { operationId?: string } = {}) => authenticatedFetch(`/api/planner/tasks/${id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }),
   createSubtask: (body: Pick<Subtask, "taskId" | "title"> & Partial<Subtask> & WriteMeta) => apiJson<Subtask>("/api/planner/subtasks", { method: "POST", body: JSON.stringify(body) }),
   updateSubtask: (id: string, body: Partial<Subtask>) => apiJson<Subtask>(`/api/planner/subtasks/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  reorderSubtasks: (taskId: string, body: { orderedIds: string[] } & WriteMeta) => apiJson<Subtask[]>(`/api/planner/tasks/${taskId}/subtasks/order`, { method: "PATCH", body: JSON.stringify(body) }),
   deleteSubtask: (id: string, body: { operationId?: string } = {}) => authenticatedFetch(`/api/planner/subtasks/${id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }),
   createTag: (body: Pick<Tag, "name"> & Partial<Tag> & WriteMeta) => apiJson<Tag>("/api/planner/tags", { method: "POST", body: JSON.stringify(body) }),
   updateTag: (id: string, body: Partial<Tag>) => apiJson<Tag>(`/api/planner/tags/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
