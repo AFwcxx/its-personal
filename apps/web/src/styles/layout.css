@@ -905,6 +905,8 @@
 
 .p-select-option.p-focus,
 .p-multiselect-option.p-focus,
+.p-select-option.p-select-option-selected,
+.p-multiselect-option.p-multiselect-option-selected,
 .p-select-option.p-selected,
 .p-multiselect-option.p-selected {
   background: var(--active) !important;
@@ -923,8 +925,21 @@
 }
 
 .p-select-option.p-selected,
-.p-multiselect-option.p-selected {
+.p-multiselect-option.p-selected,
+.p-select-option.p-select-option-selected,
+.p-multiselect-option.p-multiselect-option-selected,
+.p-select-option.p-select-option-selected.p-focus,
+.p-multiselect-option.p-multiselect-option-selected.p-focus,
+.p-select-option.p-selected.p-focus,
+.p-multiselect-option.p-selected.p-focus {
   background: var(--active) !important;
+  color: var(--text) !important;
+}
+
+.p-select-option.p-select-option-selected *,
+.p-multiselect-option.p-multiselect-option-selected *,
+.p-select-option.p-selected *,
+.p-multiselect-option.p-selected * {
   color: var(--text) !important;
 }
 
