@@ -8,6 +8,7 @@ coverage/
 .superpowers/
 data/
 attachments/
+backups/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
