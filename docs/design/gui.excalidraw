@@ -33031,16 +33031,16 @@
       "index": "bE8",
       "roundness": null,
       "seed": 1393643120,
-      "version": 539,
-      "versionNonce": 1020011152,
-      "isDeleted": false,
+      "version": 540,
+      "versionNonce": 1248890000,
+      "isDeleted": true,
       "boundElements": [
         {
           "type": "text",
           "id": "WaP0i2ePRkBXffKjCerUC"
         }
       ],
-      "updated": 1779756366861,
+      "updated": 1779757020055,
       "link": null,
       "locked": false
     },
@@ -33064,11 +33064,11 @@
       "index": "bE9",
       "roundness": null,
       "seed": 46006384,
-      "version": 566,
-      "versionNonce": 1577753712,
-      "isDeleted": false,
+      "version": 567,
+      "versionNonce": 1008223344,
+      "isDeleted": true,
       "boundElements": [],
-      "updated": 1779756379363,
+      "updated": 1779757020055,
       "link": null,
       "locked": false,
       "text": "Write something (textarea auto expand)",
@@ -33084,8 +33084,8 @@
     {
       "id": "yoszNPTWig_yDHTB4m6GZ",
       "type": "rectangle",
-      "x": 796.911545776163,
-      "y": 3920.8724236929747,
+      "x": 420.05607702616305,
+      "y": 3923.9290643179747,
       "width": 75.05859375000006,
       "height": 30,
       "angle": 0,
@@ -33103,8 +33103,8 @@
         "type": 3
       },
       "seed": 2079598224,
-      "version": 169,
-      "versionNonce": 1895299728,
+      "version": 199,
+      "versionNonce": 121296016,
       "isDeleted": false,
       "boundElements": [
         {
@@ -33112,15 +33112,15 @@
           "id": "9LZS8hJo5hY1q_A7adwNI"
         }
       ],
-      "updated": 1779756390313,
+      "updated": 1779757022248,
       "link": null,
       "locked": false
     },
     {
       "id": "9LZS8hJo5hY1q_A7adwNI",
       "type": "text",
-      "x": 819.352807067667,
-      "y": 3925.8724236929747,
+      "x": 442.49733831766696,
+      "y": 3928.9290643179747,
       "width": 30.176071166992188,
       "height": 20,
       "angle": 0,
@@ -33136,11 +33136,11 @@
       "index": "bEB",
       "roundness": null,
       "seed": 1978696336,
-      "version": 49,
-      "versionNonce": 1664755856,
+      "version": 79,
+      "versionNonce": 538034832,
       "isDeleted": false,
       "boundElements": null,
-      "updated": 1779756390313,
+      "updated": 1779757022248,
       "link": null,
       "locked": false,
       "text": "Add",
