@@ -14,8 +14,10 @@ import AppShell from "../components/AppShell.vue";
 import { generateLocalId } from "../services/offline.js";
 import { textToItems, useNotesStore, type EditableNote } from "../stores/notes.js";
 
+const noteTagFilterStorageKey = "its-personal-notes-tag-filter";
 const notes = useNotesStore();
 const search = ref("");
+const selectedFilterTagIds = ref(readPersistedTagFilter());
 const dialogVisible = ref(false);
 const deleteDialogVisible = ref(false);
 const editingId = ref<string | null>(null);
@@ -41,12 +43,21 @@ const styleOptions: Array<{ label: string; value: NoteContentStyle }> = [
 
 const tagOptions = computed(() => notes.activeTags);
 const tagsById = computed(() => new Map(notes.tags.map((tag) => [tag.id, tag])));
+const activeFilterTagIds = computed(() => {
+  const activeIds = new Set(tagOptions.value.map((tag) => tag.id));
+  return selectedFilterTagIds.value.filter((tagId) => activeIds.has(tagId));
+});
 const filteredNotes = computed(() => {
   const q = search.value.trim().toLowerCase();
   const visible = notes.visibleNotes;
-  const matched = q
-    ? visible.filter((note) => `${note.title}\n${note.content}\n${note.items.map((item) => item.text).join("\n")}`.toLowerCase().includes(q))
-    : visible;
+  const tagIds = activeFilterTagIds.value;
+  const matched = visible.filter((note) => {
+    const matchesSearch = q
+      ? `${note.title}\n${note.content}\n${note.items.map((item) => item.text).join("\n")}`.toLowerCase().includes(q)
+      : true;
+    const matchesTags = tagIds.length === 0 || tagIds.some((tagId) => note.tagIds.includes(tagId));
+    return matchesSearch && matchesTags;
+  });
   return [...matched].sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.order - b.order || b.createdAt.localeCompare(a.createdAt));
 });
 const pinnedNotes = computed(() => filteredNotes.value.filter((note) => note.pinned));
@@ -83,6 +94,19 @@ watch(
   },
   { immediate: true, flush: "post" }
 );
+
+watch(selectedFilterTagIds, (tagIds) => {
+  localStorage.setItem(noteTagFilterStorageKey, JSON.stringify(tagIds));
+}, { deep: true });
+
+function readPersistedTagFilter() {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(noteTagFilterStorageKey) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((tagId): tagId is string => typeof tagId === "string") : [];
+  } catch {
+    return [];
+  }
+}
 
 function setPinnedListEl(el: Element | ComponentPublicInstance | null) {
   pinnedListEl.value = elementFromRef(el);
@@ -269,6 +293,10 @@ function tagStyle(tagId: string) {
   return { "--tag-color": tagsById.value.get(tagId)?.color ?? "#6b7280" };
 }
 
+function removeTagChip(event: MouseEvent, removeCallback: (event: Event, item?: unknown) => void) {
+  removeCallback(event);
+}
+
 function formatModified(value: string) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
@@ -282,7 +310,30 @@ function formatModified(value: string) {
     </div>
     <div class="notes-actions">
       <Button label="Add" icon="pi pi-plus" @click="openCreateDialog" />
-      <InputText v-model="search" class="notes-search" placeholder="Search notes" />
+      <div class="notes-filters">
+        <InputText v-model="search" class="notes-search" placeholder="Search notes" />
+        <MultiSelect
+          v-model="selectedFilterTagIds"
+          class="tag-multiselect notes-tag-filter"
+          :options="tagOptions"
+          option-label="name"
+          option-value="id"
+          display="chip"
+          placeholder="Tags"
+        >
+          <template #chip="{ value, removeCallback }">
+            <span class="task-tag tag-multiselect-chip" :style="tagStyle(value)">
+              <span>{{ tagsById.get(value)?.name ?? value }}</span>
+              <button class="tag-chip-remove" type="button" aria-label="Remove tag" @click.stop="removeTagChip($event, removeCallback)">
+                <X :size="14" />
+              </button>
+            </span>
+          </template>
+          <template #option="{ option }">
+            <span class="task-tag" :style="{ '--tag-color': option.color ?? '#6b7280' }">{{ option.name }}</span>
+          </template>
+        </MultiSelect>
+      </div>
     </div>
 
     <p v-if="filteredNotes.length === 0" class="muted">No notes.</p>
@@ -368,7 +419,7 @@ function formatModified(value: string) {
             <template #chip="{ value, removeCallback }">
               <span class="task-tag tag-multiselect-chip" :style="tagStyle(value)">
                 <span>{{ tagsById.get(value)?.name ?? value }}</span>
-                <button class="tag-chip-remove" type="button" aria-label="Remove tag" @click.stop="removeCallback($event, value)">
+                <button class="tag-chip-remove" type="button" aria-label="Remove tag" @click.stop="removeTagChip($event, removeCallback)">
                   <X :size="14" />
                 </button>
               </span>

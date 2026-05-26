@@ -563,6 +563,17 @@
   width: min(320px, 100%);
 }
 
+.notes-filters {
+  display: grid;
+  gap: 0.6rem;
+  width: min(320px, 100%);
+}
+
+.notes-tag-filter.p-multiselect {
+  align-items: flex-start;
+  width: 100%;
+}
+
 .notes-section {
   margin-top: 1.25rem;
 }
@@ -1269,6 +1280,10 @@
   }
 
   .notes-search {
+    width: 100%;
+  }
+
+  .notes-filters {
     width: 100%;
   }
 
