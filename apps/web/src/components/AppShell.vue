@@ -142,7 +142,7 @@ function closeTaskDetail() {
           text
           @click="hardRefresh"
         />
-        <span>v0.0.1</span>
+        <span>v0.0.2</span>
       </div>
     </aside>
     <main class="main">

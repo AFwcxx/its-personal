@@ -1,6 +1,6 @@
 {
   "name": "@its-personal/api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -9,7 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@its-personal/shared": "0.0.1",
+    "@its-personal/shared": "0.0.2",
     "archiver": "^7.0.1",
     "better-sqlite3": "^11.10.0",
     "cookie-parser": "^1.4.7",

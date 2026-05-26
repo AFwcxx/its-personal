@@ -6,12 +6,13 @@ This app is built for personal or household use on a trusted private network. It
 
 ## Features
 
-- Planner, schedule, all-tasks, archive, and tag-management views
+- Planner, notes, schedule, all-tasks, archive, and tag-management views
 - Single shared app password with server-side idle session locking
 - SQLite storage
 - File attachments with configurable per-file size limits
 - Docker Compose deployment with persistent volumes
 - PWA-friendly web frontend
+- Durable offline planner and notes writes with pending-sync status and automatic retry
 
 ## Security Model
 
@@ -193,7 +194,7 @@ docker compose logs -f
 Requirements:
 
 - Node.js 22
-- npm
+- npm 11 or newer for the project `min-release-age=2d` supply-chain delay in `.npmrc`
 
 Install dependencies:
 
