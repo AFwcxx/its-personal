@@ -536,7 +536,7 @@
 
 .tag-row {
   display: grid;
-  grid-template-columns: 44px 44px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(150px, auto) 44px minmax(0, 1fr) auto;
   gap: 0.5rem;
   align-items: center;
   min-height: 54px;
@@ -544,6 +544,181 @@
   border-radius: var(--radius-panel);
   background: var(--surface);
   padding: 0.35rem;
+}
+
+.tag-counts {
+  min-width: 150px;
+  font-size: 0.85rem;
+}
+
+.notes-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.notes-search {
+  width: min(320px, 100%);
+}
+
+.notes-section {
+  margin-top: 1.25rem;
+}
+
+.notes-section > h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 240px));
+  align-items: start;
+  gap: 1rem;
+}
+
+.note-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 240px;
+  min-height: 120px;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.note-card:hover,
+.note-card:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: var(--surface-raised);
+}
+
+.note-card h3 {
+  margin: 0;
+  padding-right: 1.75rem;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.note-card-content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.note-card-content p {
+  margin: 0;
+}
+
+.note-drag-handle {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.55rem;
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--muted);
+  cursor: grab;
+}
+
+.note-drag-handle:hover,
+.note-drag-handle:focus-visible {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.note-list {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.note-list li + li {
+  margin-top: 0.35rem;
+}
+
+.note-checklist {
+  padding-left: 0;
+  list-style: none;
+}
+
+.note-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.note-checklist .checked {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.note-dialog {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+}
+
+.note-dialog label,
+.note-item-editor {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.note-dialog-pin {
+  position: absolute !important;
+  top: -0.5rem;
+  right: 0;
+}
+
+.note-dialog-pin.active {
+  color: var(--accent-strong) !important;
+}
+
+.note-item-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.note-item-input-row .p-inputtext {
+  flex: 1;
+}
+
+.note-style-row,
+.note-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.note-style-row {
+  justify-content: flex-start;
+}
+
+.note-style-row .p-button.active {
+  border-color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface)) !important;
+  color: var(--text) !important;
+}
+
+.note-dialog-footer .muted {
+  margin-right: auto;
+  font-size: 0.85rem;
 }
 
 .color-input {
@@ -1047,6 +1222,24 @@
 @media (max-width: 640px) {
   .task-create-actions {
     flex-direction: column;
+  }
+
+  .notes-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .notes-search {
+    width: 100%;
+  }
+
+  .notes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .note-card {
+    max-width: none;
+    width: 100%;
   }
 
   .task-create-tags.p-multiselect {

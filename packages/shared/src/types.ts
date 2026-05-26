@@ -49,6 +49,34 @@ export interface Tag {
   deletedAt: string | null;
 }
 
+export type NoteContentStyle = "normal" | "checklist" | "ordered" | "unordered";
+
+export interface NoteListItem {
+  id: string;
+  text: string;
+  checked?: boolean | undefined;
+}
+
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  contentStyle: NoteContentStyle;
+  items: NoteListItem[];
+  pinned: boolean;
+  tagIds: string[];
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface NotesSnapshot {
+  notes: Note[];
+  tags: Tag[];
+  changeVersion?: number;
+}
+
 export interface TaskLink {
   id: string;
   taskId: string;

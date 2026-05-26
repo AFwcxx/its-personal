@@ -5,7 +5,7 @@ export type PendingState = "pending" | "failed";
 
 export interface PendingOperation {
   operationId: string;
-  entityType: "task" | "subtask" | "subtask-order" | "tag" | "link";
+  entityType: "task" | "subtask" | "subtask-order" | "tag" | "link" | "note";
   entityId: string;
   method: "POST" | "PATCH" | "DELETE";
   path: string;
