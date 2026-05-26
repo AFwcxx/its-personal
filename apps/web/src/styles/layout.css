@@ -1455,6 +1455,13 @@
   grid-column: 1 / -1;
 }
 
+.all-tasks-toolbar .p-inputtext,
+.archive-toolbar .p-inputtext {
+  font-size: 1rem;
+  min-height: 44px;
+  padding-inline: 0.75rem;
+}
+
 .all-tasks-toolbar .check-label {
   align-self: end;
 }
