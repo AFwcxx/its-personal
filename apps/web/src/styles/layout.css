@@ -552,25 +552,28 @@
 }
 
 .notes-actions {
-  display: flex;
+  display: grid;
   align-items: center;
-  justify-content: space-between;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 1rem;
   margin: 1rem 0 1.25rem;
 }
 
 .notes-search {
-  width: min(320px, 100%);
+  width: 100%;
 }
 
 .notes-filters {
-  display: grid;
+  display: flex;
   gap: 0.6rem;
-  width: min(320px, 100%);
+  justify-self: end;
+  max-width: min(720px, 100%);
+  width: 100%;
 }
 
 .notes-tag-filter.p-multiselect {
   align-items: flex-start;
+  min-width: 0;
   width: 100%;
 }
 
@@ -1276,7 +1279,7 @@
 
   .notes-actions {
     align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .notes-search {
@@ -1284,6 +1287,8 @@
   }
 
   .notes-filters {
+    display: grid;
+    max-width: none;
     width: 100%;
   }
 
