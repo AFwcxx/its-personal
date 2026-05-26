@@ -281,9 +281,16 @@ function formatModified(value: string) {
       </div>
     </section>
 
-    <Dialog v-model:visible="dialogVisible" modal :header="editingId ? 'Edit note' : 'Add note'" :style="{ width: 'min(640px, 94vw)' }">
+    <Dialog v-model:visible="dialogVisible" modal :style="{ width: 'min(640px, 94vw)' }">
+      <template #header>
+        <div class="note-dialog-header">
+          <button class="note-dialog-pin-button" :class="{ active: pinned }" type="button" :aria-label="pinned ? 'Unpin note' : 'Pin note'" @click="togglePinned">
+            <Pin :size="20" :fill="pinned ? 'currentColor' : 'none'" />
+          </button>
+          <span>{{ editingId ? 'Edit note' : 'Add note' }}</span>
+        </div>
+      </template>
       <div class="note-dialog">
-        <Button class="note-dialog-pin" :class="{ active: pinned }" :aria-label="pinned ? 'Unpin note' : 'Pin note'" severity="secondary" text @click="togglePinned"><Pin :size="18" /></Button>
         <label>Title<InputText v-model="title" maxlength="500" /></label>
         <label v-if="contentStyle === 'normal'">Content<Textarea v-model="content" auto-resize rows="4" maxlength="20000" /></label>
         <div v-else class="note-item-editor">
