@@ -5,9 +5,17 @@ import type { Note, Tag } from "@its-personal/shared";
 import NotesView from "../views/NotesView.vue";
 import { useNotesStore } from "../stores/notes.js";
 
+const sortable = vi.hoisted(() => ({
+  instances: [] as Array<{ element: HTMLElement; options: { onEnd?: () => void }; destroy: ReturnType<typeof vi.fn> }>
+}));
+
 vi.mock("sortablejs", () => ({
   default: {
-    create: vi.fn(() => ({ destroy: vi.fn() }))
+    create: vi.fn((element: HTMLElement, options: { onEnd?: () => void }) => {
+      const instance = { element, options, destroy: vi.fn() };
+      sortable.instances.push(instance);
+      return instance;
+    })
   }
 }));
 
@@ -78,6 +86,8 @@ describe("NotesView", () => {
   beforeEach(() => {
     localStorage.clear();
     setActivePinia(createPinia());
+    vi.clearAllMocks();
+    sortable.instances = [];
     Object.defineProperty(window, "matchMedia", {
       configurable: true,
       value: vi.fn(() => ({ matches: false }))
@@ -118,5 +128,48 @@ describe("NotesView", () => {
     await wrapper.find("select").setValue(["tag-work"]);
 
     expect(localStorage.getItem("its-personal-notes-tag-filter")).toBe("[\"tag-work\"]");
+  });
+
+  it("reorders notes by the dropped card order inside the current section", async () => {
+    const notes = useNotesStore();
+    notes.notes = [
+      note({ id: "first", title: "First", pinned: true, order: 1000 }),
+      note({ id: "second", title: "Second", pinned: true, order: 2000 }),
+      note({ id: "third", title: "Third", pinned: true, order: 3000 })
+    ];
+    notes.reorderNotes = vi.fn();
+
+    const wrapper = mountNotesView();
+    await wrapper.vm.$nextTick();
+
+    const cards = wrapper.findAll<HTMLElement>(".note-card");
+    cards[0]!.element.parentElement?.append(cards[0]!.element);
+
+    sortable.instances[0]?.options.onEnd?.();
+
+    expect(notes.reorderNotes).toHaveBeenCalledWith([
+      expect.objectContaining({ id: "second" }),
+      expect.objectContaining({ id: "third" }),
+      expect.objectContaining({ id: "first" })
+    ]);
+  });
+
+  it("disables note reordering while filtered", async () => {
+    const notes = useNotesStore();
+    notes.tags = [tag({ id: "tag-work", name: "Work" })];
+    notes.notes = [
+      note({ id: "first", title: "First", tagIds: ["tag-work"], order: 1000 }),
+      note({ id: "second", title: "Second", order: 2000 })
+    ];
+
+    const wrapper = mountNotesView();
+    await wrapper.vm.$nextTick();
+    expect(sortable.instances).toHaveLength(1);
+
+    await wrapper.find("select").setValue(["tag-work"]);
+    await wrapper.vm.$nextTick();
+
+    expect(sortable.instances[0]?.destroy).toHaveBeenCalled();
+    expect(sortable.instances).toHaveLength(1);
   });
 });
