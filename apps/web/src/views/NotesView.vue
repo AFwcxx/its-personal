@@ -64,6 +64,7 @@ const pinnedNotes = computed(() => filteredNotes.value.filter((note) => note.pin
 const unpinnedNotes = computed(() => filteredNotes.value.filter((note) => !note.pinned));
 const editingNote = computed(() => notes.notes.find((note) => note.id === editingId.value) ?? null);
 const canSave = computed(() => title.value.trim().length > 0 || content.value.trim().length > 0 || items.value.some((item) => item.text.trim().length > 0));
+const canReorderNotes = computed(() => search.value.trim().length === 0 && activeFilterTagIds.value.length === 0);
 
 onMounted(() => {
   void notes.refresh().finally(async () => {
@@ -86,7 +87,7 @@ onBeforeUnmount(() => {
 });
 
 watch(
-  () => [notesLayoutKey(pinnedNotes.value), notesLayoutKey(unpinnedNotes.value)],
+  () => [notesLayoutKey(pinnedNotes.value), notesLayoutKey(unpinnedNotes.value), canReorderNotes.value],
   async () => {
     await nextTick();
     mountSortable();
@@ -183,20 +184,33 @@ function notesLayoutKey(items: Note[]) {
 }
 
 function createSortable(el: HTMLElement | null, source: Note[]) {
-  if (!el || source.length < 2) return null;
+  if (!el || source.length < 2 || !canReorderNotes.value) return null;
+  let lastHandledOrder = noteIdsKey(source);
+  const persistDroppedOrder = () => {
+    const reordered = orderedNotesFromDom(el, source);
+    const orderKey = noteIdsKey(reordered);
+    if (orderKey === lastHandledOrder) return;
+    lastHandledOrder = orderKey;
+    void notes.reorderNotes(reordered);
+  };
   return Sortable.create(el, {
     animation: 150,
     handle: ".note-drag-handle",
     draggable: ".note-card",
-    onEnd(event) {
-      if (event.oldIndex === undefined || event.newIndex === undefined || event.oldIndex === event.newIndex) return;
-      const reordered = [...source];
-      const [moved] = reordered.splice(event.oldIndex, 1);
-      if (!moved) return;
-      reordered.splice(event.newIndex, 0, moved);
-      void notes.reorderNotes(reordered);
-    }
+    onEnd: persistDroppedOrder
   });
+}
+
+function noteIdsKey(items: Note[]) {
+  return items.map((note) => note.id).join(",");
+}
+
+function orderedNotesFromDom(el: HTMLElement, source: Note[]) {
+  const byId = new Map(source.map((note) => [note.id, note]));
+  const ordered = Array.from(el.querySelectorAll<HTMLElement>(".note-card"))
+    .map((card) => card.dataset.id ? byId.get(card.dataset.id) : undefined)
+    .filter((note): note is Note => note !== undefined);
+  return ordered.length === source.length ? ordered : source;
 }
 
 function openCreateDialog() {

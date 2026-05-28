@@ -38,6 +38,7 @@ describe("notes store offline projection", () => {
   beforeEach(async () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    (window as unknown as { __forceMemoryOutbox?: boolean }).__forceMemoryOutbox = true;
     await clearPendingOperations();
   });
 
@@ -87,5 +88,22 @@ describe("notes store offline projection", () => {
     await notes.toggleChecklistItem("note", "item-1");
 
     expect(notes.notes[0]?.items[0]?.checked).toBe(true);
+  });
+
+  it("persists note reorders from the original stored order", async () => {
+    const notes = useNotesStore();
+    notes.notes = [
+      note({ id: "first", order: 1000 }),
+      note({ id: "second", order: 2000 }),
+      note({ id: "third", order: 3000 })
+    ];
+    vi.mocked(notesApi.updateNote).mockImplementation(async (id, patch) => note({ id, ...patch }));
+
+    await notes.reorderNotes([notes.notes[1]!, notes.notes[2]!, notes.notes[0]!]);
+
+    expect(notesApi.updateNote).toHaveBeenCalledTimes(3);
+    expect(notesApi.updateNote).toHaveBeenNthCalledWith(1, "second", { order: 1000 });
+    expect(notesApi.updateNote).toHaveBeenNthCalledWith(2, "third", { order: 2000 });
+    expect(notesApi.updateNote).toHaveBeenNthCalledWith(3, "first", { order: 3000 });
   });
 });

@@ -126,10 +126,27 @@ export const useNotesStore = defineStore("notes", {
       this.notes = this.notes.map((note) => note.id === id ? { ...note, deletedAt: new Date().toISOString() } : note);
     },
     async reorderNotes(notes: Note[]) {
+      const originalById = new Map(this.notes.map((note) => [note.id, note]));
       const updates = notes.map((note, index) => ({ ...note, order: (index + 1) * 1000 }));
       this.notes = this.notes.map((note) => updates.find((updated) => updated.id === note.id) ?? note);
       for (const note of updates) {
-        await this.updateNote(note.id, { order: note.order });
+        const original = originalById.get(note.id);
+        if (!original || original.order === note.order) continue;
+        const operationId = generateLocalId("op");
+        const saved = await this.writeOperation<Note>({
+          operationId,
+          entityType: "note",
+          entityId: note.id,
+          method: "PATCH",
+          path: `/api/notes/${note.id}`,
+          body: { order: note.order, operationId },
+          base: { order: original.order },
+          state: "pending",
+          retryable: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        if (saved) this.notes = this.notes.map((candidate) => candidate.id === note.id ? normalizeNote(saved) : candidate);
       }
     },
     async toggleChecklistItem(noteId: string, itemId: string) {
