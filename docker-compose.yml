@@ -1,18 +1,17 @@
 services:
   its-personal:
     build: .
+    network_mode: host
     env_file:
       - path: .env
         required: false
     environment:
       HOST: 0.0.0.0
-      PORT: 3000
+      PORT: 3009
       APP_TIMEZONE: ${APP_TIMEZONE:-Asia/Kuala_Lumpur}
       TZ: ${APP_TIMEZONE:-Asia/Kuala_Lumpur}
       DATABASE_PATH: /data/its-personal.sqlite
       ATTACHMENT_DIR: /attachments
-    ports:
-      - "${PUBLISHED_HOST:-127.0.0.1}:${PUBLISHED_PORT:-3009}:3000"
     volumes:
       - planner-data:/data
       - planner-attachments:/attachments
