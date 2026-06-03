@@ -489,6 +489,30 @@ describe("planner store offline write responsiveness", () => {
     expect(await pendingOperations()).toHaveLength(1);
   });
 
+  it("queues reordered task order from the original stored order", async () => {
+    Object.defineProperty(window.navigator, "onLine", { value: false, configurable: true });
+    const planner = usePlannerStore();
+    planner.tasks = [
+      task({ id: "first", order: 1000 }),
+      task({ id: "second", order: 2000 }),
+      task({ id: "third", order: 3000 })
+    ];
+
+    await planner.reorderTasks([planner.tasks[1]!, planner.tasks[2]!, planner.tasks[0]!]);
+
+    const operations = await pendingOperations();
+    expect(operations).toHaveLength(3);
+    expect(operations.map((operation) => ({
+      entityId: operation.entityId,
+      order: operation.body.order,
+      baseOrder: operation.base?.order
+    }))).toEqual([
+      { entityId: "second", order: 1000, baseOrder: 2000 },
+      { entityId: "third", order: 2000, baseOrder: 3000 },
+      { entityId: "first", order: 3000, baseOrder: 1000 }
+    ]);
+  });
+
   it("keeps tag and note edits folded into an offline-created task", async () => {
     Object.defineProperty(window.navigator, "onLine", { value: false, configurable: true });
     const planner = usePlannerStore();

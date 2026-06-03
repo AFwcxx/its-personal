@@ -180,10 +180,27 @@ export const usePlannerStore = defineStore("planner", {
       await this.updateTask(id, { subtasksCollapsed: collapsed });
     },
     async reorderTasks(tasks: Task[]) {
+      const originalById = new Map(this.tasks.map((task) => [task.id, task]));
       const updates = tasks.map((task, index) => ({ ...task, order: (index + 1) * 1000 }));
       this.tasks = this.tasks.map((task) => updates.find((updated) => updated.id === task.id) ?? task);
       for (const task of updates) {
-        await this.updateTask(task.id, { order: task.order });
+        const original = originalById.get(task.id);
+        if (!original || original.order === task.order) continue;
+        const operationId = generateLocalId("op");
+        const saved = await this.writeOperation<Task>({
+          operationId,
+          entityType: "task",
+          entityId: task.id,
+          method: "PATCH",
+          path: `/api/planner/tasks/${task.id}`,
+          body: { order: task.order, operationId },
+          base: { order: original.order },
+          state: "pending",
+          retryable: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+        if (saved) this.tasks = this.tasks.map((candidate) => candidate.id === task.id ? reconcileTaskResponse(candidate, { ...original, order: task.order }, saved, { order: task.order }) : candidate);
       }
     },
     async reorderSubtasks(subtasks: Subtask[]) {
