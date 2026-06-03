@@ -216,6 +216,24 @@ describe("planner store task update ordering", () => {
 
     expect(planner.tasks[0]?.notes).toBe("Keep words");
   });
+
+  it("keeps reordered task order when an expand response returns stale order", async () => {
+    const planner = usePlannerStore();
+    const first = task({ id: "first", order: 1000, subtasksCollapsed: true });
+    const second = task({ id: "second", order: 2000 });
+    vi.mocked(plannerApi.updateTask).mockImplementation(async (id, patch) => task({
+      id,
+      ...patch,
+      order: id === "first" ? 1000 : 2000
+    }));
+    planner.tasks = [first, second];
+    planner.tasks = planner.tasks.map((candidate) => candidate.id === "first" ? { ...candidate, order: 2000 } : { ...candidate, order: 1000 });
+
+    await planner.setSubtasksCollapsed("first", false);
+
+    expect(planner.tasks.find((candidate) => candidate.id === "first")?.order).toBe(2000);
+    expect(planner.tasks.find((candidate) => candidate.id === "first")?.subtasksCollapsed).toBe(false);
+  });
 });
 
 describe("planner store pending projection replay", () => {
