@@ -25,6 +25,7 @@ const title = ref("");
 const content = ref("");
 const contentStyle = ref<NoteContentStyle>("normal");
 const items = ref<NoteListItem[]>([]);
+const focusedItemId = ref<string | null>(null);
 const pinned = ref(false);
 const selectedTagIds = ref<string[]>([]);
 const pinnedListEl = ref<HTMLElement | null>(null);
@@ -219,6 +220,7 @@ function openCreateDialog() {
   content.value = "";
   contentStyle.value = "normal";
   items.value = [];
+  focusedItemId.value = null;
   pinned.value = false;
   selectedTagIds.value = [];
   dialogVisible.value = true;
@@ -230,6 +232,7 @@ function openEditDialog(note: Note) {
   content.value = note.contentStyle === "normal" ? note.content : note.items.map((item) => item.text).join("\n");
   contentStyle.value = note.contentStyle;
   items.value = note.items.map((item) => ({ ...item }));
+  focusedItemId.value = null;
   pinned.value = note.pinned;
   selectedTagIds.value = [...note.tagIds];
   dialogVisible.value = true;
@@ -261,12 +264,24 @@ function addListItem(index = items.value.length) {
 }
 
 function blurListItem(index: number) {
+  focusedItemId.value = null;
   if (items.value.length <= 1) return;
   if (items.value[index]?.text.trim() === "") items.value.splice(index, 1);
 }
 
 function enterListItem(index: number) {
   addListItem(index + 1);
+}
+
+function canDeleteListItem(item: NoteListItem) {
+  return items.value.length > 1 && focusedItemId.value === item.id && item.text.trim().length > 0;
+}
+
+function deleteListItem(index: number) {
+  const item = items.value[index];
+  if (!item || items.value.length <= 1) return;
+  focusedItemId.value = null;
+  items.value.splice(index, 1);
 }
 
 async function saveNote() {
@@ -422,10 +437,30 @@ function formatModified(value: string) {
         <label v-if="contentStyle === 'normal'">Content<Textarea v-model="content" auto-resize rows="4" maxlength="20000" /></label>
         <div v-else class="note-item-editor">
           <label>Content</label>
-          <div v-for="(item, index) in items" :key="item.id" class="note-item-input-row">
-            <Checkbox v-if="contentStyle === 'checklist'" v-model="item.checked" binary />
-            <InputText v-model="item.text" :data-note-item-id="item.id" @blur="blurListItem(index)" @keydown.enter.prevent="enterListItem(index)" />
-          </div>
+          <TransitionGroup name="note-item-row" tag="div" class="note-item-input-rows">
+            <div v-for="(item, index) in items" :key="item.id" class="note-item-input-row">
+              <Checkbox v-if="contentStyle === 'checklist'" v-model="item.checked" binary />
+              <InputText
+                v-model="item.text"
+                :data-note-item-id="item.id"
+                @focus="focusedItemId = item.id"
+                @blur="blurListItem(index)"
+                @keydown.enter.prevent="enterListItem(index)"
+              />
+              <span class="note-item-delete-slot" :class="{ visible: canDeleteListItem(item) }">
+                <button
+                  class="note-item-delete-button"
+                  type="button"
+                  aria-label="Delete content entry"
+                  :tabindex="canDeleteListItem(item) ? 0 : -1"
+                  @mousedown.prevent
+                  @click="deleteListItem(index)"
+                >
+                  <Trash2 :size="16" />
+                </button>
+              </span>
+            </div>
+          </TransitionGroup>
           <Button label="Add item" icon="pi pi-plus" severity="secondary" outlined @click="addListItem()" />
         </div>
         <label>Tags

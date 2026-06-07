@@ -172,4 +172,45 @@ describe("NotesView", () => {
     expect(sortable.instances[0]?.destroy).toHaveBeenCalled();
     expect(sortable.instances).toHaveLength(1);
   });
+
+  it("removes list entries from the editor only after the user saves", async () => {
+    const notes = useNotesStore();
+    notes.notes = [
+      note({
+        id: "list-note",
+        title: "List note",
+        content: "Alpha\nBeta",
+        contentStyle: "unordered",
+        items: [
+          { id: "item-alpha", text: "Alpha" },
+          { id: "item-beta", text: "Beta" }
+        ]
+      })
+    ];
+    notes.updateNote = vi.fn(async (_id, patch) => {
+      notes.notes = notes.notes.map((candidate) => candidate.id === "list-note" ? { ...candidate, ...patch } : candidate);
+      return notes.notes[0];
+    });
+
+    const wrapper = mountNotesView();
+    await wrapper.find(".note-card").trigger("click");
+    const itemInputs = wrapper.findAll(".note-item-input-row input");
+
+    await itemInputs[0]!.trigger("focus");
+
+    expect(wrapper.findAll(".note-item-delete-slot.visible")).toHaveLength(1);
+
+    await wrapper.find(".note-item-delete-slot.visible .note-item-delete-button").trigger("click");
+
+    expect(wrapper.findAll(".note-item-input-row")).toHaveLength(1);
+    expect(notes.updateNote).not.toHaveBeenCalled();
+    expect(wrapper.findAll(".note-item-delete-slot.visible")).toHaveLength(0);
+
+    await wrapper.findAll("button").find((button) => button.text() === "Save")!.trigger("click");
+
+    expect(notes.updateNote).toHaveBeenCalledWith("list-note", expect.objectContaining({
+      items: [{ id: "item-beta", text: "Beta", checked: undefined }],
+      content: "Beta"
+    }));
+  });
 });

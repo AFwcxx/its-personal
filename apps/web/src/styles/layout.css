@@ -724,14 +724,72 @@
   color: var(--accent);
 }
 
+.note-item-input-rows {
+  display: grid;
+  gap: 0.5rem;
+}
+
 .note-item-input-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  overflow: hidden;
+  transition: opacity 110ms ease;
 }
 
 .note-item-input-row .p-inputtext {
   flex: 1;
+  min-width: 0;
+}
+
+.note-item-delete-slot {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 0;
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: flex-basis 110ms ease, width 110ms ease, opacity 90ms ease;
+}
+
+.note-item-delete-slot.visible {
+  flex-basis: 1.25rem;
+  width: 1.25rem;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.note-item-delete-button {
+  display: inline-grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #ffe66d;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 90ms ease, color 90ms ease;
+}
+
+.note-item-delete-slot.visible .note-item-delete-button {
+  opacity: 1;
+}
+
+.note-item-delete-button:hover,
+.note-item-delete-button:focus-visible {
+  color: #fff3a0;
+  outline: none;
+}
+
+.note-item-row-leave-active {
+  transition: opacity 110ms ease;
+}
+
+.note-item-row-leave-to {
+  opacity: 0;
 }
 
 .note-style-row,
