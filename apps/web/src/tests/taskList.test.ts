@@ -213,6 +213,28 @@ describe("TaskList", () => {
     expect(labels).toEqual(["Collapse subtasks", "Complete"]);
   });
 
+  it("moves a single overdue task to today's planner date from the sun action", async () => {
+    const planner = usePlannerStore();
+    planner.currentDate = "2026-05-21";
+    planner.updateTask = vi.fn(async (id: string, patch: Partial<Task>) => ({ ...task({ id }), ...patch }));
+
+    const wrapper = mount(TaskRow, {
+      props: { task: task({ id: "overdue", dueDate: "2026-05-18" }), moveToTodayAction: true },
+      global: {
+        stubs: {
+          Button: { template: "<button v-bind='$attrs' type='button' @click='$emit(\"click\", $event)'><slot /></button>" }
+        }
+      }
+    });
+
+    expect(wrapper.find(".pi-sun").exists()).toBe(true);
+    expect(wrapper.find("button[aria-label='Pin']").exists()).toBe(false);
+
+    await wrapper.find("button[aria-label='Move to today']").trigger("click");
+
+    expect(planner.updateTask).toHaveBeenCalledWith("overdue", { dueDate: "2026-05-21" });
+  });
+
   it("shows a dialog instead of completing a task with an open subtask", async () => {
     const planner = usePlannerStore();
     planner.tasks = [task({ id: "parent", title: "Parent" })];

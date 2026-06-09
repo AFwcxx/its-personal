@@ -6,7 +6,7 @@ import { usePlannerStore } from "../stores/planner.js";
 import SubtaskList from "./SubtaskList.vue";
 import TaskRow from "./TaskRow.vue";
 
-const props = defineProps<{ tasks: Task[]; reorderable?: boolean; readonly?: boolean; hidePin?: boolean }>();
+const props = defineProps<{ tasks: Task[]; reorderable?: boolean; readonly?: boolean; hidePin?: boolean; moveToTodayAction?: boolean }>();
 const emit = defineEmits<{ reorder: [tasks: Task[]] }>();
 const planner = usePlannerStore();
 
@@ -84,11 +84,12 @@ onBeforeUnmount(destroySortable);
         :draggable="Boolean(reorderable)"
         :readonly="Boolean(readonly)"
         :hide-pin="Boolean(hidePin)"
+        :move-to-today-action="Boolean(moveToTodayAction)"
         :can-collapse-subtasks="visibleSubtasksFor(task).length > 0"
       />
       <SubtaskList v-if="!task.subtasksCollapsed" :task-id="task.id" :subtasks="planner.subtasks" :readonly="Boolean(readonly)" />
       <div v-if="childrenFor(task).length > 0" class="subtask-list">
-        <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" />
+        <TaskRow v-for="child in childrenFor(task)" :key="child.id" :task="child" :readonly="Boolean(readonly)" :hide-pin="Boolean(hidePin)" :move-to-today-action="Boolean(moveToTodayAction)" />
       </div>
     </div>
   </TransitionGroup>

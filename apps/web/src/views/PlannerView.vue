@@ -157,7 +157,7 @@ async function confirmMoveGroupToToday() {
             <i class="pi pi-sun" aria-hidden="true" />
           </button>
         </div>
-        <TaskList :tasks="group.tasks" :reorderable="canReorder" @reorder="reorder" />
+        <TaskList :tasks="group.tasks" :reorderable="canReorder" move-to-today-action @reorder="reorder" />
       </section>
     </template>
     <TaskList v-else :tasks="visibleTasks" :reorderable="canReorder" @reorder="reorder" />

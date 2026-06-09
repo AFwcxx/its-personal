@@ -6,7 +6,7 @@ import { ChevronDown, ChevronRight, GripVertical, Pin, Square, SquareCheck } fro
 import { computed, ref } from "vue";
 import { usePlannerStore } from "../stores/planner.js";
 
-const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean; hidePin?: boolean; canCollapseSubtasks?: boolean }>();
+const props = defineProps<{ task: Task; draggable?: boolean; readonly?: boolean; hidePin?: boolean; moveToTodayAction?: boolean; canCollapseSubtasks?: boolean }>();
 const planner = usePlannerStore();
 const incompleteSubtasksDialogVisible = ref(false);
 const isSelected = computed(() => planner.selectedTaskId === props.task.id);
@@ -30,6 +30,10 @@ async function toggleCompleted() {
 
 async function toggleSubtasksCollapsed() {
   await planner.setSubtasksCollapsed(props.task.id, !props.task.subtasksCollapsed);
+}
+
+async function moveToToday() {
+  await planner.updateTask(props.task.id, { dueDate: planner.today });
 }
 </script>
 
@@ -70,7 +74,10 @@ async function toggleSubtasksCollapsed() {
         <ChevronRight v-if="task.subtasksCollapsed" :size="18" />
         <ChevronDown v-else :size="18" />
       </Button>
-      <Button v-if="!readonly && !hidePin" class="task-row-icon-button" title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
+      <Button v-if="!readonly && moveToTodayAction" class="task-row-icon-button" title="Move to today" aria-label="Move to today" severity="secondary" text @click.stop="moveToToday">
+        <i class="pi pi-sun" aria-hidden="true" />
+      </Button>
+      <Button v-else-if="!readonly && !hidePin" class="task-row-icon-button" title="Pin" aria-label="Pin" severity="secondary" text @click.stop="planner.updateTask(task.id, { pinned: !task.pinned })">
         <Pin :size="16" :fill="task.pinned ? 'currentColor' : 'none'" />
       </Button>
       <Button v-if="!readonly" class="task-row-icon-button" title="Complete" aria-label="Complete" severity="secondary" text @click.stop="toggleCompleted">
