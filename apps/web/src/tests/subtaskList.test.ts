@@ -109,6 +109,37 @@ describe("SubtaskList", () => {
     expect(Sortable.create).toHaveBeenCalledTimes(1);
   });
 
+  it("shows completed subtasks at the bottom without changing stored order", async () => {
+    const wrapper = mount(SubtaskList, {
+      props: {
+        taskId: "task",
+        subtasks: [
+          subtask({ id: "first", title: "First", order: 1000 }),
+          subtask({ id: "second", title: "Second", order: 2000, completedAt: "2026-05-21T01:00:00.000Z" }),
+          subtask({ id: "third", title: "Third", order: 3000 })
+        ]
+      },
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" }
+        }
+      }
+    });
+
+    expect(wrapper.findAll(".subtask-title").map((title) => title.text())).toEqual(["First", "Third", "Second"]);
+
+    await wrapper.setProps({
+      subtasks: [
+        subtask({ id: "first", title: "First", order: 1000 }),
+        subtask({ id: "second", title: "Second", order: 2000 }),
+        subtask({ id: "third", title: "Third", order: 3000 })
+      ]
+    });
+
+    expect(wrapper.findAll(".subtask-title").map((title) => title.text())).toEqual(["First", "Second", "Third"]);
+  });
+
   it("updates an incomplete subtask from the edit dialog and closes it", async () => {
     const planner = usePlannerStore();
     planner.subtasks = [subtask({ id: "first", title: "First" })];

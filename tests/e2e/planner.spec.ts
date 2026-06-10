@@ -167,7 +167,7 @@ test("task detail backdrop covers the full left side and closes the menu", async
   await expect(page.locator(".detail")).toHaveCount(0);
 });
 
-test("subtask order stays after reordering then toggling completion", async ({ page }) => {
+test("completed subtask moves to the bottom visually and returns when reopened", async ({ page }) => {
   const serverSubtasks = [
     {
       id: "subtask-first",
@@ -175,7 +175,7 @@ test("subtask order stays after reordering then toggling completion", async ({ p
       title: "First subtask",
       completedAt: null,
       deletedAt: null,
-      order: 1000,
+      order: 3000,
       createdAt: "2026-05-25T00:00:00.000Z",
       updatedAt: "2026-05-25T00:00:00.000Z"
     },
@@ -185,7 +185,7 @@ test("subtask order stays after reordering then toggling completion", async ({ p
       title: "Second subtask",
       completedAt: null,
       deletedAt: null,
-      order: 2000,
+      order: 1000,
       createdAt: "2026-05-25T00:01:00.000Z",
       updatedAt: "2026-05-25T00:01:00.000Z"
     },
@@ -195,12 +195,14 @@ test("subtask order stays after reordering then toggling completion", async ({ p
       title: "Third subtask",
       completedAt: null,
       deletedAt: null,
-      order: 3000,
+      order: 2000,
       createdAt: "2026-05-25T00:02:00.000Z",
       updatedAt: "2026-05-25T00:02:00.000Z"
     }
   ];
+  let reorderRequests = 0;
 
+  await page.setViewportSize({ width: 1200, height: 900 });
   await page.addInitScript(() => {
     sessionStorage.clear();
   });
@@ -213,6 +215,26 @@ test("subtask order stays after reordering then toggling completion", async ({ p
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({ idleTimeoutSeconds: 10800 })
+  }));
+  await page.route("**/api/config", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ appTitle: "Its Personal" })
+  }));
+  await page.route("**/api/planner/changes", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ version: 0 })
+  }));
+  await page.route("**/api/notes/changes", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ version: 0 })
+  }));
+  await page.route("**/api/notes/snapshot", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ notes: [], tags: [], changeVersion: 0 })
   }));
   await page.route("**/api/planner/snapshot", (route) => route.fulfill({
     status: 200,
@@ -243,6 +265,7 @@ test("subtask order stays after reordering then toggling completion", async ({ p
     })
   }));
   await page.route("**/api/planner/tasks/task-1/subtasks/order", (route) => {
+    reorderRequests += 1;
     const body = route.request().postDataJSON();
     for (const [index, id] of body.orderedIds.entries()) {
       const subtask = serverSubtasks.find((candidate) => candidate.id === id);
@@ -270,20 +293,23 @@ test("subtask order stays after reordering then toggling completion", async ({ p
     await page.getByPlaceholder("Password").fill("secret");
     await page.getByRole("button", { name: "Unlock" }).click();
   }
+  await expect(page.getByRole("heading", { name: "Notes" })).toBeVisible();
+  await page.getByRole("button", { name: "Planner" }).click();
   await expect(page.getByRole("heading", { name: "Planner" })).toBeVisible();
 
   const titles = page.locator(".subtask-title");
-  await expect(titles).toHaveText(["First subtask", "Second subtask", "Third subtask"]);
-
-  const firstHandle = page.locator(".subtask-row").filter({ hasText: "First subtask" }).locator(".subtask-drag-handle");
-  const thirdRow = page.locator(".subtask-row").filter({ hasText: "Third subtask" });
-  await firstHandle.dragTo(thirdRow);
   await expect(titles).toHaveText(["Second subtask", "Third subtask", "First subtask"]);
 
   await page.locator(".subtask-row").filter({ hasText: "Third subtask" }).getByRole("button", { name: "Complete" }).click();
   await page.waitForTimeout(300);
 
+  await expect(titles).toHaveText(["Second subtask", "First subtask", "Third subtask"]);
+
+  await page.locator(".subtask-row").filter({ hasText: "Third subtask" }).getByRole("button", { name: "Complete" }).click();
+  await page.waitForTimeout(300);
+
   await expect(titles).toHaveText(["Second subtask", "Third subtask", "First subtask"]);
+  expect(reorderRequests).toBe(0);
 });
 
 test("offline task create stays pending and syncs once without duplicates", async ({ page }) => {

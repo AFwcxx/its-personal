@@ -17,7 +17,10 @@ const editedTitle = ref("");
 let sortable: Sortable | null = null;
 
 const activeSubtasks = computed(() => props.subtasks.filter((subtask) => subtask.taskId === props.taskId && subtask.deletedAt === null));
-const sortedSubtasks = computed(() => [...activeSubtasks.value].sort((a, b) => a.order - b.order || a.createdAt.localeCompare(b.createdAt)));
+const sortedSubtasks = computed(() => [...activeSubtasks.value].sort((a, b) => {
+  if (Boolean(a.completedAt) !== Boolean(b.completedAt)) return a.completedAt ? 1 : -1;
+  return a.order - b.order || a.createdAt.localeCompare(b.createdAt);
+}));
 const sortableSignature = computed(() => `${props.readonly ? "readonly" : "editable"}:${sortedSubtasks.value.map((subtask) => subtask.id).join(",")}`);
 const editingSubtask = computed(() => sortedSubtasks.value.find((subtask) => subtask.id === editingSubtaskId.value && subtask.completedAt === null) ?? null);
 const pendingRemoval = computed(() => sortedSubtasks.value.find((subtask) => subtask.id === pendingRemovalId.value) ?? null);
