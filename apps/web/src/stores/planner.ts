@@ -116,7 +116,7 @@ export const usePlannerStore = defineStore("planner", {
     },
     async createSubtask(taskId: string, title: string) {
       const siblingSubtasks = this.subtasks.filter((subtask) => subtask.taskId === taskId && subtask.deletedAt === null);
-      const nextOrder = siblingSubtasks.reduce((max, subtask) => Math.max(max, subtask.order), 0) + 1000;
+      const nextOrder = siblingSubtasks.length === 0 ? 1000 : Math.min(...siblingSubtasks.map((subtask) => subtask.order)) - 1000;
       const now = new Date().toISOString();
       const id = generateLocalId("subtask");
       const operationId = generateLocalId("op");

@@ -58,12 +58,12 @@ describe("planner store subtask ordering", () => {
     vi.useRealTimers();
   });
 
-  it("creates the next subtask after the current optimistic sibling order", async () => {
+  it("creates the next subtask before the current optimistic sibling order", async () => {
     vi.useFakeTimers();
     const planner = usePlannerStore();
     const first = subtask({ id: "first", order: 1000 });
     const second = subtask({ id: "second", order: 2000 });
-    const created = subtask({ id: "third", title: "Third", order: 3000 });
+    const created = subtask({ id: "third", title: "Third", order: 0 });
     vi.mocked(plannerApi.reorderSubtasks).mockResolvedValue([second, first]);
     vi.mocked(plannerApi.createSubtask).mockResolvedValue(created);
     planner.subtasks = [first, second];
@@ -72,7 +72,7 @@ describe("planner store subtask ordering", () => {
     await planner.createSubtask("task", "Third");
     await vi.advanceTimersByTimeAsync(250);
 
-    expect(plannerApi.createSubtask).toHaveBeenCalledWith({ taskId: "task", title: "Third", order: 3000 });
+    expect(plannerApi.createSubtask).toHaveBeenCalledWith({ taskId: "task", title: "Third", order: 0 });
   });
 
   it("coalesces rapid subtask reorders into the latest list-level sync", async () => {

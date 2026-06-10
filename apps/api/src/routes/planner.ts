@@ -180,7 +180,7 @@ export function plannerRouter(db: Db, timezone = "UTC", changes?: PlannerChanges
     }
     const now = new Date().toISOString();
     const siblingSubtasks = listSubtasks(db).filter((candidate) => candidate.taskId === input.taskId && candidate.deletedAt === null);
-    const nextOrder = siblingSubtasks.reduce((max, candidate) => Math.max(max, candidate.order), 0) + 1000;
+    const nextOrder = siblingSubtasks.length === 0 ? 1000 : Math.min(...siblingSubtasks.map((candidate) => candidate.order)) - 1000;
     const subtask: Subtask = {
       id: submittedId ?? nanoid(),
       taskId: input.taskId,

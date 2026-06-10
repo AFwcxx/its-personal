@@ -352,7 +352,7 @@ describe("auth and database", () => {
       });
   });
 
-  it("appends new subtasks after the last active sibling order", async () => {
+  it("prepends new subtasks before the first active sibling order", async () => {
     const db = openDatabase(":memory:");
     const token = issueSession(config, db, "test-device").token;
     upsertTask(db, taskFixture("task-1"));
@@ -394,7 +394,7 @@ describe("auth and database", () => {
       .send({ taskId: "task-1", title: "Third" })
       .expect(201)
       .expect((response) => {
-        expect(response.body.order).toBe(3000);
+        expect(response.body.order).toBe(0);
       });
   });
 
