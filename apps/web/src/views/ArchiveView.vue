@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { sortPlannerItems, todayISO, type Task } from "@its-personal/shared";
 import InputText from "primevue/inputtext";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import AppShell from "../components/AppShell.vue";
 import TaskList from "../components/TaskList.vue";
 import { usePlannerStore } from "../stores/planner.js";
@@ -50,6 +50,12 @@ function resetDefaultRange(today = todayISO()) {
   rangeFrom.value = addCalendarMonths(today, -1);
   rangeTo.value = today;
 }
+
+watch(() => planner.today, (today, previousToday) => {
+  if (!previousToday) return;
+  if (rangeFrom.value !== addCalendarMonths(previousToday, -1) || rangeTo.value !== previousToday) return;
+  resetDefaultRange(today);
+});
 </script>
 
 <template>

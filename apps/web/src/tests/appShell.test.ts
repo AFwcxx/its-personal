@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
 import AppShell from "../components/AppShell.vue";
 import { usePlannerStore } from "../stores/planner.js";
@@ -43,8 +43,13 @@ const task = (patch: Partial<Task> = {}): Task => ({
 
 describe("AppShell task detail backdrop", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     setActivePinia(createPinia());
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("closes the task detail menu when the frosted backdrop is clicked", async () => {
@@ -72,5 +77,27 @@ describe("AppShell task detail backdrop", () => {
     await backdrop.trigger("click");
 
     expect(planner.selectedTaskId).toBeNull();
+  });
+
+  it("refreshes the planner date from the clock while the app stays open", async () => {
+    const planner = usePlannerStore();
+    planner.refreshPendingStatus = vi.fn();
+    planner.refreshIfChanged = vi.fn();
+    planner.refreshCurrentDate = vi.fn();
+
+    mount(AppShell, {
+      global: {
+        stubs: {
+          Button: { props: ["label", "icon"], template: "<button type='button' @click='$emit(\"click\")'>{{ label }}<slot /></button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          SubtaskCreateDialog: true,
+          TaskDetailPanel: true
+        }
+      }
+    });
+
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(planner.refreshCurrentDate).toHaveBeenCalledTimes(1);
   });
 });

@@ -45,6 +45,9 @@ onMounted(() => {
   window.setInterval(() => {
     if (session.isUnlocked) void planner.refreshIfChanged().catch(() => undefined);
   }, 5_000);
+  window.setInterval(() => {
+    planner.refreshCurrentDate();
+  }, 60_000);
 });
 watch(() => session.isUnlocked, (isUnlocked) => {
   if (!isUnlocked) void router.push("/unlock");

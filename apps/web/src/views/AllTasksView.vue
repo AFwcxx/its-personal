@@ -2,7 +2,7 @@
 import { sortPlannerItems, todayISO, type Task } from "@its-personal/shared";
 import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import AppShell from "../components/AppShell.vue";
 import TaskList from "../components/TaskList.vue";
 import { usePlannerStore } from "../stores/planner.js";
@@ -56,6 +56,12 @@ function resetDefaultRange(today = todayISO()) {
   rangeFrom.value = today;
   rangeTo.value = addCalendarMonths(today, 1);
 }
+
+watch(() => planner.today, (today, previousToday) => {
+  if (!previousToday) return;
+  if (rangeFrom.value !== previousToday || rangeTo.value !== addCalendarMonths(previousToday, 1)) return;
+  resetDefaultRange(today);
+});
 </script>
 
 <template>

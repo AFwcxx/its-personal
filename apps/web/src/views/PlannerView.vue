@@ -4,7 +4,7 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import AppShell from "../components/AppShell.vue";
 import TaskCreateForm from "../components/TaskCreateForm.vue";
 import TaskList from "../components/TaskList.vue";
@@ -86,6 +86,11 @@ function selectTab(key: string) {
   tab.value = key;
   newDueDate.value = planner.dateForTab(key);
 }
+
+watch(() => planner.today, (today, previousToday) => {
+  if (!previousToday || newDueDate.value !== planner.dateForTab(tab.value, previousToday)) return;
+  newDueDate.value = planner.dateForTab(tab.value, today);
+});
 
 function toggleCompleted() {
   completedExpanded.value = !completedExpanded.value;

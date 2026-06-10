@@ -1,7 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { defineComponent } from "vue";
+import { defineComponent, nextTick } from "vue";
 import type { Tag, Task } from "@its-personal/shared";
 import ScheduleView from "../views/ScheduleView.vue";
 import { usePlannerStore } from "../stores/planner.js";
@@ -153,6 +153,25 @@ describe("ScheduleView", () => {
 
     expect(today()?.classes()).toContain("today");
     expect(today()?.classes()).not.toContain("active");
+  });
+
+  it("moves the magenta today marker on date rollover without changing the selected day", async () => {
+    const planner = usePlannerStore();
+    planner.currentDate = "2026-05-21";
+    planner.refresh = vi.fn();
+
+    const wrapper = mountSchedule();
+    const day22 = () => wrapper.findAll("button").find((button) => button.text() === "22");
+    const day23 = () => wrapper.findAll("button").find((button) => button.text() === "23");
+
+    await day23()?.trigger("click");
+    planner.currentDate = "2026-05-22";
+    await nextTick();
+
+    expect(day22()?.classes()).toContain("today");
+    expect(day22()?.classes()).not.toContain("active");
+    expect(day23()?.classes()).toContain("active");
+    expect(day23()?.classes()).not.toContain("today");
   });
 
   it("keeps out-of-month calendar days visible but unselectable without task counts", async () => {

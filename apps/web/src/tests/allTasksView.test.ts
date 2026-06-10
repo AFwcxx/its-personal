@@ -1,7 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { defineComponent } from "vue";
+import { defineComponent, nextTick } from "vue";
 import type { Task } from "@its-personal/shared";
 import AllTasksView from "../views/AllTasksView.vue";
 import { usePlannerStore } from "../stores/planner.js";
@@ -126,5 +126,36 @@ describe("AllTasksView", () => {
     const inputs = wrapper.findAll("input");
     expect((inputs[1]!.element as HTMLInputElement).value).toBe("2026-05-22");
     expect((inputs[2]!.element as HTMLInputElement).value).toBe("2026-06-22");
+  });
+
+  it("rolls the default date range forward without overwriting a custom range", async () => {
+    const planner = usePlannerStore();
+    planner.currentDate = "2026-05-21";
+    planner.refresh = vi.fn();
+
+    const wrapper = mount(AllTasksView, {
+      global: {
+        stubs: {
+          AppShell: { template: "<main><slot /></main>" },
+          Checkbox: { template: "<input type='checkbox' />" },
+          InputText: { props: ["modelValue"], emits: ["update:modelValue"], template: "<input :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" },
+          TaskList: { props: ["tasks"], template: "<div />" }
+        }
+      }
+    });
+    const inputs = () => wrapper.findAll("input");
+
+    planner.currentDate = "2026-05-22";
+    await nextTick();
+
+    expect((inputs()[1]!.element as HTMLInputElement).value).toBe("2026-05-22");
+    expect((inputs()[2]!.element as HTMLInputElement).value).toBe("2026-06-22");
+
+    await inputs()[1]!.setValue("2026-05-20");
+    planner.currentDate = "2026-05-23";
+    await nextTick();
+
+    expect((inputs()[1]!.element as HTMLInputElement).value).toBe("2026-05-20");
+    expect((inputs()[2]!.element as HTMLInputElement).value).toBe("2026-06-22");
   });
 });

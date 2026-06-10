@@ -1,6 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 import type { Tag, Task } from "@its-personal/shared";
 import PlannerView from "../views/PlannerView.vue";
 import { usePlannerStore } from "../stores/planner.js";
@@ -190,6 +191,28 @@ describe("PlannerView", () => {
 
     expect(planner.createTask).toHaveBeenCalledWith("Tagged task", "2026-05-21", null, ["tag-personal"]);
     expect((wrapper.find("select").element as HTMLSelectElement).selectedOptions).toHaveLength(0);
+  });
+
+  it("rolls the default add-task date forward without overwriting a custom date", async () => {
+    const planner = usePlannerStore();
+    planner.currentDate = "2026-05-21";
+    planner.refresh = vi.fn();
+
+    const wrapper = mountPlanner();
+    const dueDate = () => wrapper.find("input[type='date']");
+
+    expect((dueDate().element as HTMLInputElement).value).toBe("2026-05-21");
+
+    planner.currentDate = "2026-05-22";
+    await nextTick();
+
+    expect((dueDate().element as HTMLInputElement).value).toBe("2026-05-22");
+
+    await dueDate().setValue("2026-06-01");
+    planner.currentDate = "2026-05-23";
+    await nextTick();
+
+    expect((dueDate().element as HTMLInputElement).value).toBe("2026-06-01");
   });
 
   it("starts the add task form collapsed and preserves draft values across toggles", async () => {

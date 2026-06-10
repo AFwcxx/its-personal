@@ -18,6 +18,7 @@ export const usePlannerStore = defineStore("planner", {
     selectedTaskId: null as string | null,
     subtaskDialogTaskId: null as string | null,
     currentDate: todayISO(),
+    timezone: null as string | null,
     status: "idle" as "idle" | "loading" | "offline" | "error",
     error: "",
     pendingEntityStates: {} as Record<string, PendingState>,
@@ -43,6 +44,7 @@ export const usePlannerStore = defineStore("planner", {
       }));
       this.subtasks = snapshot.subtasks ?? [];
       this.currentDate = snapshot.today ?? this.currentDate;
+      this.timezone = snapshot.timezone ?? this.timezone;
       this.tags = snapshot.tags;
       this.links = snapshot.links;
       this.attachments = snapshot.attachments;
@@ -335,6 +337,9 @@ export const usePlannerStore = defineStore("planner", {
       }
       if (version !== this.changeVersion) await this.refresh();
     },
+    refreshCurrentDate(now = new Date()) {
+      this.currentDate = todayISO(now, this.timezone ?? undefined);
+    },
     async discardFailedSyncOperations() {
       await removeFailedPendingOperations();
       await this.refresh();
@@ -450,11 +455,12 @@ export const usePlannerStore = defineStore("planner", {
       }
       await this.refreshPendingStatus();
     },
-    dateForTab(tab: string) {
-      if (tab === "today") return this.currentDate;
-      if (tab === "tomorrow") return addDays(this.currentDate, 1);
-      if (tab === "day-after") return addDays(this.currentDate, 2);
-      return this.currentDate;
+    dateForTab(tab: string, today?: string) {
+      const baseDate = today ?? this.currentDate;
+      if (tab === "today") return baseDate;
+      if (tab === "tomorrow") return addDays(baseDate, 1);
+      if (tab === "day-after") return addDays(baseDate, 2);
+      return baseDate;
     }
   }
 });
