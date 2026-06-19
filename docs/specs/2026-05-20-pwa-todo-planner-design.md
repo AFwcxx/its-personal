@@ -4,7 +4,7 @@ Date: 2026-05-20
 
 ## Summary
 
-Build a single-user, offline-capable PWA to-do/planner app in TypeScript. The frontend is a Vue 3 PWA. The backend is Node.js + Express with SQLite as the canonical database. The app is deployed with Docker Compose, uses a simple password unlock with server-side idle session locking, stores uploaded attachments in a Docker volume, and syncs offline changes through an operation log.
+Build a single-user, offline-capable PWA to-do/planner app in TypeScript. The frontend is a Vue 3 PWA. The backend is Node.js + Express with SQLite as the canonical database. The app is deployed with Docker Compose, uses a simple password or 4-digit PIN unlock with server-side idle session locking, stores uploaded attachments in a Docker volume, and syncs offline changes through an operation log.
 
 The MVP is end-to-end and intentionally lean: it should be usable as a personal planner across devices, work offline for task management, sync when online, and follow the provided planner mockup and design samples.
 
@@ -20,7 +20,7 @@ The MVP is end-to-end and intentionally lean: it should be usable as a personal 
 - Sync edits between devices when connectivity returns.
 - Store canonical data in local SQLite on the server.
 - Support standard uploaded attachments stored on the server and cached offline on demand.
-- Require a simple password after a tab is locked, dormant past the configured idle timeout, or invalidated by password change.
+- Require a simple password or 4-digit PIN after a tab is locked, dormant past the configured idle timeout, or invalidated by credential change.
 - Run through Docker Compose and be reachable only locally or through Tailscale/local networking by default.
 
 ## Non-goals
@@ -36,29 +36,29 @@ The MVP is end-to-end and intentionally lean: it should be usable as a personal 
 Use a TypeScript monorepo with three main workspaces:
 
 - `apps/web`: Vite + Vue 3 PWA. It owns offline UX, IndexedDB storage, service worker caching, touch interactions, and responsive UI.
-- `apps/api`: Node.js + Express API. It owns password unlock, server-side idle session validation, SQLite persistence, sync operation ingestion, state queries, backup export, and attachment upload/download.
+- `apps/api`: Node.js + Express API. It owns password/PIN unlock, server-side idle session validation, SQLite persistence, sync operation ingestion, state queries, backup export, and attachment upload/download.
 - `packages/shared`: shared TypeScript types, validation schemas, recurrence helpers, date utilities, and sync operation definitions.
 
 Docker Compose runs the built web/API service with:
 
 - a SQLite data volume,
 - an attachment volume,
-- environment variables for password, timezone, bind host/port, session settings, and storage limits.
+- environment variables for unlock credential, timezone, bind host/port, session settings, and storage limits.
 
 The default deployment binds to localhost/private interfaces. Tailscale access is documented as either binding to a Tailscale interface or placing the app behind a Tailnet-only reverse proxy. The app should not be exposed publicly by default.
 
 ## Authentication
 
-The app is single-user. The password is configured through Docker Compose, normally via an environment variable or `.env` file referenced by Compose.
+The app is single-user. The unlock credential is configured through Docker Compose, normally via an environment variable or `.env` file referenced by Compose. `APP_PASSWORD` enables the password unlock layout and takes precedence. If `APP_PASSWORD` is not set and `APP_PIN` is set to a 4-digit value, the app uses the masked 4-digit PIN unlock layout.
 
 Unlock flow:
 
-1. The PWA asks for the password when the current browser tab has no valid unlocked session.
-2. The API verifies the password, creates a SQLite-backed server session, and issues a signed bearer token for that server session.
+1. The PWA asks for the configured password or PIN when the current browser tab has no valid unlocked session.
+2. The API verifies the credential, creates a SQLite-backed server session, and issues a signed bearer token for that server session.
 3. The PWA stores the token in tab-scoped session storage, not persistent local storage.
 4. Browser UI activity, including pointer, click, touch, keyboard, scroll, and focus activity, updates the local idle timer and sends a throttled authenticated activity heartbeat. Successful authenticated API calls also count as activity.
-5. The API rejects tokens whose server session has been dormant longer than `SESSION_IDLE_TIMEOUT_SECONDS`, whose session was manually locked, or whose password fingerprint no longer matches the current configured `APP_PASSWORD`.
-6. Sessions have no daily boundary expiry. An actively used session can continue indefinitely until manual lock, idle expiry, token invalidation, or app password change.
+5. The API rejects tokens whose server session has been dormant longer than `SESSION_IDLE_TIMEOUT_SECONDS`, whose session was manually locked, or whose credential fingerprint no longer matches the current configured auth mode and credential.
+6. Sessions have no daily boundary expiry. An actively used session can continue indefinitely until manual lock, idle expiry, token invalidation, or credential change.
 
 Each browser/device also has a stable `device_id` used for sync attribution and deterministic conflict tie-breaking. The `device_id` is not a user account.
 
@@ -286,7 +286,7 @@ The service worker caches the app shell and static assets. IndexedDB is the sour
 
 The app should fail visibly and recoverably:
 
-- Invalid password shows a clear unlock error.
+- Invalid password or PIN shows a clear unlock error.
 - Expired idle session redirects to unlock without losing local queued edits.
 - Sync failures leave operations in the outbox and show a small pending/error indicator.
 - Attachment upload/download failures can be retried.
@@ -312,7 +312,7 @@ Testing should cover:
 
 The MVP is complete when:
 
-- Docker Compose can start the app with configured password, SQLite volume, and attachment volume.
+- Docker Compose can start the app with a configured password or PIN, SQLite volume, and attachment volume.
 - A user can unlock a browser tab and remain unlocked while active; dormant tabs lock after the configured server-side idle timeout.
 - The main planner, overdue, all tasks, schedule, archive, and manage-tags flows work.
 - Tasks can be created, edited, completed, reordered, pinned, tagged, searched, archived, and made recurring.
@@ -328,6 +328,6 @@ The MVP is complete when:
 
 - Browser storage quotas vary. Attachment caching must stay explicit and conservative.
 - Timestamp-based sync depends on device clocks. The MVP accepts this and uses device id tie-breakers; future versions may add server-assigned logical clocks.
-- Password sessions with server-side idle locking are suitable for a private local/Tailscale app, not public exposure.
+- Password/PIN sessions with server-side idle locking are suitable for a private local/Tailscale app, not public exposure. A 4-digit PIN should be treated as a private-network convenience, not public-internet hardening.
 - Advanced recurrence rules beyond inclusive end dates are intentionally deferred.
 - Full backup restore UI is deferred.

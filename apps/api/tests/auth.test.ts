@@ -49,7 +49,7 @@ describe("auth and database", () => {
       .get("/api/config")
       .expect(200)
       .expect((response) => {
-        expect(response.body).toEqual({ appTitle: "Personal Ops" });
+        expect(response.body).toEqual({ appTitle: "Personal Ops", authMode: "password" });
       });
   });
 
@@ -72,6 +72,27 @@ describe("auth and database", () => {
     const session = issueSession(config, db, "test-device", new Date("2026-05-20T12:00:00.000Z"));
     expect(verifySession(config, db, session.token, new Date("2026-05-20T14:00:00.000Z")).deviceId).toBe("test-device");
     expect(() => verifySession(config, db, session.token, new Date("2026-05-20T17:00:01.000Z"))).toThrow();
+  });
+
+  it("uses a configured 4-digit PIN only when no app password is provided", () => {
+    const pinConfig = loadConfig({
+      APP_PIN: "2328",
+      SESSION_SECRET: "test-secret-with-enough-length",
+      DATABASE_PATH: ":memory:"
+    });
+    const passwordConfig = loadConfig({
+      APP_PASSWORD: "secret",
+      APP_PIN: "2328",
+      SESSION_SECRET: "test-secret-with-enough-length",
+      DATABASE_PATH: ":memory:"
+    });
+
+    expect(pinConfig.AUTH_MODE).toBe("pin");
+    expect(verifyPassword(pinConfig, "2328")).toBe(true);
+    expect(verifyPassword(pinConfig, "secret")).toBe(false);
+    expect(passwordConfig.AUTH_MODE).toBe("password");
+    expect(verifyPassword(passwordConfig, "secret")).toBe(true);
+    expect(verifyPassword(passwordConfig, "2328")).toBe(false);
   });
 
   it("rejects existing sessions after the app password changes", () => {

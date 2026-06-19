@@ -10,12 +10,16 @@ export interface SessionClaims {
   deviceId: string;
 }
 
+function unlockCredential(config: AppConfig): string {
+  return config.AUTH_MODE === "pin" ? config.APP_PIN! : config.APP_PASSWORD;
+}
+
 export function verifyPassword(config: AppConfig, input: string): boolean {
-  return input === config.APP_PASSWORD;
+  return input === unlockCredential(config);
 }
 
 export function passwordFingerprint(config: AppConfig): string {
-  return createHash("sha256").update(`${config.SESSION_SECRET}:${config.APP_PASSWORD}`).digest("hex");
+  return createHash("sha256").update(`${config.SESSION_SECRET}:${config.AUTH_MODE}:${unlockCredential(config)}`).digest("hex");
 }
 
 export function issueSession(config: AppConfig, db: Db, deviceId: string, now = new Date()): { token: string; idleTimeoutSeconds: number } {

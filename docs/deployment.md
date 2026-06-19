@@ -3,8 +3,9 @@
 ## Docker Compose
 
 1. Copy `.env.example` to `.env`.
-2. Set `APP_PASSWORD` and `SESSION_SECRET`.
+2. Set `APP_PASSWORD` or `APP_PIN`, plus `SESSION_SECRET`.
    If either value contains `$`, escape each `$` as `$$` because Docker Compose interpolates environment files.
+   To use the 4-digit PIN unlock layout instead, omit `APP_PASSWORD` and set `APP_PIN`; `APP_PASSWORD` takes precedence if both are set.
    Optionally set `APP_TITLE`; the default is `Its Personal`.
    Optionally set `SESSION_IDLE_TIMEOUT_SECONDS`; the default is `10800` seconds.
 3. Start the app:

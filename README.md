@@ -7,7 +7,7 @@ This app is built for personal or household use on a trusted private network. It
 ## Features
 
 - Planner, notes, schedule, all-tasks, archive, and tag-management views
-- Single shared app password with server-side idle session locking
+- Single shared app password or 4-digit PIN with server-side idle session locking
 - SQLite storage
 - File attachments with configurable per-file size limits
 - Docker Compose deployment with persistent volumes
@@ -18,13 +18,13 @@ This app is built for personal or household use on a trusted private network. It
 
 This application is intended to be reachable through a VPN, tailnet, or another private network layer such as Tailscale, WireGuard, or a private reverse proxy.
 
-Do not publish this app directly to the public internet unless you add additional hardening yourself. The current app uses a single shared password, bearer-token sessions, and private-network assumptions. It does not include public-internet protections such as account management, MFA, rate limiting, abuse monitoring, CSRF hardening, or a full production security review.
+Do not publish this app directly to the public internet unless you add additional hardening yourself. The current app uses a single shared password or PIN, bearer-token sessions, and private-network assumptions. It does not include public-internet protections such as account management, MFA, rate limiting, abuse monitoring, CSRF hardening, or a full production security review.
 
 Recommended baseline:
 
 - Keep the Docker port bound to `127.0.0.1` unless you know exactly why you need another bind address.
 - Access it through a VPN or tailnet instead of opening firewall ports to the internet.
-- Use a strong `APP_PASSWORD`.
+- Use a strong `APP_PASSWORD`; use `APP_PIN` only on a trusted private network.
 - Use a long random `SESSION_SECRET`.
 - Keep `SESSION_IDLE_TIMEOUT_SECONDS` short enough for your device risk. The default is 3 hours.
 - Keep `.env`, SQLite data, and attachment backups private.
@@ -51,10 +51,11 @@ Create your environment file:
 cp .env.example .env
 ```
 
-Edit `.env` and set at least these values:
+Edit `.env` and set at least these values. Use either `APP_PASSWORD` or `APP_PIN`; `APP_PASSWORD` takes precedence if both are set.
 
 ```dotenv
 APP_PASSWORD=use-a-strong-password
+# APP_PIN=2328
 SESSION_SECRET=replace-with-a-long-random-secret
 SESSION_IDLE_TIMEOUT_SECONDS=10800
 APP_TIMEZONE=Asia/Kuala_Lumpur
@@ -63,6 +64,8 @@ PUBLISHED_PORT=3009
 ```
 
 If a value contains `$`, escape each `$` as `$$` because Docker Compose interpolates environment files.
+
+To unlock with a 4-digit PIN instead of the password field, omit `APP_PASSWORD` and set `APP_PIN`, for example `APP_PIN=2328`. If both `APP_PASSWORD` and `APP_PIN` are set, `APP_PASSWORD` takes precedence and the app keeps the password unlock layout.
 
 Start the app:
 
@@ -152,7 +155,8 @@ The app reads configuration from environment variables.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `APP_TITLE` | `Its Personal` | Browser, installed app, and manifest name. |
-| `APP_PASSWORD` | `change-me` | Password used to unlock the app. Change this. |
+| `APP_PASSWORD` | `change-me` when neither credential is set | Password used to unlock the app. Takes precedence over `APP_PIN`. |
+| `APP_PIN` | unset | Four-digit PIN used to unlock the app when `APP_PASSWORD` is not set. |
 | `SESSION_SECRET` | `dev-session-secret-change-me` | Secret used to sign sessions. Use a long random value. |
 | `SESSION_IDLE_TIMEOUT_SECONDS` | `10800` | Server-side idle timeout for unlocked browser tabs. The default is 3 hours. |
 | `APP_TIMEZONE` | `Asia/Kuala_Lumpur` | Local timezone used by the app for planner dates. Docker also maps this value to `TZ`. |
