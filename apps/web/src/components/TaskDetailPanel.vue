@@ -8,7 +8,7 @@ import Select from "primevue/select";
 import Textarea from "primevue/textarea";
 import type { Attachment, Recurrence, RecurrenceEnd, TaskLink } from "@its-personal/shared";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
-import { Trash2, X } from "lucide-vue-next";
+import { File, FileArchive, FileAudio, FileCode, FileImage, FileSpreadsheet, FileText, FileVideo, Globe, Trash2, X } from "lucide-vue-next";
 import { openAttachment, uploadAttachment } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
@@ -39,8 +39,12 @@ const recurrenceEndOptions = [
 ];
 
 const task = computed(() => planner.selectedTask);
-const taskLinks = computed(() => planner.links.filter((link) => link.taskId === task.value?.id && !link.deletedAt));
-const taskAttachments = computed(() => planner.attachments.filter((attachment) => attachment.taskId === task.value?.id && !attachment.deletedAt));
+const taskLinks = computed(() => planner.links
+  .filter((link) => link.taskId === task.value?.id && !link.deletedAt)
+  .map((link) => ({ ...link, preview: linkPreview(link.url) })));
+const taskAttachments = computed(() => planner.attachments
+  .filter((attachment) => attachment.taskId === task.value?.id && !attachment.deletedAt)
+  .map((attachment) => ({ ...attachment, icon: attachmentIcon(attachment.mimeType) })));
 const tagOptions = computed(() => planner.activeTags);
 const canAddSubtask = computed(() => Boolean(task.value && task.value.completedAt === null && task.value.deletedAt === null));
 const tagsById = computed(() => new Map(planner.activeTags.map((tag) => [tag.id, tag])));
@@ -147,6 +151,41 @@ function updateDueDate(value: string | undefined) {
 function shouldQueueNotesImmediately(taskId: string): boolean {
   if (planner.pendingEntityStates[taskId]) return true;
   return typeof navigator !== "undefined" && navigator.onLine === false;
+}
+
+function linkPreview(value: string): { src: string; kind: "thumbnail" | "favicon" } | null {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    const host = url.hostname.replace(/^(www|m)\./, "");
+    const videoId = host === "youtu.be"
+      ? url.pathname.split("/")[1]
+      : host === "youtube.com"
+        ? url.pathname === "/watch"
+          ? url.searchParams.get("v")
+          : url.pathname.match(/^\/(?:shorts|embed)\/([^/]+)/)?.[1]
+        : null;
+    return videoId
+      ? { src: `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/default.jpg`, kind: "thumbnail" }
+      : { src: `${url.origin}/favicon.ico`, kind: "favicon" };
+  } catch {
+    return null;
+  }
+}
+
+function hideBrokenThumbnail(event: Event) {
+  (event.currentTarget as HTMLImageElement).hidden = true;
+}
+
+function attachmentIcon(mimeType: string) {
+  if (mimeType.startsWith("image/")) return FileImage;
+  if (mimeType.startsWith("audio/")) return FileAudio;
+  if (mimeType.startsWith("video/")) return FileVideo;
+  if (mimeType === "text/csv" || mimeType.includes("spreadsheet") || mimeType.includes("excel")) return FileSpreadsheet;
+  if (mimeType.includes("zip") || mimeType.includes("compressed") || mimeType.includes("tar") || mimeType.includes("rar")) return FileArchive;
+  if (mimeType.includes("json") || mimeType.includes("javascript") || mimeType.includes("xml") || mimeType === "text/html" || mimeType === "text/css") return FileCode;
+  if (mimeType === "application/pdf" || mimeType.startsWith("text/")) return FileText;
+  return File;
 }
 
 async function addLink() {
@@ -276,7 +315,13 @@ function openSubtaskDialog() {
       <Button label="Add Link" @click="addLink" />
       <ul>
         <li v-for="link in taskLinks" :key="link.id" class="detail-linked-item">
-          <a :href="link.url" target="_blank" rel="noreferrer">{{ link.url }}</a>
+          <div class="detail-linked-content">
+            <span class="detail-item-visual" aria-hidden="true">
+              <Globe :size="22" />
+              <img v-if="link.preview" class="link-preview-image" :class="`link-preview-${link.preview.kind}`" :src="link.preview.src" alt="" loading="lazy" referrerpolicy="no-referrer" @error="hideBrokenThumbnail">
+            </span>
+            <a :href="link.url" target="_blank" rel="noreferrer">{{ link.url }}</a>
+          </div>
           <Button class="task-row-icon-button" title="Delete link" aria-label="Delete link" severity="danger" text @click="requestLinkRemoval(link)">
             <Trash2 :size="16" />
           </Button>
@@ -285,7 +330,10 @@ function openSubtaskDialog() {
       <label>Attachment<FileUpload class="attachment-upload" mode="basic" custom-upload auto choose-label="Choose File" @select="addFile" /></label>
       <ul>
         <li v-for="attachment in taskAttachments" :key="attachment.id" class="detail-linked-item">
-          <a class="attachment-link" href="#" @click.prevent="openTaskAttachment(attachment.id)">{{ attachment.originalName }}</a>
+          <div class="detail-linked-content">
+            <span class="detail-item-visual attachment-type-icon" aria-hidden="true"><component :is="attachment.icon" :size="26" /></span>
+            <a class="attachment-link" href="#" @click.prevent="openTaskAttachment(attachment.id)">{{ attachment.originalName }}</a>
+          </div>
           <Button class="task-row-icon-button" title="Delete attachment" aria-label="Delete attachment" severity="danger" text @click="requestAttachmentRemoval(attachment)">
             <Trash2 :size="16" />
           </Button>

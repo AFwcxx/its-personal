@@ -1063,12 +1063,44 @@
 
 .detail-linked-item {
   display: list-item;
-  padding-right: 1.6rem;
+  min-height: 36px;
+  padding-right: 1.75rem;
   position: relative;
+}
+
+.detail-linked-content {
+  align-items: center;
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: 44px minmax(0, 1fr);
 }
 
 .detail-linked-item a {
   overflow-wrap: anywhere;
+}
+
+.detail-item-visual {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  height: 36px;
+  justify-content: center;
+  position: relative;
+  width: 44px;
+}
+
+.link-preview-image {
+  background: var(--surface);
+  height: 100%;
+  inset: 0;
+  object-fit: contain;
+  position: absolute;
+  width: 100%;
+}
+
+.link-preview-thumbnail {
+  border-radius: 4px;
+  object-fit: cover;
 }
 
 .detail-linked-item .task-row-icon-button.p-button {

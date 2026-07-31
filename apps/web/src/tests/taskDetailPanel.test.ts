@@ -1,7 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Task } from "@its-personal/shared";
+import type { Attachment, Task, TaskLink } from "@its-personal/shared";
 import SubtaskCreateDialog from "../components/SubtaskCreateDialog.vue";
 import TaskDetailPanel from "../components/TaskDetailPanel.vue";
 import { deleteAttachment, plannerApi } from "../services/api.js";
@@ -308,6 +308,49 @@ describe("TaskDetailPanel recurrence", () => {
 
     expect(deleteAttachment).toHaveBeenCalledWith("attachment-1");
     expect(planner.attachments[0]?.deletedAt).not.toBeNull();
+  });
+
+  it("shows deterministic link previews and MIME icons so linked items remain recognizable", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = baseTask.id;
+    planner.links = [
+      ["watch", "https://www.youtube.com/watch?v=video-one"],
+      ["short", "https://youtu.be/video-two"],
+      ["site", "https://example.com/page"],
+      ["invalid", "not a URL"]
+    ].map(([id, url]) => ({ id, taskId: baseTask.id, url, label: null, createdAt: "2026-05-21T00:00:00.000Z", deletedAt: null })) as TaskLink[];
+    planner.attachments = [
+      ["image", "image/png"],
+      ["archive", "application/zip"],
+      ["unknown", "application/octet-stream"]
+    ].map(([id, mimeType]) => ({ id, taskId: baseTask.id, originalName: id, storedName: id, mimeType, size: 1, checksum: id, createdAt: "2026-05-21T00:00:00.000Z", deletedAt: null })) as Attachment[];
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    expect(wrapper.findAll(".link-preview-image").map((image) => image.attributes("src"))).toEqual([
+      "https://i.ytimg.com/vi/video-one/default.jpg",
+      "https://i.ytimg.com/vi/video-two/default.jpg",
+      "https://example.com/favicon.ico"
+    ]);
+    await wrapper.find(".link-preview-image").trigger("error");
+    expect((wrapper.find(".link-preview-image").element as HTMLImageElement).hidden).toBe(true);
+    expect(wrapper.findAll(".detail-linked-item")[3]!.find(".link-preview-image").exists()).toBe(false);
+    expect(wrapper.find(".attachment-type-icon .lucide-file-image").exists()).toBe(true);
+    expect(wrapper.find(".attachment-type-icon .lucide-file-archive").exists()).toBe(true);
+    expect(wrapper.find(".attachment-type-icon .lucide-file").exists()).toBe(true);
   });
 
   it("opens the subtask dialog and closes the task detail menu", async () => {
