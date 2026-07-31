@@ -9,7 +9,7 @@ import Textarea from "primevue/textarea";
 import type { Attachment, Recurrence, RecurrenceEnd, TaskLink } from "@its-personal/shared";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { File, FileArchive, FileAudio, FileCode, FileImage, FileSpreadsheet, FileText, FileVideo, Globe, Trash2, X } from "lucide-vue-next";
-import { openAttachment, uploadAttachment } from "../services/api.js";
+import { loadAttachmentUrl, openAttachment, uploadAttachment } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
 const planner = usePlannerStore();
@@ -22,7 +22,9 @@ const customIntervalDays = ref(1);
 const recurrenceEnds = ref<RecurrenceEnd>({ type: "eternity" });
 const taskPendingRemoval = ref(false);
 const uploadingAttachment = ref(false);
+const attachmentPreviewUrls = ref<Record<string, string>>({});
 const pendingItemRemoval = ref<{ type: "link"; item: TaskLink } | { type: "attachment"; item: Attachment } | null>(null);
+let attachmentPreviewLoad = 0;
 let notesSaveTimer: ReturnType<typeof setTimeout> | null = null;
 let syncedTaskId: string | null = null;
 let syncedNotes = "";
@@ -49,6 +51,24 @@ const taskAttachments = computed(() => planner.attachments
 const tagOptions = computed(() => planner.activeTags);
 const canAddSubtask = computed(() => Boolean(task.value && task.value.completedAt === null && task.value.deletedAt === null));
 const tagsById = computed(() => new Map(planner.activeTags.map((tag) => [tag.id, tag])));
+
+watch(() => taskAttachments.value.filter((attachment) => attachment.mimeType.startsWith("image/")).map((attachment) => attachment.id), async (ids) => {
+  const load = ++attachmentPreviewLoad;
+  clearAttachmentPreviews();
+  const urls: Record<string, string> = {};
+  await Promise.all(ids.map(async (id) => {
+    try {
+      urls[id] = await loadAttachmentUrl(id);
+    } catch {
+      // The MIME icon remains visible when a thumbnail cannot be loaded.
+    }
+  }));
+  if (load !== attachmentPreviewLoad) {
+    Object.values(urls).forEach((url) => URL.revokeObjectURL(url));
+    return;
+  }
+  attachmentPreviewUrls.value = urls;
+}, { immediate: true });
 
 watch(task, (value) => {
   const changedTask = value?.id !== syncedTaskId;
@@ -88,11 +108,18 @@ watch(notes, (value) => {
 });
 
 onBeforeUnmount(() => {
+  attachmentPreviewLoad += 1;
+  clearAttachmentPreviews();
   if (notesSaveTimer) clearTimeout(notesSaveTimer);
   if (task.value && notes.value !== task.value.notes) {
     planner.updateTask(task.value.id, { notes: notes.value });
   }
 });
+
+function clearAttachmentPreviews() {
+  Object.values(attachmentPreviewUrls.value).forEach((url) => URL.revokeObjectURL(url));
+  attachmentPreviewUrls.value = {};
+}
 
 async function save() {
   if (!task.value) return;
@@ -337,7 +364,10 @@ function openSubtaskDialog() {
       <ul>
         <li v-for="attachment in taskAttachments" :key="attachment.id" class="detail-linked-item">
           <div class="detail-linked-content">
-            <span class="detail-item-visual attachment-type-icon" aria-hidden="true"><component :is="attachment.icon" :size="26" /></span>
+            <span class="detail-item-visual attachment-type-icon" aria-hidden="true">
+              <component :is="attachment.icon" :size="26" />
+              <img v-if="attachmentPreviewUrls[attachment.id]" class="attachment-preview-image" :src="attachmentPreviewUrls[attachment.id]" alt="" @error="hideBrokenThumbnail">
+            </span>
             <a class="attachment-link" href="#" @click.prevent="openTaskAttachment(attachment.id)">{{ attachment.originalName }}</a>
           </div>
           <Button class="task-row-icon-button" title="Delete attachment" aria-label="Delete attachment" severity="danger" text @click="requestAttachmentRemoval(attachment)">

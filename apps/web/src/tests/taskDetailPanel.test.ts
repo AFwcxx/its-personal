@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Attachment, Task, TaskLink } from "@its-personal/shared";
 import SubtaskCreateDialog from "../components/SubtaskCreateDialog.vue";
 import TaskDetailPanel from "../components/TaskDetailPanel.vue";
-import { deleteAttachment, plannerApi, uploadAttachment } from "../services/api.js";
+import { deleteAttachment, loadAttachmentUrl, plannerApi, uploadAttachment } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
 const baseTask: Task = {
@@ -27,6 +27,7 @@ const baseTask: Task = {
 
 vi.mock("../services/api.js", () => ({
   deleteAttachment: vi.fn(async () => undefined),
+  loadAttachmentUrl: vi.fn(async (id: string) => `blob:${id}`),
   openAttachment: vi.fn(),
   uploadAttachment: vi.fn(),
   plannerApi: {
@@ -310,7 +311,9 @@ describe("TaskDetailPanel recurrence", () => {
     expect(planner.attachments[0]?.deletedAt).not.toBeNull();
   });
 
-  it("shows deterministic link previews and MIME icons so linked items remain recognizable", async () => {
+  it("shows link previews, image thumbnails, and fallback MIME icons", async () => {
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal("URL", Object.assign(class extends URL {}, { revokeObjectURL }));
     const planner = usePlannerStore();
     planner.tasks = [baseTask];
     planner.selectedTaskId = baseTask.id;
@@ -322,6 +325,7 @@ describe("TaskDetailPanel recurrence", () => {
     ].map(([id, url]) => ({ id, taskId: baseTask.id, url, label: null, createdAt: "2026-05-21T00:00:00.000Z", deletedAt: null })) as TaskLink[];
     planner.attachments = [
       ["image", "image/png"],
+      ["video", "video/mp4"],
       ["archive", "application/zip"],
       ["unknown", "application/octet-stream"]
     ].map(([id, mimeType]) => ({ id, taskId: baseTask.id, originalName: id, storedName: id, mimeType, size: 1, checksum: id, createdAt: "2026-05-21T00:00:00.000Z", deletedAt: null })) as Attachment[];
@@ -338,6 +342,7 @@ describe("TaskDetailPanel recurrence", () => {
         }
       }
     });
+    await flushPromises();
 
     expect(wrapper.findAll(".link-preview-image").map((image) => image.attributes("src"))).toEqual([
       "https://i.ytimg.com/vi/video-one/default.jpg",
@@ -347,9 +352,18 @@ describe("TaskDetailPanel recurrence", () => {
     await wrapper.find(".link-preview-image").trigger("error");
     expect((wrapper.find(".link-preview-image").element as HTMLImageElement).hidden).toBe(true);
     expect(wrapper.findAll(".detail-linked-item")[3]!.find(".link-preview-image").exists()).toBe(false);
-    expect(wrapper.find(".attachment-type-icon .lucide-file-image").exists()).toBe(true);
+    const imageThumbnail = wrapper.find(".attachment-preview-image");
+    expect(loadAttachmentUrl).toHaveBeenCalledWith("image");
+    expect(imageThumbnail.attributes("src")).toBe("blob:image");
+    expect(wrapper.find(".attachment-type-icon .lucide-file-video").exists()).toBe(true);
     expect(wrapper.find(".attachment-type-icon .lucide-file-archive").exists()).toBe(true);
     expect(wrapper.find(".attachment-type-icon .lucide-file").exists()).toBe(true);
+    await imageThumbnail.trigger("error");
+    expect((imageThumbnail.element as HTMLImageElement).hidden).toBe(true);
+
+    wrapper.unmount();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:image");
+    vi.unstubAllGlobals();
   });
 
   it("shows a loader and prevents another attachment upload while one is pending", async () => {

@@ -92,14 +92,18 @@ export async function uploadAttachment(taskId: string, file: File): Promise<Atta
 
 export async function openAttachment(id: string): Promise<void> {
   const opened = window.open("", "_blank");
-  const response = await authenticatedFetch(`/api/attachments/${id}`);
-  if (!response.ok) throw new Error(await response.text());
-  const blobUrl = URL.createObjectURL(await response.blob());
+  const blobUrl = await loadAttachmentUrl(id);
   if (opened) {
     opened.location.href = blobUrl;
   } else {
     window.location.href = blobUrl;
   }
+}
+
+export async function loadAttachmentUrl(id: string): Promise<string> {
+  const response = await authenticatedFetch(`/api/attachments/${id}`);
+  if (!response.ok) throw new Error(await response.text());
+  return URL.createObjectURL(await response.blob());
 }
 
 export async function deleteAttachment(id: string): Promise<void> {
