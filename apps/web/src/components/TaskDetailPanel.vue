@@ -21,6 +21,7 @@ const linkUrl = ref("");
 const customIntervalDays = ref(1);
 const recurrenceEnds = ref<RecurrenceEnd>({ type: "eternity" });
 const taskPendingRemoval = ref(false);
+const uploadingAttachment = ref(false);
 const pendingItemRemoval = ref<{ type: "link"; item: TaskLink } | { type: "attachment"; item: Attachment } | null>(null);
 let notesSaveTimer: ReturnType<typeof setTimeout> | null = null;
 let syncedTaskId: string | null = null;
@@ -156,10 +157,15 @@ async function addLink() {
 }
 
 async function addFile(event: { files: File[] }) {
-  if (!task.value) return;
+  if (!task.value || uploadingAttachment.value) return;
   const file = event.files[0];
   if (!file) return;
-  planner.attachments.push(await uploadAttachment(task.value.id, file));
+  uploadingAttachment.value = true;
+  try {
+    planner.attachments.push(await uploadAttachment(task.value.id, file));
+  } finally {
+    uploadingAttachment.value = false;
+  }
 }
 
 async function openTaskAttachment(id: string) {
@@ -282,7 +288,7 @@ function openSubtaskDialog() {
           </Button>
         </li>
       </ul>
-      <label>Attachment<FileUpload class="attachment-upload" mode="basic" custom-upload auto choose-label="Choose File" @select="addFile" /></label>
+      <label>Attachment<FileUpload class="attachment-upload" mode="basic" custom-upload auto :choose-label="uploadingAttachment ? 'Uploading…' : 'Choose File'" :choose-button-props="{ loading: uploadingAttachment }" :disabled="uploadingAttachment" :aria-busy="uploadingAttachment" @select="addFile" /></label>
       <ul>
         <li v-for="attachment in taskAttachments" :key="attachment.id" class="detail-linked-item">
           <a class="attachment-link" href="#" @click.prevent="openTaskAttachment(attachment.id)">{{ attachment.originalName }}</a>

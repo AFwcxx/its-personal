@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
 import SubtaskCreateDialog from "../components/SubtaskCreateDialog.vue";
 import TaskDetailPanel from "../components/TaskDetailPanel.vue";
-import { deleteAttachment, plannerApi } from "../services/api.js";
+import { deleteAttachment, plannerApi, uploadAttachment } from "../services/api.js";
 import { usePlannerStore } from "../stores/planner.js";
 
 const baseTask: Task = {
@@ -308,6 +308,64 @@ describe("TaskDetailPanel recurrence", () => {
 
     expect(deleteAttachment).toHaveBeenCalledWith("attachment-1");
     expect(planner.attachments[0]?.deletedAt).not.toBeNull();
+  });
+
+  it("shows a loader and prevents another attachment upload while one is pending", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = baseTask.id;
+    let finishUpload!: (attachment: typeof planner.attachments[number]) => void;
+    vi.mocked(uploadAttachment).mockReturnValueOnce(new Promise((resolve) => {
+      finishUpload = resolve;
+    }));
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { name: "FileUpload", props: ["chooseLabel", "chooseButtonProps", "disabled"], template: "<button :disabled='disabled'>{{ chooseLabel }}</button>" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+    const fileUpload = wrapper.findComponent({ name: "FileUpload" });
+    const file = new File(["receipt"], "receipt.pdf", { type: "application/pdf" });
+
+    await fileUpload.vm.$emit("select", { files: [file] });
+
+    expect(fileUpload.props("chooseLabel")).toBe("Uploading…");
+    expect(fileUpload.props("chooseButtonProps")).toEqual({ loading: true });
+    expect(fileUpload.props("disabled")).toBe(true);
+
+    await fileUpload.vm.$emit("select", { files: [file] });
+    expect(uploadAttachment).toHaveBeenCalledTimes(1);
+
+    finishUpload({
+      id: "attachment-1",
+      taskId: baseTask.id,
+      originalName: file.name,
+      storedName: "stored-receipt.pdf",
+      mimeType: file.type,
+      size: file.size,
+      checksum: "checksum",
+      createdAt: "2026-05-21T00:00:00.000Z",
+      deletedAt: null
+    });
+    await flushPromises();
+
+    expect(fileUpload.props("chooseLabel")).toBe("Choose File");
+    expect(fileUpload.props("disabled")).toBe(false);
+    expect(planner.attachments).toHaveLength(1);
+
+    vi.mocked(uploadAttachment).mockRejectedValueOnce(new Error("Upload failed"));
+    await expect((wrapper.vm as unknown as { addFile: (event: { files: File[] }) => Promise<void> }).addFile({ files: [new File(["receipt"], "receipt.pdf")] })).rejects.toThrow("Upload failed");
+
+    expect(fileUpload.props("chooseLabel")).toBe("Choose File");
+    expect(fileUpload.props("disabled")).toBe(false);
   });
 
   it("opens the subtask dialog and closes the task detail menu", async () => {
