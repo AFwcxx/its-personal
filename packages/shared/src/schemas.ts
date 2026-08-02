@@ -64,12 +64,13 @@ export const tagPatchSchema = tagInputSchema.partial().extend({
   deletedAt: z.string().datetime().nullable().optional()
 });
 
-export const noteContentStyleSchema = z.enum(["normal", "checklist", "ordered", "unordered"]);
+export const noteContentStyleSchema = z.enum(["normal", "checklist", "ordered", "unordered", "calculate"]);
 
 export const noteListItemSchema = z.object({
   id: z.string().min(1),
   text: z.string().max(500),
-  checked: z.boolean().optional()
+  checked: z.boolean().optional(),
+  valueCents: z.number().int().safe().optional()
 });
 
 const noteBaseSchema = z.object({

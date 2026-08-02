@@ -25,6 +25,8 @@ const title = ref("");
 const content = ref("");
 const contentStyle = ref<NoteContentStyle>("normal");
 const items = ref<NoteListItem[]>([]);
+const calculateValues = ref<Record<string, string>>({});
+const invalidValueIds = ref<Set<string>>(new Set());
 const focusedItemId = ref<string | null>(null);
 const pinned = ref(false);
 const selectedTagIds = ref<string[]>([]);
@@ -39,8 +41,19 @@ const styleOptions: Array<{ label: string; value: NoteContentStyle }> = [
   { label: "Text", value: "normal" },
   { label: "Checklist", value: "checklist" },
   { label: "Ordered", value: "ordered" },
-  { label: "Bullets", value: "unordered" }
+  { label: "Bullets", value: "unordered" },
+  { label: "Calculate", value: "calculate" }
 ];
+
+const calculateTotalCents = computed(() => {
+  let total = 0n;
+  for (const item of items.value) {
+    const parsed = parseCents(calculateValues.value[item.id] ?? "");
+    if (parsed === null) return null;
+    total += BigInt(parsed ?? 0);
+  }
+  return total;
+});
 
 const tagOptions = computed(() => notes.activeTags);
 const tagsById = computed(() => new Map(notes.tags.map((tag) => [tag.id, tag])));
@@ -178,7 +191,7 @@ function notesLayoutKey(items: Note[]) {
     note.title,
     note.content,
     note.contentStyle,
-    note.items.map((item) => `${item.id}:${item.text}:${Boolean(item.checked)}`).join("|"),
+    note.items.map((item) => `${item.id}:${item.text}:${Boolean(item.checked)}:${item.valueCents ?? ""}`).join("|"),
     note.tagIds.join(","),
     note.order
   ].join("~")).join("::");
@@ -220,6 +233,8 @@ function openCreateDialog() {
   content.value = "";
   contentStyle.value = "normal";
   items.value = [];
+  calculateValues.value = {};
+  invalidValueIds.value = new Set();
   focusedItemId.value = null;
   pinned.value = false;
   selectedTagIds.value = [];
@@ -232,6 +247,8 @@ function openEditDialog(note: Note) {
   content.value = note.contentStyle === "normal" ? note.content : note.items.map((item) => item.text).join("\n");
   contentStyle.value = note.contentStyle;
   items.value = note.items.map((item) => ({ ...item }));
+  calculateValues.value = Object.fromEntries(note.items.map((item) => [item.id, centsToInput(item.valueCents)]));
+  invalidValueIds.value = new Set();
   focusedItemId.value = null;
   pinned.value = note.pinned;
   selectedTagIds.value = [...note.tagIds];
@@ -244,19 +261,23 @@ function togglePinned() {
 
 function updateStyle(value: NoteContentStyle) {
   if (value === contentStyle.value) return;
+  if (contentStyle.value === "calculate" && !syncCalculateValues()) return;
   if (value === "normal") {
     content.value = contentStyle.value === "normal" ? content.value : items.value.map((item) => item.text).join("\n");
     items.value = [];
   } else {
-    items.value = contentStyle.value === "normal" ? textToItems(content.value) : items.value.map((item) => ({ id: item.id, text: item.text, checked: value === "checklist" ? false : undefined }));
+    items.value = contentStyle.value === "normal" ? textToItems(content.value) : items.value.map((item) => ({ id: item.id, text: item.text, checked: value === "checklist" ? false : undefined, valueCents: item.valueCents }));
     content.value = "";
     if (items.value.length === 0) addListItem();
+    if (value === "calculate") calculateValues.value = Object.fromEntries(items.value.map((item) => [item.id, centsToInput(item.valueCents)]));
   }
   contentStyle.value = value;
 }
 
 function addListItem(index = items.value.length) {
-  items.value.splice(index, 0, { id: generateLocalId("note_item"), text: "", checked: false });
+  const item = { id: generateLocalId("note_item"), text: "", checked: false };
+  items.value.splice(index, 0, item);
+  calculateValues.value[item.id] = "";
   void nextTick(() => {
     const input = document.querySelector<HTMLInputElement>(`[data-note-item-id="${items.value[index]?.id}"]`);
     input?.focus();
@@ -266,7 +287,11 @@ function addListItem(index = items.value.length) {
 function blurListItem(index: number) {
   focusedItemId.value = null;
   if (items.value.length <= 1) return;
-  if (items.value[index]?.text.trim() === "") items.value.splice(index, 1);
+  const item = items.value[index];
+  if (item?.text.trim() === "") {
+    items.value.splice(index, 1);
+    delete calculateValues.value[item.id];
+  }
 }
 
 function enterListItem(index: number) {
@@ -282,10 +307,12 @@ function deleteListItem(index: number) {
   if (!item || items.value.length <= 1) return;
   focusedItemId.value = null;
   items.value.splice(index, 1);
+  delete calculateValues.value[item.id];
 }
 
 async function saveNote() {
   if (!canSave.value) return;
+  if (contentStyle.value === "calculate" && !syncCalculateValues()) return;
   const payload = notePayload();
   if (editingId.value) {
     await notes.updateNote(editingId.value, payload);
@@ -299,7 +326,8 @@ function notePayload(): EditableNote {
   const normalizedItems = contentStyle.value === "normal" ? [] : items.value.filter((item) => item.text.trim()).map((item) => ({
     id: item.id,
     text: item.text.trim(),
-    checked: contentStyle.value === "checklist" ? Boolean(item.checked) : undefined
+    checked: contentStyle.value === "checklist" ? Boolean(item.checked) : undefined,
+    valueCents: item.valueCents
   }));
   return {
     title: title.value.trim(),
@@ -309,6 +337,54 @@ function notePayload(): EditableNote {
     pinned: pinned.value,
     tagIds: selectedTagIds.value
   };
+}
+
+function parseCents(value: string): number | null | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  if (!/^-?\d+(?:\.\d{1,2})?$/.test(trimmed)) return null;
+  const negative = trimmed.startsWith("-");
+  const [whole, fraction = ""] = (negative ? trimmed.slice(1) : trimmed).split(".");
+  const cents = BigInt(whole!) * 100n + BigInt(fraction.padEnd(2, "0"));
+  const signed = negative ? -cents : cents;
+  return signed <= BigInt(Number.MAX_SAFE_INTEGER) && signed >= BigInt(Number.MIN_SAFE_INTEGER) ? Number(signed) : null;
+}
+
+function syncCalculateValues() {
+  const invalid = new Set<string>();
+  for (const item of items.value) {
+    const parsed = parseCents(calculateValues.value[item.id] ?? "");
+    if (parsed === null) invalid.add(item.id);
+    else item.valueCents = parsed;
+  }
+  invalidValueIds.value = invalid;
+  return invalid.size === 0;
+}
+
+function blurCalculateValue(itemId: string) {
+  const parsed = parseCents(calculateValues.value[itemId] ?? "");
+  const next = new Set(invalidValueIds.value);
+  if (parsed === null) next.add(itemId);
+  else next.delete(itemId);
+  invalidValueIds.value = next;
+}
+
+function centsToInput(cents: number | undefined) {
+  if (cents === undefined) return "";
+  const value = BigInt(cents);
+  const absolute = value < 0n ? -value : value;
+  return `${value < 0n ? "-" : ""}${absolute / 100n}.${String(absolute % 100n).padStart(2, "0")}`;
+}
+
+const decimalSeparator = new Intl.NumberFormat(undefined, { minimumFractionDigits: 1 }).formatToParts(1.1).find((part) => part.type === "decimal")?.value ?? ".";
+const minusSign = new Intl.NumberFormat().formatToParts(-1).find((part) => part.type === "minusSign")?.value ?? "-";
+const wholeNumberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
+const fractionNumberFormat = new Intl.NumberFormat(undefined, { useGrouping: false, minimumIntegerDigits: 2 });
+
+function formatCents(cents: number | bigint | undefined) {
+  const value = BigInt(cents ?? 0);
+  const absolute = value < 0n ? -value : value;
+  return `${value < 0n ? minusSign : ""}${wholeNumberFormat.format(absolute / 100n)}${decimalSeparator}${fractionNumberFormat.format(absolute % 100n)}`;
 }
 
 async function confirmDelete() {
@@ -384,6 +460,10 @@ function formatModified(value: string) {
             <ol v-else-if="note.contentStyle === 'ordered'" class="note-list">
               <li v-for="item in note.items" :key="item.id">{{ item.text }}</li>
             </ol>
+            <div v-else-if="note.contentStyle === 'calculate'" class="note-calculate">
+              <div v-for="item in note.items" :key="item.id" class="note-calculate-item"><span>{{ item.text }}</span><span>{{ formatCents(item.valueCents) }}</span></div>
+              <div class="note-calculate-total"><span>Total</span><strong>{{ formatCents(note.items.reduce((total, item) => total + BigInt(item.valueCents ?? 0), 0n)) }}</strong></div>
+            </div>
             <ul v-else class="note-list">
               <li v-for="item in note.items" :key="item.id">{{ item.text }}</li>
             </ul>
@@ -412,6 +492,10 @@ function formatModified(value: string) {
             <ol v-else-if="note.contentStyle === 'ordered'" class="note-list">
               <li v-for="item in note.items" :key="item.id">{{ item.text }}</li>
             </ol>
+            <div v-else-if="note.contentStyle === 'calculate'" class="note-calculate">
+              <div v-for="item in note.items" :key="item.id" class="note-calculate-item"><span>{{ item.text }}</span><span>{{ formatCents(item.valueCents) }}</span></div>
+              <div class="note-calculate-total"><span>Total</span><strong>{{ formatCents(note.items.reduce((total, item) => total + BigInt(item.valueCents ?? 0), 0n)) }}</strong></div>
+            </div>
             <ul v-else class="note-list">
               <li v-for="item in note.items" :key="item.id">{{ item.text }}</li>
             </ul>
@@ -447,6 +531,17 @@ function formatModified(value: string) {
                 @blur="blurListItem(index)"
                 @keydown.enter.prevent="enterListItem(index)"
               />
+              <label v-if="contentStyle === 'calculate'" class="note-calculate-value">
+                <input
+                  v-model="calculateValues[item.id]"
+                  :aria-label="`Value for ${item.text || `item ${index + 1}`}`"
+                  class="p-inputtext p-component"
+                  inputmode="decimal"
+                  placeholder="0.00"
+                  @blur="blurCalculateValue(item.id)"
+                />
+                <small v-if="invalidValueIds.has(item.id)" class="note-calculate-error">Enter a valid value with up to 2 decimal places</small>
+              </label>
               <span class="note-item-delete-slot" :class="{ visible: canDeleteListItem(item) }">
                 <button
                   class="note-item-delete-button"
@@ -461,6 +556,9 @@ function formatModified(value: string) {
               </span>
             </div>
           </TransitionGroup>
+          <div v-if="contentStyle === 'calculate'" class="note-calculate-total">
+            <span>Total</span><strong>{{ calculateTotalCents === null ? '—' : formatCents(calculateTotalCents) }}</strong>
+          </div>
           <Button label="Add item" icon="pi pi-plus" severity="secondary" outlined @click="addListItem()" />
         </div>
         <label>Tags

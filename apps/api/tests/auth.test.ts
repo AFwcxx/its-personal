@@ -267,10 +267,10 @@ describe("auth and database", () => {
       operationId: "op-create-note-1",
       title: "",
       content: "Buy milk\nUse coupon",
-      contentStyle: "checklist",
+      contentStyle: "calculate",
       items: [
-        { id: "item-1", text: "Buy milk", checked: false },
-        { id: "item-2", text: "Use coupon", checked: true }
+        { id: "item-1", text: "Buy milk", valueCents: 450 },
+        { id: "item-2", text: "Use coupon", valueCents: -125 }
       ],
       pinned: true,
       tagIds: []
@@ -294,11 +294,12 @@ describe("auth and database", () => {
     await request(server)
       .patch("/api/notes/note-client-1")
       .set("authorization", `Bearer ${token}`)
-      .send({ operationId: "op-update-note-1", pinned: false, items: [{ id: "item-1", text: "Buy milk", checked: true }] })
+      .send({ operationId: "op-update-note-1", pinned: false, items: [{ id: "item-1", text: "Buy milk", valueCents: 325 }] })
       .expect(200)
       .expect((response) => {
         expect(response.body.pinned).toBe(false);
-        expect(response.body.items[0].checked).toBe(true);
+        expect(response.body.contentStyle).toBe("calculate");
+        expect(response.body.items[0].valueCents).toBe(325);
       });
 
     await request(server)
@@ -307,6 +308,8 @@ describe("auth and database", () => {
       .expect(200)
       .expect((response) => {
         expect(response.body.notes).toHaveLength(1);
+        expect(response.body.notes[0].contentStyle).toBe("calculate");
+        expect(response.body.notes[0].items[0].valueCents).toBe(325);
         expect(response.body.changeVersion).toBe(2);
       });
 

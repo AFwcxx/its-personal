@@ -683,6 +683,34 @@
   text-decoration: line-through;
 }
 
+.note-calculate {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.note-calculate-item,
+.note-calculate-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.note-calculate-item span:last-child {
+  white-space: nowrap;
+}
+
+.note-calculate-total {
+  align-items: baseline;
+  margin-top: 0.5rem;
+  font-weight: 700;
+}
+
+.note-calculate-total strong {
+  overflow-wrap: anywhere;
+  text-align: right;
+  font-size: 1.5rem;
+}
+
 .note-dialog {
   position: relative;
   display: grid;
@@ -740,6 +768,21 @@
 .note-item-input-row .p-inputtext {
   flex: 1;
   min-width: 0;
+}
+
+.note-calculate-value {
+  position: relative;
+  flex: 0 0 9rem;
+}
+
+.note-calculate-value .p-inputtext {
+  width: 100%;
+  text-align: right;
+}
+
+.note-calculate-error {
+  color: var(--danger);
+  font-size: 0.75rem;
 }
 
 .note-item-delete-slot {

@@ -174,7 +174,7 @@ export function upsertNote(db: Db, note: Note): Note {
 }
 
 function noteContentStyle(value: string): NoteContentStyle {
-  return value === "checklist" || value === "ordered" || value === "unordered" ? value : "normal";
+  return value === "checklist" || value === "ordered" || value === "unordered" || value === "calculate" ? value : "normal";
 }
 
 function noteItems(value: string): NoteListItem[] {

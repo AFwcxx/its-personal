@@ -213,4 +213,31 @@ describe("NotesView", () => {
       content: "Beta"
     }));
   });
+
+  it("shows exact calculate totals and rejects invalid decimal input", async () => {
+    const notes = useNotesStore();
+    notes.notes = [note({
+      contentStyle: "calculate",
+      items: [
+        { id: "positive", text: "Income", valueCents: 10 },
+        { id: "negative", text: "Fee", valueCents: -20 },
+        { id: "blank", text: "Pending" }
+      ]
+    })];
+    notes.updateNote = vi.fn();
+
+    const wrapper = mountNotesView();
+    expect(wrapper.find(".note-calculate-total strong").text()).toBe("-0.10");
+    expect(wrapper.text()).toContain("0.00");
+
+    await wrapper.find(".note-card").trigger("click");
+    const value = wrapper.find<HTMLInputElement>("input[aria-label='Value for Income']");
+    await value.setValue("1.234");
+    await value.trigger("blur");
+
+    expect(wrapper.find(".note-calculate-error").exists()).toBe(true);
+    expect(wrapper.findAll(".note-calculate-total strong").at(-1)?.text()).toBe("—");
+    await wrapper.findAll("button").find((button) => button.text() === "Save")!.trigger("click");
+    expect(notes.updateNote).not.toHaveBeenCalled();
+  });
 });

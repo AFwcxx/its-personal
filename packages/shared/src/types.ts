@@ -49,12 +49,13 @@ export interface Tag {
   deletedAt: string | null;
 }
 
-export type NoteContentStyle = "normal" | "checklist" | "ordered" | "unordered";
+export type NoteContentStyle = "normal" | "checklist" | "ordered" | "unordered" | "calculate";
 
 export interface NoteListItem {
   id: string;
   text: string;
   checked?: boolean | undefined;
+  valueCents?: number | undefined;
 }
 
 export interface Note {

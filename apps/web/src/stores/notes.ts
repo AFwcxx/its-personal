@@ -299,7 +299,7 @@ function numberValue(value: unknown, fallback: number): number {
 }
 
 function contentStyleValue(value: unknown, fallback: NoteContentStyle): NoteContentStyle {
-  return value === "checklist" || value === "ordered" || value === "unordered" || value === "normal" ? value : fallback;
+  return value === "checklist" || value === "ordered" || value === "unordered" || value === "calculate" || value === "normal" ? value : fallback;
 }
 
 function isNoteListItem(value: unknown): value is NoteListItem {
