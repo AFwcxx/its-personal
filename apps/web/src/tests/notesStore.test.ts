@@ -74,6 +74,21 @@ describe("notes store offline projection", () => {
     expect(notes.notes.map((candidate) => candidate.content)).toEqual(["Offline note", "Content"]);
   });
 
+  it("places new notes first in their pinned or unpinned section", async () => {
+    const notes = useNotesStore();
+    notes.notes = [
+      note({ id: "unpinned", order: 1000 }),
+      note({ id: "pinned", pinned: true, order: 5000 }),
+      note({ id: "deleted", order: -10_000, deletedAt: "2026-05-25T01:00:00.000Z" })
+    ];
+
+    const unpinned = await notes.createNote({ title: "New", content: "", contentStyle: "normal", items: [], pinned: false, tagIds: [] });
+    const pinned = await notes.createNote({ title: "New pinned", content: "", contentStyle: "normal", items: [], pinned: true, tagIds: [] });
+
+    expect(unpinned.order).toBe(0);
+    expect(pinned.order).toBe(4000);
+  });
+
   it("toggles checklist items through note updates", async () => {
     const notes = useNotesStore();
     notes.notes = [note({

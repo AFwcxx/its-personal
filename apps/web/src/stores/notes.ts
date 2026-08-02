@@ -58,6 +58,7 @@ export const useNotesStore = defineStore("notes", {
       const now = new Date().toISOString();
       const id = generateLocalId("note");
       const operationId = generateLocalId("op");
+      const order = Math.min(Date.now(), ...this.notes.filter((note) => note.deletedAt === null && note.pinned === input.pinned).map((note) => note.order)) - 1000;
       const note = normalizeNote({
         id,
         title: input.title,
@@ -66,7 +67,7 @@ export const useNotesStore = defineStore("notes", {
         items: input.items,
         pinned: input.pinned,
         tagIds: input.tagIds,
-        order: Date.now(),
+        order,
         createdAt: now,
         updatedAt: now,
         deletedAt: null
