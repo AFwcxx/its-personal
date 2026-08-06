@@ -31,6 +31,7 @@ const task = (patch: Partial<Task>): Task => ({
   title: patch.title ?? "Task",
   parentId: patch.parentId ?? null,
   dueDate: patch.dueDate ?? "2026-05-21",
+  recurrenceDate: patch.recurrenceDate ?? null,
   completedAt: patch.completedAt ?? null,
   pinned: patch.pinned ?? false,
   subtasksCollapsed: patch.subtasksCollapsed ?? false,

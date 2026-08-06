@@ -11,6 +11,7 @@ const baseTask: Task = {
   title: "Task",
   parentId: null,
   dueDate: "2026-05-21",
+  recurrenceDate: null,
   completedAt: null,
   pinned: false,
   subtasksCollapsed: false,

@@ -7,6 +7,7 @@ export function migrate(db: Db): void {
       title TEXT NOT NULL,
       parent_id TEXT,
       due_date TEXT NOT NULL,
+      recurrence_date TEXT,
       completed_at TEXT,
       pinned INTEGER NOT NULL DEFAULT 0,
       subtasks_collapsed INTEGER NOT NULL DEFAULT 0,
@@ -123,5 +124,9 @@ export function migrate(db: Db): void {
   const taskColumns = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
   if (!taskColumns.some((column) => column.name === "subtasks_collapsed")) {
     db.prepare("ALTER TABLE tasks ADD COLUMN subtasks_collapsed INTEGER NOT NULL DEFAULT 0").run();
+  }
+  if (!taskColumns.some((column) => column.name === "recurrence_date")) {
+    db.prepare("ALTER TABLE tasks ADD COLUMN recurrence_date TEXT").run();
+    db.prepare("UPDATE tasks SET recurrence_date = due_date WHERE recurrence_json NOT LIKE '%\"type\":\"none\"%'").run();
   }
 }

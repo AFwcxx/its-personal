@@ -55,6 +55,7 @@ export function plannerRouter(db: Db, timezone = "UTC", changes?: PlannerChanges
       title: input.title,
       parentId: input.parentId ?? null,
       dueDate: input.dueDate,
+      recurrenceDate: input.recurrenceDate ?? null,
       completedAt: null,
       pinned: input.pinned ?? false,
       subtasksCollapsed: input.subtasksCollapsed ?? false,
@@ -96,6 +97,9 @@ export function plannerRouter(db: Db, timezone = "UTC", changes?: PlannerChanges
       title: patch.title ?? current.title,
       parentId: patch.parentId ?? current.parentId,
       dueDate: patch.dueDate ?? current.dueDate,
+      recurrenceDate: patch.recurrenceDate !== undefined
+        ? patch.recurrenceDate
+        : current.recurrenceDate ?? (current.recurrence.type !== "none" && patch.dueDate !== undefined ? current.dueDate : null),
       completedAt: patch.completedAt !== undefined ? patch.completedAt : current.completedAt,
       pinned: patch.pinned ?? current.pinned,
       subtasksCollapsed: patch.subtasksCollapsed ?? current.subtasksCollapsed,
@@ -132,10 +136,11 @@ export function plannerRouter(db: Db, timezone = "UTC", changes?: PlannerChanges
       return;
     }
     const now = new Date().toISOString();
-    const completed = upsertTask(db, { ...task, completedAt: now, updatedAt: now });
-    const recurringDueDate = nextDueDate(task.dueDate, task.recurrence);
+    const recurrenceDate = task.recurrenceDate ?? task.dueDate;
+    const completed = upsertTask(db, { ...task, recurrenceDate, completedAt: now, updatedAt: now });
+    const recurringDueDate = nextDueDate(task.dueDate, task.recurrence, recurrenceDate);
     if (recurringDueDate) {
-      const nextTask = upsertTask(db, { ...task, id: nanoid(), dueDate: recurringDueDate, completedAt: null, subtasksCollapsed: false, createdAt: now, updatedAt: now });
+      const nextTask = upsertTask(db, { ...task, id: nanoid(), dueDate: recurringDueDate, recurrenceDate, completedAt: null, subtasksCollapsed: false, createdAt: now, updatedAt: now });
       for (const subtask of subtasks.filter((candidate) => candidate.taskId === task.id && candidate.deletedAt === null)) {
         upsertSubtask(db, {
           ...subtask,

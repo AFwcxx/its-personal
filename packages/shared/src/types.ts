@@ -15,6 +15,7 @@ export interface Task {
   title: string;
   parentId: string | null;
   dueDate: string;
+  recurrenceDate: string | null;
   completedAt: string | null;
   pinned: boolean;
   subtasksCollapsed: boolean;

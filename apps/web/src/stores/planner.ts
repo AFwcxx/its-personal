@@ -38,6 +38,7 @@ export const usePlannerStore = defineStore("planner", {
     apply(snapshot: PlannerSnapshot) {
       this.tasks = snapshot.tasks.map((task) => ({
         ...task,
+        recurrenceDate: task.recurrenceDate ?? null,
         tagIds: task.tagIds ?? (task.tagId ? [task.tagId] : []),
         subtasksCollapsed: task.subtasksCollapsed ?? false,
         recurrence: normalizeRecurrence(task.recurrence)
@@ -97,7 +98,7 @@ export const usePlannerStore = defineStore("planner", {
       const now = new Date().toISOString();
       const id = generateLocalId("task");
       const operationId = generateLocalId("op");
-      const task: Task = { id, title, parentId, dueDate: dueDate ?? this.currentDate, completedAt: null, pinned: false, subtasksCollapsed: false, tagId: tagIds[0] ?? null, tagIds, notes: "", recurrence: { type: "none" }, order: Date.now(), createdAt: now, updatedAt: now, deletedAt: null };
+      const task: Task = { id, title, parentId, dueDate: dueDate ?? this.currentDate, recurrenceDate: null, completedAt: null, pinned: false, subtasksCollapsed: false, tagId: tagIds[0] ?? null, tagIds, notes: "", recurrence: { type: "none" }, order: Date.now(), createdAt: now, updatedAt: now, deletedAt: null };
       this.tasks.push(task);
       const saved = await this.writeOperation<Task>({
         operationId,
@@ -533,6 +534,7 @@ function bodyWithoutOperationId(body: Record<string, unknown>): Record<string, u
 function normalizeTask(task: Task): Task {
   return {
     ...task,
+    recurrenceDate: task.recurrenceDate ?? null,
     tagIds: task.tagIds ?? (task.tagId ? [task.tagId] : []),
     subtasksCollapsed: task.subtasksCollapsed ?? false,
     recurrence: normalizeRecurrence(task.recurrence)
@@ -566,6 +568,7 @@ function taskFromPendingOperation(operation: PendingOperation, existing?: Task):
     title: stringValue(body.title, existing?.title ?? "Untitled task"),
     parentId: nullableStringValue(body.parentId, existing?.parentId ?? null),
     dueDate: stringValue(body.dueDate, existing?.dueDate ?? todayISO()),
+    recurrenceDate: nullableStringValue(body.recurrenceDate, existing?.recurrenceDate ?? null),
     completedAt: nullableStringValue(body.completedAt, existing?.completedAt ?? null),
     pinned: booleanValue(body.pinned, existing?.pinned ?? false),
     subtasksCollapsed: booleanValue(body.subtasksCollapsed, existing?.subtasksCollapsed ?? false),

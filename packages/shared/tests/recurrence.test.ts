@@ -12,6 +12,12 @@ describe("nextDueDate", () => {
 
   it("clamps monthly dates", () => {
     expect(nextDueDate("2026-01-31", { type: "monthly", ends: { type: "eternity" } })).toBe("2026-02-28");
+    expect(nextDueDate("2026-02-28", { type: "monthly", ends: { type: "eternity" } }, "2026-01-31")).toBe("2026-03-31");
+  });
+
+  it("uses an independent recurrence date anchor", () => {
+    expect(nextDueDate("2026-08-08", { type: "monthly", ends: { type: "eternity" } }, "2026-08-07")).toBe("2026-09-07");
+    expect(nextDueDate("2026-10-20", { type: "monthly", ends: { type: "eternity" } }, "2026-08-07")).toBe("2026-11-07");
   });
 
   it("treats recurrence end dates as inclusive", () => {

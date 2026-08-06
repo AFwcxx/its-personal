@@ -3,29 +3,44 @@ import type { Recurrence, RecurrenceEnd } from "./types.js";
 
 const eternity: RecurrenceEnd = { type: "eternity" };
 
-export function nextDueDate(date: string, recurrence: Recurrence): string | null {
+export function nextDueDate(date: string, recurrence: Recurrence, recurrenceDate = date): string | null {
   const normalized = normalizeRecurrence(recurrence);
-  let next: string | null = null;
+  let next = recurrenceDate;
   switch (normalized.type) {
     case "none":
       return null;
     case "daily":
-      next = addDays(date, 1);
+      while (next <= date) next = addDays(next, 1);
       break;
     case "weekly":
-      next = addDays(date, 7);
+      while (next <= date) next = addDays(next, 7);
       break;
     case "every_n_days":
-      next = addDays(date, normalized.intervalDays);
+      while (next <= date) next = addDays(next, normalized.intervalDays);
       break;
     case "monthly":
-      next = addMonths(date, 1);
+      next = nextMonthDate(date, recurrenceDate);
       break;
     case "yearly":
-      next = addYears(date, 1);
+      next = nextYearDate(date, recurrenceDate);
       break;
   }
   return withinRecurrenceEnd(date, next, normalized.ends) ? next : null;
+}
+
+function nextMonthDate(after: string, anchor: string): string {
+  const base = parseDate(anchor);
+  const target = parseDate(after);
+  let months = (target.getUTCFullYear() - base.getUTCFullYear()) * 12 + target.getUTCMonth() - base.getUTCMonth();
+  let next = addMonths(anchor, Math.max(0, months));
+  if (next <= after) next = addMonths(anchor, Math.max(0, months) + 1);
+  return next;
+}
+
+function nextYearDate(after: string, anchor: string): string {
+  const years = Math.max(0, parseDate(after).getUTCFullYear() - parseDate(anchor).getUTCFullYear());
+  const next = addYears(anchor, years);
+  return next > after ? next : addYears(anchor, years + 1);
 }
 
 export function normalizeRecurrence(value: unknown): Recurrence {

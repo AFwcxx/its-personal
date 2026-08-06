@@ -25,6 +25,7 @@ function taskFixture(id: string, patch: Partial<Parameters<typeof upsertTask>[1]
     title: "Task",
     parentId: null,
     dueDate: "2026-05-20",
+    recurrenceDate: null,
     completedAt: null,
     pinned: false,
     subtasksCollapsed: false,
@@ -584,5 +585,22 @@ describe("auth and database", () => {
     const clonedSubtask = listSubtasks(db).find((subtask) => subtask.taskId === nextTask?.id);
     expect(clonedSubtask?.title).toBe("Use coupon");
     expect(clonedSubtask?.completedAt).toBeNull();
+  });
+
+  it("completes monthly recurrence from its independent recurrence date", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    upsertTask(db, taskFixture("task-1", {
+      dueDate: "2026-08-07",
+      recurrenceDate: "2026-08-07",
+      recurrence: { type: "monthly", ends: { type: "eternity" } }
+    }));
+
+    await request(createServer(config, db)).patch("/api/planner/tasks/task-1").set("authorization", `Bearer ${token}`).send({ dueDate: "2026-08-08" }).expect(200);
+    await request(createServer(config, db)).post("/api/planner/tasks/task-1/complete").set("authorization", `Bearer ${token}`).expect(200);
+
+    const nextTask = listTasks(db).find((task) => task.id !== "task-1");
+    expect(nextTask?.dueDate).toBe("2026-09-07");
+    expect(nextTask?.recurrenceDate).toBe("2026-08-07");
   });
 });

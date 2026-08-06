@@ -78,10 +78,11 @@ export function scheduledTasksForDate(tasks: Task[], date: string): Task[] {
 
 function isProjectedOccurrence(task: Task, date: string): boolean {
   if (task.deletedAt !== null || task.completedAt !== null || task.dueDate >= date) return false;
-  let next = nextDueDate(task.dueDate, task.recurrence);
+  const recurrenceDate = task.recurrenceDate ?? task.dueDate;
+  let next = nextDueDate(task.dueDate, task.recurrence, recurrenceDate);
   while (next !== null && next <= date) {
     if (next === date) return true;
-    next = nextDueDate(next, task.recurrence);
+    next = nextDueDate(next, task.recurrence, recurrenceDate);
   }
   return false;
 }

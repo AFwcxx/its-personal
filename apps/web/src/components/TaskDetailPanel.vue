@@ -15,6 +15,7 @@ import { usePlannerStore } from "../stores/planner.js";
 const planner = usePlannerStore();
 const title = ref("");
 const dueDate = ref("");
+const recurrenceDate = ref("");
 const notes = ref("");
 const selectedTagIds = ref<string[]>([]);
 const linkUrl = ref("");
@@ -28,6 +29,8 @@ let attachmentPreviewLoad = 0;
 let notesSaveTimer: ReturnType<typeof setTimeout> | null = null;
 let syncedTaskId: string | null = null;
 let syncedNotes = "";
+let syncedRecurrenceDate = "";
+let syncedDueDate = "";
 const recurrenceOptions = [
   { label: "None", value: "none" },
   { label: "Daily", value: "daily" },
@@ -75,7 +78,16 @@ watch(task, (value) => {
   syncedTaskId = value?.id ?? null;
   const nextNotes = value?.notes ?? "";
   title.value = value?.title ?? "";
-  dueDate.value = value?.dueDate ?? "";
+  const nextDueDate = value?.dueDate ?? "";
+  if (changedTask || dueDate.value === syncedDueDate || dueDate.value === nextDueDate) {
+    dueDate.value = nextDueDate;
+    syncedDueDate = nextDueDate;
+  }
+  const nextRecurrenceDate = value?.recurrenceDate ?? value?.dueDate ?? "";
+  if (changedTask || recurrenceDate.value === syncedRecurrenceDate || recurrenceDate.value === nextRecurrenceDate) {
+    recurrenceDate.value = nextRecurrenceDate;
+    syncedRecurrenceDate = nextRecurrenceDate;
+  }
   if (changedTask || notes.value === syncedNotes || notes.value === nextNotes) {
     notes.value = nextNotes;
     syncedNotes = nextNotes;
@@ -123,7 +135,12 @@ function clearAttachmentPreviews() {
 
 async function save() {
   if (!task.value) return;
-  await planner.updateTask(task.value.id, { title: title.value, dueDate: dueDate.value || task.value.dueDate, notes: notes.value });
+  await planner.updateTask(task.value.id, {
+    title: title.value,
+    dueDate: dueDate.value || task.value.dueDate,
+    recurrenceDate: task.value.recurrence.type === "none" ? task.value.recurrenceDate : recurrenceDate.value || dueDate.value || task.value.dueDate,
+    notes: notes.value
+  });
 }
 
 async function assignTags(tagIds: string[]) {
@@ -174,6 +191,11 @@ async function updateRecurrenceEndDate(date: string) {
 
 function updateDueDate(value: string | undefined) {
   dueDate.value = value ?? "";
+  if (task.value?.recurrence.type === "none" && task.value.recurrenceDate === null) recurrenceDate.value = dueDate.value;
+}
+
+function updateRecurrenceDate(value: string | undefined) {
+  recurrenceDate.value = value || dueDate.value || task.value?.dueDate || "";
 }
 
 function shouldQueueNotesImmediately(taskId: string): boolean {
@@ -289,6 +311,14 @@ function openSubtaskDialog() {
           option-label="label"
           option-value="value"
           @update:model-value="updateRecurrence"
+        />
+      </label>
+      <label v-if="task.recurrence.type !== 'none'">Recurrence date
+        <InputText
+          :model-value="recurrenceDate"
+          aria-label="Recurrence date"
+          type="date"
+          @update:model-value="updateRecurrenceDate"
         />
       </label>
       <label v-if="task.recurrence.type === 'every_n_days'">Interval days

@@ -21,6 +21,7 @@ export const taskInputSchema = z.object({
   title: z.string().min(1).max(500),
   parentId: z.string().nullable().optional(),
   dueDate: dateSchema,
+  recurrenceDate: dateSchema.nullable().optional(),
   pinned: z.boolean().optional(),
   subtasksCollapsed: z.boolean().optional(),
   tagId: z.string().nullable().optional(),

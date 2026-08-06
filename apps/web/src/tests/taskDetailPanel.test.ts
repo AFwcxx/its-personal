@@ -12,6 +12,7 @@ const baseTask: Task = {
   title: "Today",
   parentId: null,
   dueDate: "2026-05-21",
+  recurrenceDate: null,
   completedAt: null,
   pinned: false,
   subtasksCollapsed: false,
@@ -117,9 +118,10 @@ describe("TaskDetailPanel recurrence", () => {
     });
   });
 
-  it("waits until save before applying due date edits from the detail editor", async () => {
+  it("waits until save before applying due and recurrence date edits", async () => {
     const planner = usePlannerStore();
-    planner.tasks = [baseTask];
+    const recurringTask: Task = { ...baseTask, recurrenceDate: "2026-05-21", recurrence: { type: "monthly", ends: { type: "eternity" } } };
+    planner.tasks = [recurringTask];
     planner.selectedTaskId = baseTask.id;
 
     const wrapper = mount(TaskDetailPanel, {
@@ -136,10 +138,11 @@ describe("TaskDetailPanel recurrence", () => {
       }
     });
 
-    const dueDateInput = wrapper.findAllComponents({ name: "InputText" }).find((input) => input.props("type") === "date");
-    expect(dueDateInput).toBeTruthy();
+    const dateInputs = wrapper.findAllComponents({ name: "InputText" }).filter((input) => input.props("type") === "date");
+    expect(dateInputs).toHaveLength(2);
 
-    await dueDateInput!.vm.$emit("update:modelValue", "2026-05-22");
+    await dateInputs[0]!.vm.$emit("update:modelValue", "2026-05-22");
+    await dateInputs[1]!.vm.$emit("update:modelValue", "2026-05-20");
     await flushPromises();
 
     expect(plannerApi.updateTask).not.toHaveBeenCalled();
@@ -151,7 +154,7 @@ describe("TaskDetailPanel recurrence", () => {
     await saveButton!.trigger("click");
     await flushPromises();
 
-    expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, { title: "Today", dueDate: "2026-05-22", notes: "" });
+    expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, { title: "Today", dueDate: "2026-05-22", recurrenceDate: "2026-05-20", notes: "" });
     expect(planner.selectedTask?.dueDate).toBe("2026-05-22");
   });
 

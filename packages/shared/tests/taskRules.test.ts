@@ -7,6 +7,7 @@ const base = (task: Partial<Task>): Task => ({
   title: task.title ?? "Task",
   parentId: task.parentId ?? null,
   dueDate: task.dueDate ?? "2026-05-20",
+  recurrenceDate: task.recurrenceDate ?? null,
   completedAt: task.completedAt ?? null,
   pinned: task.pinned ?? false,
   subtasksCollapsed: task.subtasksCollapsed ?? false,
@@ -50,6 +51,12 @@ describe("task rules", () => {
     const weekly = base({ id: "weekly", dueDate: "2026-05-21", recurrence: { type: "weekly", ends: { type: "eternity" } } });
     expect(scheduledTasksForDate([weekly], "2026-05-28")).toEqual([{ ...weekly, dueDate: "2026-05-28" }]);
     expect(scheduledTasksForDate([weekly], "2026-06-04")).toEqual([{ ...weekly, dueDate: "2026-06-04" }]);
+  });
+
+  it("projects recurring tasks from their recurrence date", () => {
+    const monthly = base({ dueDate: "2026-08-08", recurrenceDate: "2026-08-07", recurrence: { type: "monthly", ends: { type: "eternity" } } });
+    expect(scheduledTasksForDate([monthly], "2026-09-07")).toEqual([{ ...monthly, dueDate: "2026-09-07" }]);
+    expect(scheduledTasksForDate([monthly], "2026-09-08")).toEqual([]);
   });
 
   it("stops projected recurring tasks after their end date", () => {
