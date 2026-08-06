@@ -1,3 +1,7 @@
+<script lang="ts">
+const noteScrollPositions = new Map<string, number>();
+</script>
+
 <script setup lang="ts">
 import type { Note, NoteContentStyle, NoteListItem } from "@its-personal/shared";
 import Button from "primevue/button";
@@ -15,6 +19,8 @@ import { generateLocalId } from "../services/offline.js";
 import { textToItems, useNotesStore, type EditableNote } from "../stores/notes.js";
 
 const noteTagFilterStorageKey = "its-personal-notes-tag-filter";
+const noteScrollViewport = "(max-width: 1024px) and (orientation: portrait)";
+const noteScrollFadeDistance = 32;
 const notes = useNotesStore();
 const search = ref("");
 const selectedFilterTagIds = ref(readPersistedTagFilter());
@@ -93,6 +99,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  rememberNoteScrollPositions(pinnedListEl.value);
+  rememberNoteScrollPositions(unpinnedListEl.value);
   pinnedSortable?.destroy();
   unpinnedSortable?.destroy();
   window.removeEventListener("resize", scheduleMasonryLayout);
@@ -169,6 +177,8 @@ function layoutNoteGrid(grid: HTMLElement | null) {
     card.style.removeProperty("grid-row-end");
   }
 
+  updateNoteScrollRegions(grid);
+
   for (const card of grid.querySelectorAll<HTMLElement>(".note-card")) {
     const columnIndex = shortestColumnIndex(columnHeights);
     const x = columnIndex * (cardWidth + gap);
@@ -179,6 +189,55 @@ function layoutNoteGrid(grid: HTMLElement | null) {
     columnHeights[columnIndex] = y + height + gap;
   }
   grid.style.height = `${Math.max(0, ...columnHeights) - gap}px`;
+}
+
+function updateNoteScrollRegions(grid: HTMLElement) {
+  for (const region of grid.querySelectorAll<HTMLElement>(".note-scroll-region")) {
+    const entries = Array.from(region.children) as HTMLElement[];
+    const first = entries[0];
+    const lastVisible = entries[Math.min(entries.length, 5) - 1];
+    if (first && lastVisible) {
+      region.style.setProperty("--note-scroll-limit", `${lastVisible.offsetTop + lastVisible.offsetHeight - first.offsetTop}px`);
+    } else {
+      region.style.removeProperty("--note-scroll-limit");
+    }
+
+    updateNoteScrollFade(region);
+    if (window.matchMedia(noteScrollViewport).matches && region.dataset.scrollRestored !== "true") {
+      region.scrollTop = noteScrollPositions.get(region.dataset.noteId ?? "") ?? 0;
+      region.dataset.scrollRestored = "true";
+      updateNoteScrollFade(region);
+    }
+  }
+}
+
+function handleNoteScroll(event: Event) {
+  const region = event.currentTarget as HTMLElement;
+  const noteId = region.dataset.noteId;
+  if (noteId) noteScrollPositions.set(noteId, region.scrollTop);
+  updateNoteScrollFade(region);
+}
+
+function rememberNoteScrollPositions(grid: HTMLElement | null) {
+  for (const region of grid?.querySelectorAll<HTMLElement>(".note-scroll-region") ?? []) {
+    const noteId = region.dataset.noteId;
+    if (noteId) noteScrollPositions.set(noteId, region.scrollTop);
+  }
+}
+
+function updateNoteScrollFade(region: HTMLElement) {
+  const remaining = Math.max(0, region.scrollHeight - region.clientHeight - region.scrollTop);
+  const overflowing = region.scrollHeight > region.clientHeight + 1;
+  region.classList.toggle("is-scrollable", overflowing);
+  if (overflowing) {
+    region.tabIndex = 0;
+    region.setAttribute("aria-label", "Scrollable note content");
+  } else {
+    region.removeAttribute("tabindex");
+    region.removeAttribute("aria-label");
+  }
+  region.style.setProperty("--note-scroll-top-edge-opacity", String(1 - Math.min(region.scrollTop / noteScrollFadeDistance, 1)));
+  region.style.setProperty("--note-scroll-bottom-edge-opacity", String(1 - Math.min(remaining / noteScrollFadeDistance, 1)));
 }
 
 function shortestColumnIndex(columnHeights: number[]) {
@@ -451,20 +510,22 @@ function formatModified(value: string) {
           <h3 v-if="note.title.trim()">{{ note.title }}</h3>
           <div class="note-card-content">
             <p v-if="note.contentStyle === 'normal'">{{ note.content }}</p>
-            <ul v-else-if="note.contentStyle === 'checklist'" class="note-list note-checklist">
+            <ul v-else-if="note.contentStyle === 'checklist'" class="note-list note-checklist note-scroll-region" :data-note-id="note.id" @scroll="handleNoteScroll">
               <li v-for="item in note.items" :key="item.id">
                 <Checkbox :model-value="Boolean(item.checked)" binary @click.stop @update:model-value="notes.toggleChecklistItem(note.id, item.id)" />
                 <span :class="{ checked: item.checked }">{{ item.text }}</span>
               </li>
             </ul>
-            <ol v-else-if="note.contentStyle === 'ordered'" class="note-list">
+            <ol v-else-if="note.contentStyle === 'ordered'" class="note-list note-scroll-region" :data-note-id="note.id" @scroll="handleNoteScroll">
               <li v-for="item in note.items" :key="item.id">{{ item.text }}</li>
             </ol>
             <div v-else-if="note.contentStyle === 'calculate'" class="note-calculate">
-              <div v-for="item in note.items" :key="item.id" class="note-calculate-item"><span>{{ item.text }}</span><span>{{ formatCents(item.valueCents) }}</span></div>
+              <div class="note-calculate-items note-scroll-region" :data-note-id="note.id" @scroll="handleNoteScroll">
+                <div v-for="item in note.items" :key="item.id" class="note-calculate-item"><span>{{ item.text }}</span><span>{{ formatCents(item.valueCents) }}</span></div>
+              </div>
               <div class="note-calculate-total"><span>Total</span><strong>{{ formatCents(note.items.reduce((total, item) => total + BigInt(item.valueCents ?? 0), 0n)) }}</strong></div>
             </div>
-            <ul v-else class="note-list">
+            <ul v-else class="note-list note-scroll-region" :data-note-id="note.id" @scroll="handleNoteScroll">
               <li v-for="item in note.items" :key="item.id">{{ item.text }}</li>
             </ul>
           </div>
@@ -483,20 +544,22 @@ function formatModified(value: string) {
           <h3 v-if="note.title.trim()">{{ note.title }}</h3>
           <div class="note-card-content">
             <p v-if="note.contentStyle === 'normal'">{{ note.content }}</p>
-            <ul v-else-if="note.contentStyle === 'checklist'" class="note-list note-checklist">
+            <ul v-else-if="note.contentStyle === 'checklist'" class="note-list note-checklist note-scroll-region" :data-note-id="note.id" @scroll="handleNoteScroll">
               <li v-for="item in note.items" :key="item.id">
                 <Checkbox :model-value="Boolean(item.checked)" binary @click.stop @update:model-value="notes.toggleChecklistItem(note.id, item.id)" />
                 <span :class="{ checked: item.checked }">{{ item.text }}</span>
               </li>
             </ul>
-            <ol v-else-if="note.contentStyle === 'ordered'" class="note-list">
+            <ol v-else-if="note.contentStyle === 'ordered'" class="note-list note-scroll-region" :data-note-id="note.id" @scroll="handleNoteScroll">
               <li v-for="item in note.items" :key="item.id">{{ item.text }}</li>
             </ol>
             <div v-else-if="note.contentStyle === 'calculate'" class="note-calculate">
-              <div v-for="item in note.items" :key="item.id" class="note-calculate-item"><span>{{ item.text }}</span><span>{{ formatCents(item.valueCents) }}</span></div>
+              <div class="note-calculate-items note-scroll-region" :data-note-id="note.id" @scroll="handleNoteScroll">
+                <div v-for="item in note.items" :key="item.id" class="note-calculate-item"><span>{{ item.text }}</span><span>{{ formatCents(item.valueCents) }}</span></div>
+              </div>
               <div class="note-calculate-total"><span>Total</span><strong>{{ formatCents(note.items.reduce((total, item) => total + BigInt(item.valueCents ?? 0), 0n)) }}</strong></div>
             </div>
-            <ul v-else class="note-list">
+            <ul v-else class="note-list note-scroll-region" :data-note-id="note.id" @scroll="handleNoteScroll">
               <li v-for="item in note.items" :key="item.id">{{ item.text }}</li>
             </ul>
           </div>

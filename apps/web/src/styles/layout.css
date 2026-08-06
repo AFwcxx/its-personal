@@ -688,6 +688,11 @@
   gap: 0.35rem;
 }
 
+.note-calculate-items {
+  display: grid;
+  gap: 0.35rem;
+}
+
 .note-calculate-item,
 .note-calculate-total {
   display: flex;
@@ -709,6 +714,35 @@
   overflow-wrap: anywhere;
   text-align: right;
   font-size: 1.5rem;
+}
+
+@media (max-width: 1024px) and (orientation: portrait) {
+  .note-scroll-region {
+    max-height: min(var(--note-scroll-limit, 40dvh), 40dvh);
+  }
+
+  .note-scroll-region.is-scrollable {
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / var(--note-scroll-top-edge-opacity, 1)) 0,
+      #000 32px,
+      #000 calc(100% - 32px),
+      rgb(0 0 0 / var(--note-scroll-bottom-edge-opacity, 1)) 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      rgb(0 0 0 / var(--note-scroll-top-edge-opacity, 1)) 0,
+      #000 32px,
+      #000 calc(100% - 32px),
+      rgb(0 0 0 / var(--note-scroll-bottom-edge-opacity, 1)) 100%
+    );
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .note-scroll-region.is-scrollable::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .note-dialog {

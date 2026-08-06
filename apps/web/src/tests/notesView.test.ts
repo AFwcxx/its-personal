@@ -173,6 +173,63 @@ describe("NotesView", () => {
     expect(sortable.instances).toHaveLength(1);
   });
 
+  it("limits structured notes to five rendered entries and preserves their scroll position across navigation", async () => {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      value: vi.fn((query: string) => ({ matches: query.includes("orientation: portrait") }))
+    });
+    const notes = useNotesStore();
+    notes.notes = [note({
+      id: "long-checklist",
+      contentStyle: "checklist",
+      items: Array.from({ length: 6 }, (_, index) => ({ id: `item-${index}`, text: `Item ${index}`, checked: false }))
+    })];
+
+    const wrapper = mountNotesView();
+    const region = wrapper.find<HTMLElement>(".note-scroll-region").element;
+    Array.from(region.children).forEach((entry, index) => {
+      Object.defineProperty(entry, "offsetTop", { configurable: true, value: index * 30 });
+      Object.defineProperty(entry, "offsetHeight", { configurable: true, value: 24 });
+    });
+    Object.defineProperties(region, {
+      clientHeight: { configurable: true, value: 100 },
+      scrollHeight: { configurable: true, value: 220 }
+    });
+    window.dispatchEvent(new Event("resize"));
+
+    expect(region.style.getPropertyValue("--note-scroll-limit")).toBe("144px");
+    expect(region.classList).toContain("is-scrollable");
+    expect(region.getAttribute("tabindex")).toBe("0");
+    expect(region.style.getPropertyValue("--note-scroll-top-edge-opacity")).toBe("1");
+    expect(region.style.getPropertyValue("--note-scroll-bottom-edge-opacity")).toBe("0");
+
+    region.scrollTop = 16;
+    await wrapper.find(".note-scroll-region").trigger("scroll");
+    expect(region.style.getPropertyValue("--note-scroll-top-edge-opacity")).toBe("0.5");
+
+    region.scrollTop = 120;
+    await wrapper.find(".note-scroll-region").trigger("scroll");
+    expect(region.style.getPropertyValue("--note-scroll-top-edge-opacity")).toBe("0");
+    expect(region.style.getPropertyValue("--note-scroll-bottom-edge-opacity")).toBe("1");
+    wrapper.unmount();
+
+    const remounted = mountNotesView();
+    await vi.waitFor(() => expect(remounted.find<HTMLElement>(".note-scroll-region").element.scrollTop).toBe(120));
+  });
+
+  it("keeps plain text unrestricted and calculation totals outside the scroll region", () => {
+    const notes = useNotesStore();
+    notes.notes = [
+      note({ id: "plain", contentStyle: "normal", content: "Long plain text" }),
+      note({ id: "calculation", contentStyle: "calculate", items: [{ id: "cost", text: "Cost", valueCents: 100 }] })
+    ];
+
+    const wrapper = mountNotesView();
+    expect(wrapper.findAll(".note-scroll-region")).toHaveLength(1);
+    expect(wrapper.find(".note-scroll-region").find(".note-calculate-total").exists()).toBe(false);
+    expect(wrapper.find(".note-calculate").find(".note-calculate-total").exists()).toBe(true);
+  });
+
   it("removes list entries from the editor only after the user saves", async () => {
     const notes = useNotesStore();
     notes.notes = [

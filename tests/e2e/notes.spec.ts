@@ -100,3 +100,70 @@ test("note order persists after visual drag and refresh", async ({ page }) => {
     expect.stringContaining("First")
   ]);
 });
+
+test("long structured notes scroll with edge fades in portrait view", async ({ page }) => {
+  const longNote = note({
+    id: "long-checklist",
+    title: "Long checklist",
+    contentStyle: "checklist",
+    items: Array.from({ length: 8 }, (_, index) => ({
+      id: `item-${index}`,
+      text: `Item ${index + 1} with enough text to wrap across several lines on a narrow note card`,
+      checked: false
+    }))
+  });
+
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.addInitScript(() => sessionStorage.clear());
+  await page.route("**/api/**", async (route, request) => {
+    const path = new URL(request.url()).pathname;
+    if (path === "/api/auth/unlock") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ token: "e2e-token", idleTimeoutSeconds: 10800 }) });
+    } else if (path === "/api/auth/activity") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ idleTimeoutSeconds: 10800 }) });
+    } else if (path === "/api/notes/snapshot") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ notes: [longNote], tags: [], changeVersion: 0 }) });
+    } else if (path === "/api/planner/snapshot") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ tasks: [], subtasks: [], tags: [], links: [], attachments: [], today: "2026-05-25", changeVersion: 0 }) });
+    } else if (path.endsWith("/changes")) {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ version: 0 }) });
+    } else {
+      await route.fulfill({ status: 404 });
+    }
+  });
+
+  await page.goto("/notes");
+  if (await page.getByPlaceholder("Password").isVisible()) {
+    await page.getByPlaceholder("Password").fill("secret");
+    await page.getByRole("button", { name: "Unlock" }).click();
+  }
+
+  const region = page.locator(".note-scroll-region");
+  await expect(region).toHaveClass(/is-scrollable/);
+  await expect.poll(() => region.evaluate((element) => ({
+    bottom: element.style.getPropertyValue("--note-scroll-bottom-edge-opacity"),
+    height: element.clientHeight,
+    maxHeight: window.innerHeight * 0.4,
+    top: element.style.getPropertyValue("--note-scroll-top-edge-opacity")
+  }))).toEqual({ bottom: "0", height: expect.any(Number), maxHeight: 409.6, top: "1" });
+  const sizing = await region.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    computedMaxHeight: getComputedStyle(element).maxHeight,
+    matchesPortraitRule: matchMedia("(max-width: 1024px) and (orientation: portrait)").matches,
+    viewportLimit: window.innerHeight * 0.4
+  }));
+  expect(sizing.matchesPortraitRule).toBe(true);
+  expect(sizing.computedMaxHeight).toBe(`${sizing.viewportLimit}px`);
+  expect(sizing.clientHeight).toBeLessThanOrEqual(Math.ceil(sizing.viewportLimit));
+
+  await region.evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
+  await expect.poll(() => region.evaluate((element) => ({
+    bottom: element.style.getPropertyValue("--note-scroll-bottom-edge-opacity"),
+    top: element.style.getPropertyValue("--note-scroll-top-edge-opacity")
+  }))).toEqual({ bottom: "1", top: "0" });
+  const savedScrollTop = await region.evaluate((element) => element.scrollTop);
+
+  await page.getByRole("button", { name: "Planner", exact: true }).click();
+  await page.getByRole("button", { name: "Notes", exact: true }).click();
+  await expect.poll(() => page.locator(".note-scroll-region").evaluate((element) => element.scrollTop)).toBe(savedScrollTop);
+});
