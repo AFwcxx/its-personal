@@ -804,6 +804,28 @@
   min-width: 0;
 }
 
+.note-item-drag-handle {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 1.75rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--muted);
+  cursor: grab;
+  touch-action: none;
+}
+
+.note-item-drag-handle:hover,
+.note-item-drag-handle:focus-visible {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
 .note-calculate-value {
   position: relative;
   flex: 0 0 9rem;

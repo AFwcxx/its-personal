@@ -6,12 +6,12 @@ import NotesView from "../views/NotesView.vue";
 import { useNotesStore } from "../stores/notes.js";
 
 const sortable = vi.hoisted(() => ({
-  instances: [] as Array<{ element: HTMLElement; options: { onEnd?: () => void }; destroy: ReturnType<typeof vi.fn> }>
+  instances: [] as Array<{ element: HTMLElement; options: { onEnd?: (event: { oldIndex?: number; newIndex?: number }) => void }; destroy: ReturnType<typeof vi.fn> }>
 }));
 
 vi.mock("sortablejs", () => ({
   default: {
-    create: vi.fn((element: HTMLElement, options: { onEnd?: () => void }) => {
+    create: vi.fn((element: HTMLElement, options: { onEnd?: (event: { oldIndex?: number; newIndex?: number }) => void }) => {
       const instance = { element, options, destroy: vi.fn() };
       sortable.instances.push(instance);
       return instance;
@@ -145,7 +145,7 @@ describe("NotesView", () => {
     const cards = wrapper.findAll<HTMLElement>(".note-card");
     cards[0]!.element.parentElement?.append(cards[0]!.element);
 
-    sortable.instances[0]?.options.onEnd?.();
+    sortable.instances[0]?.options.onEnd?.({});
 
     expect(notes.reorderNotes).toHaveBeenCalledWith([
       expect.objectContaining({ id: "second" }),
@@ -268,6 +268,43 @@ describe("NotesView", () => {
     expect(notes.updateNote).toHaveBeenCalledWith("list-note", expect.objectContaining({
       items: [{ id: "item-beta", text: "Beta", checked: undefined }],
       content: "Beta"
+    }));
+  });
+
+  it("reorders structured note items by drag and keyboard before saving", async () => {
+    const notes = useNotesStore();
+    notes.notes = [note({
+      id: "calculation",
+      contentStyle: "calculate",
+      items: [
+        { id: "first", text: "First", valueCents: 100 },
+        { id: "second", text: "Second", valueCents: 200 },
+        { id: "third", text: "Third", valueCents: 300 }
+      ]
+    })];
+    notes.updateNote = vi.fn();
+
+    const wrapper = mountNotesView();
+    await wrapper.find(".note-card").trigger("click");
+    await wrapper.vm.$nextTick();
+
+    const editorSortable = sortable.instances.find((instance) => instance.element.classList.contains("note-item-input-rows"));
+    editorSortable?.options.onEnd?.({ oldIndex: 0, newIndex: 2 });
+    await wrapper.vm.$nextTick();
+
+    const movedHandle = wrapper.find<HTMLButtonElement>('[data-note-item-handle-id="first"]');
+    await movedHandle.trigger("keydown", { key: "ArrowUp" });
+    await wrapper.vm.$nextTick();
+    await wrapper.find<HTMLButtonElement>('[data-note-item-handle-id="second"]').trigger("keydown", { key: "ArrowUp" });
+    await wrapper.findAll("button").find((button) => button.text() === "Save")!.trigger("click");
+
+    expect(notes.updateNote).toHaveBeenCalledWith("calculation", expect.objectContaining({
+      content: "Second\nFirst\nThird",
+      items: [
+        { id: "second", text: "Second", checked: undefined, valueCents: 200 },
+        { id: "first", text: "First", checked: undefined, valueCents: 100 },
+        { id: "third", text: "Third", checked: undefined, valueCents: 300 }
+      ]
     }));
   });
 

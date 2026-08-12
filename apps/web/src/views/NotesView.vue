@@ -38,8 +38,10 @@ const pinned = ref(false);
 const selectedTagIds = ref<string[]>([]);
 const pinnedListEl = ref<HTMLElement | null>(null);
 const unpinnedListEl = ref<HTMLElement | null>(null);
+const itemListEl = ref<HTMLElement | null>(null);
 let pinnedSortable: Sortable | null = null;
 let unpinnedSortable: Sortable | null = null;
+let itemSortable: Sortable | null = null;
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 let layoutFrame: number | null = null;
 
@@ -103,6 +105,7 @@ onBeforeUnmount(() => {
   rememberNoteScrollPositions(unpinnedListEl.value);
   pinnedSortable?.destroy();
   unpinnedSortable?.destroy();
+  itemSortable?.destroy();
   window.removeEventListener("resize", scheduleMasonryLayout);
   if (layoutFrame !== null) cancelAnimationFrame(layoutFrame);
   if (refreshTimer) clearInterval(refreshTimer);
@@ -114,6 +117,26 @@ watch(
     await nextTick();
     mountSortable();
     scheduleMasonryLayout();
+  },
+  { immediate: true, flush: "post" }
+);
+
+watch(
+  () => `${dialogVisible.value}:${contentStyle.value}:${items.value.map((item) => item.id).join(",")}`,
+  async () => {
+    await nextTick();
+    itemSortable?.destroy();
+    itemSortable = null;
+    if (!dialogVisible.value || contentStyle.value === "normal" || items.value.length < 2 || !itemListEl.value) return;
+    itemSortable = Sortable.create(itemListEl.value, {
+      animation: 150,
+      handle: ".note-item-drag-handle",
+      draggable: ".note-item-input-row",
+      onEnd(event) {
+        if (event.oldIndex === undefined || event.newIndex === undefined) return;
+        moveListItem(event.oldIndex, event.newIndex);
+      }
+    });
   },
   { immediate: true, flush: "post" }
 );
@@ -137,6 +160,10 @@ function setPinnedListEl(el: Element | ComponentPublicInstance | null) {
 
 function setUnpinnedListEl(el: Element | ComponentPublicInstance | null) {
   unpinnedListEl.value = elementFromRef(el);
+}
+
+function setItemListEl(el: Element | ComponentPublicInstance | null) {
+  itemListEl.value = elementFromRef(el);
 }
 
 function elementFromRef(el: Element | ComponentPublicInstance | null): HTMLElement | null {
@@ -369,6 +396,24 @@ function deleteListItem(index: number) {
   delete calculateValues.value[item.id];
 }
 
+function moveListItem(from: number, to: number) {
+  if (from === to || from < 0 || to < 0 || from >= items.value.length || to >= items.value.length) return false;
+  const reordered = [...items.value];
+  const [moved] = reordered.splice(from, 1);
+  if (!moved) return false;
+  reordered.splice(to, 0, moved);
+  items.value = reordered;
+  return true;
+}
+
+function reorderListItemWithKeyboard(event: KeyboardEvent, index: number, itemId: string) {
+  const offset = event.key === "ArrowUp" ? -1 : event.key === "ArrowDown" ? 1 : 0;
+  if (!offset) return;
+  event.preventDefault();
+  if (!moveListItem(index, index + offset)) return;
+  void nextTick(() => document.querySelector<HTMLButtonElement>(`[data-note-item-handle-id="${itemId}"]`)?.focus());
+}
+
 async function saveNote() {
   if (!canSave.value) return;
   if (contentStyle.value === "calculate" && !syncCalculateValues()) return;
@@ -584,8 +629,18 @@ function formatModified(value: string) {
         <label v-if="contentStyle === 'normal'">Content<Textarea v-model="content" auto-resize rows="4" maxlength="20000" /></label>
         <div v-else class="note-item-editor">
           <label>Content</label>
-          <TransitionGroup name="note-item-row" tag="div" class="note-item-input-rows">
+          <TransitionGroup :ref="setItemListEl" name="note-item-row" tag="div" class="note-item-input-rows">
             <div v-for="(item, index) in items" :key="item.id" class="note-item-input-row">
+              <button
+                v-if="items.length > 1"
+                class="note-item-drag-handle"
+                type="button"
+                :aria-label="`Reorder item ${index + 1} of ${items.length}`"
+                :data-note-item-handle-id="item.id"
+                @keydown="reorderListItemWithKeyboard($event, index, item.id)"
+              >
+                <GripVertical :size="16" />
+              </button>
               <Checkbox v-if="contentStyle === 'checklist'" v-model="item.checked" binary />
               <InputText
                 v-model="item.text"
