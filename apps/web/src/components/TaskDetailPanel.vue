@@ -141,6 +141,7 @@ async function save() {
     recurrenceDate: task.value.recurrence.type === "none" ? task.value.recurrenceDate : recurrenceDate.value || dueDate.value || task.value.dueDate,
     notes: notes.value
   });
+  planner.selectedTaskId = null;
 }
 
 async function assignTags(tagIds: string[]) {

@@ -118,7 +118,7 @@ describe("TaskDetailPanel recurrence", () => {
     });
   });
 
-  it("waits until save before applying due and recurrence date edits", async () => {
+  it("applies due and recurrence date edits on save, then closes the detail panel", async () => {
     const planner = usePlannerStore();
     const recurringTask: Task = { ...baseTask, recurrenceDate: "2026-05-21", recurrence: { type: "monthly", ends: { type: "eternity" } } };
     planner.tasks = [recurringTask];
@@ -155,7 +155,8 @@ describe("TaskDetailPanel recurrence", () => {
     await flushPromises();
 
     expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, { title: "Today", dueDate: "2026-05-22", recurrenceDate: "2026-05-20", notes: "" });
-    expect(planner.selectedTask?.dueDate).toBe("2026-05-22");
+    expect(planner.tasks.find((task) => task.id === baseTask.id)?.dueDate).toBe("2026-05-22");
+    expect(planner.selectedTaskId).toBeNull();
   });
 
   it("queues note edits immediately for pending tasks so offline notes survive refresh", async () => {
