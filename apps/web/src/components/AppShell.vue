@@ -14,6 +14,7 @@ const navItems = [
   { to: "/notes", label: "Notes" },
   { to: "/planner", label: "Planner" },
   { to: "/schedule", label: "Schedule" },
+  { to: "/tracker", label: "Tracker" },
   { to: "/all", label: "All Tasks" },
   { to: "/archive", label: "Archive" },
   { to: "/tags", label: "Tags" }

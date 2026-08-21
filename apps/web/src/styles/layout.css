@@ -156,6 +156,81 @@
   margin-left: auto;
 }
 
+.tracker-table-scroll {
+  margin-top: 1rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.tracker-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: max-content;
+}
+
+.tracker-table th,
+.tracker-table td {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  height: 48px;
+  min-width: 48px;
+  padding: 0;
+  text-align: center;
+}
+
+.tracker-table thead th {
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+
+.tracker-table thead th > span {
+  display: block;
+}
+
+.tracker-table .tracker-label-cell {
+  border-left: 1px solid var(--border);
+  left: 0;
+  min-width: 180px;
+  position: sticky;
+  text-align: left;
+  z-index: 1;
+}
+
+.tracker-table thead .tracker-label-cell {
+  padding-left: 0.75rem;
+  z-index: 2;
+}
+
+.tracker-label-cell > button,
+.tracker-table td > button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  height: 100%;
+  width: 100%;
+}
+
+.tracker-label-cell > button {
+  overflow: hidden;
+  padding-inline: 0.75rem;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tracker-table td > button span {
+  color: var(--accent-alt);
+  font-size: 1.4rem;
+  text-shadow: var(--neon-magenta-glow);
+}
+
+.tracker-table .tracker-today {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
 .detail > .toolbar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

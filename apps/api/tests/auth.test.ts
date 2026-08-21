@@ -603,4 +603,27 @@ describe("auth and database", () => {
     expect(nextTask?.dueDate).toBe("2026-09-07");
     expect(nextTask?.recurrenceDate).toBe("2026-08-07");
   });
+
+  it("preserves tracker history and blocks retirement over later marks", async () => {
+    const db = openDatabase(":memory:");
+    const token = issueSession(config, db, "test-device").token;
+    const server = createServer(config, db);
+
+    await request(server).post("/api/planner/trackers").set("authorization", `Bearer ${token}`)
+      .send({ id: "tracker-1", operationId: "create-tracker", name: "Exercise", activeFromMonth: "2026-05" }).expect(201);
+    await request(server).patch("/api/planner/trackers/tracker-1/marks/2026-06-03").set("authorization", `Bearer ${token}`)
+      .send({ operationId: "mark-tracker", completed: true }).expect(200);
+    await request(server).patch("/api/planner/trackers/tracker-1").set("authorization", `Bearer ${token}`)
+      .send({ operationId: "retire-blocked", retiredFromMonth: "2026-06" }).expect(409);
+    await request(server).patch("/api/planner/trackers/tracker-1/marks/2026-06-03").set("authorization", `Bearer ${token}`)
+      .send({ operationId: "clear-tracker", completed: false }).expect(200);
+    await request(server).patch("/api/planner/trackers/tracker-1").set("authorization", `Bearer ${token}`)
+      .send({ operationId: "retire-tracker", name: "Daily exercise", retiredFromMonth: "2026-06" }).expect(200);
+
+    await request(server).get("/api/planner/snapshot").set("authorization", `Bearer ${token}`).expect(200).expect((response) => {
+      expect(response.body.trackers).toEqual([expect.objectContaining({ id: "tracker-1", name: "Daily exercise", activeFromMonth: "2026-05", retiredFromMonth: "2026-06" })]);
+      expect(response.body.trackerMarks).toEqual([]);
+      expect(response.body.changeVersion).toBe(4);
+    });
+  });
 });

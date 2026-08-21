@@ -120,6 +120,25 @@ export function migrate(db: Db): void {
       response_json TEXT,
       created_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS trackers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      active_from_month TEXT NOT NULL,
+      retired_from_month TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS tracker_marks (
+      tracker_id TEXT NOT NULL,
+      date TEXT NOT NULL,
+      completed_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY(tracker_id, date),
+      FOREIGN KEY(tracker_id) REFERENCES trackers(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_tracker_marks_date ON tracker_marks(date);
   `);
   const taskColumns = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
   if (!taskColumns.some((column) => column.name === "subtasks_collapsed")) {

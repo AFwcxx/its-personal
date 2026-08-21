@@ -1,4 +1,4 @@
-import type { Attachment, Note, NotesSnapshot, PlannerSnapshot, Subtask, Tag, Task, TaskLink } from "@its-personal/shared";
+import type { Attachment, Note, NotesSnapshot, PlannerSnapshot, Subtask, Tag, Task, TaskLink, Tracker } from "@its-personal/shared";
 import { useSessionStore } from "../stores/session.js";
 
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -72,7 +72,10 @@ export const plannerApi = {
   updateTag: (id: string, body: Partial<Tag>) => apiJson<Tag>(`/api/planner/tags/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   deleteTag: (id: string, body: { operationId?: string } = {}) => authenticatedFetch(`/api/planner/tags/${id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }),
   createLink: (body: Pick<TaskLink, "taskId" | "url"> & Partial<TaskLink> & WriteMeta) => apiJson<TaskLink>("/api/planner/links", { method: "POST", body: JSON.stringify(body) }),
-  deleteLink: (id: string, body: { operationId?: string } = {}) => authenticatedFetch(`/api/planner/links/${id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })
+  deleteLink: (id: string, body: { operationId?: string } = {}) => authenticatedFetch(`/api/planner/links/${id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }),
+  createTracker: (body: Pick<Tracker, "name" | "activeFromMonth"> & WriteMeta) => apiJson<Tracker>("/api/planner/trackers", { method: "POST", body: JSON.stringify(body) }),
+  updateTracker: (id: string, body: Partial<Pick<Tracker, "name" | "retiredFromMonth">>) => apiJson<Tracker>(`/api/planner/trackers/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  setTrackerMark: (id: string, date: string, completed: boolean) => apiJson<{ trackerId: string; date: string; completed: boolean }>(`/api/planner/trackers/${id}/marks/${date}`, { method: "PATCH", body: JSON.stringify({ completed }) })
 };
 
 export const notesApi = {

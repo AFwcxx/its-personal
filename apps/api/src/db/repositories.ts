@@ -1,4 +1,4 @@
-import { normalizeRecurrence, type Attachment, type Note, type NoteContentStyle, type NoteListItem, type Subtask, type Tag, type Task, type TaskLink } from "@its-personal/shared";
+import { normalizeRecurrence, type Attachment, type Note, type NoteContentStyle, type NoteListItem, type Subtask, type Tag, type Task, type TaskLink, type Tracker, type TrackerMark } from "@its-personal/shared";
 import type { Db } from "./connection.js";
 
 type TaskRow = {
@@ -17,6 +17,8 @@ type NoteRow = {
 };
 type LinkRow = { id: string; task_id: string; url: string; label: string | null; created_at: string; deleted_at: string | null };
 type AttachmentRow = { id: string; task_id: string; original_name: string; stored_name: string; mime_type: string; size: number; checksum: string; created_at: string; deleted_at: string | null };
+type TrackerRow = { id: string; name: string; active_from_month: string; retired_from_month: string | null; created_at: string; updated_at: string };
+type TrackerMarkRow = { tracker_id: string; date: string; completed_at: string; updated_at: string };
 export type SessionRow = {
   id: string;
   device_id: string;
@@ -220,6 +222,40 @@ export function insertAttachment(db: Db, attachment: Attachment): Attachment {
     VALUES (@id, @taskId, @originalName, @storedName, @mimeType, @size, @checksum, @createdAt, @deletedAt)
   `).run(attachment);
   return attachment;
+}
+
+export function listTrackers(db: Db): Tracker[] {
+  return db.prepare("SELECT * FROM trackers ORDER BY created_at, id").all().map((row) => {
+    const item = row as TrackerRow;
+    return { id: item.id, name: item.name, activeFromMonth: item.active_from_month, retiredFromMonth: item.retired_from_month, createdAt: item.created_at, updatedAt: item.updated_at };
+  });
+}
+
+export function upsertTracker(db: Db, tracker: Tracker): Tracker {
+  db.prepare(`
+    INSERT INTO trackers (id, name, active_from_month, retired_from_month, created_at, updated_at)
+    VALUES (@id, @name, @activeFromMonth, @retiredFromMonth, @createdAt, @updatedAt)
+    ON CONFLICT(id) DO UPDATE SET name=@name, retired_from_month=@retiredFromMonth, updated_at=@updatedAt
+  `).run(tracker);
+  return tracker;
+}
+
+export function listTrackerMarks(db: Db): TrackerMark[] {
+  return db.prepare("SELECT * FROM tracker_marks ORDER BY date, tracker_id").all().map((row) => {
+    const mark = row as TrackerMarkRow;
+    return { trackerId: mark.tracker_id, date: mark.date, completedAt: mark.completed_at, updatedAt: mark.updated_at };
+  });
+}
+
+export function setTrackerMark(db: Db, trackerId: string, date: string, completed: boolean, now: string): void {
+  if (!completed) {
+    db.prepare("DELETE FROM tracker_marks WHERE tracker_id = ? AND date = ?").run(trackerId, date);
+    return;
+  }
+  db.prepare(`
+    INSERT INTO tracker_marks (tracker_id, date, completed_at, updated_at) VALUES (?, ?, ?, ?)
+    ON CONFLICT(tracker_id, date) DO UPDATE SET completed_at=excluded.completed_at, updated_at=excluded.updated_at
+  `).run(trackerId, date, now, now);
 }
 
 export function insertSession(db: Db, session: SessionRow): SessionRow {

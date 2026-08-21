@@ -1,4 +1,4 @@
-import { addDays, normalizeRecurrence, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Subtask, type Tag, type Task, type TaskLink } from "@its-personal/shared";
+import { addDays, normalizeRecurrence, overdueTasks, plannerTasksForDate, scheduledTasksForDate, sortPlannerItems, todayISO, visibleArchiveItems, type Attachment, type PlannerSnapshot, type Subtask, type Tag, type Task, type TaskLink, type Tracker, type TrackerMark } from "@its-personal/shared";
 import { defineStore } from "pinia";
 import { cachedSnapshot, deleteAttachment as deleteAttachmentRequest, loadPlannerChangeVersion, loadSnapshot, plannerApi } from "../services/api.js";
 import { generateLocalId, hasDurableOutbox, markPendingOperationFailed, pendingOperations, removeFailedPendingOperations, removePendingOperation, saveCompactedPendingOperation, sendPendingOperation, shouldShowOfflineDialog, type PendingOperation, type PendingState } from "../services/offline.js";
@@ -15,6 +15,8 @@ export const usePlannerStore = defineStore("planner", {
     tags: [] as Tag[],
     links: [] as TaskLink[],
     attachments: [] as Attachment[],
+    trackers: [] as Tracker[],
+    trackerMarks: [] as TrackerMark[],
     selectedTaskId: null as string | null,
     subtaskDialogTaskId: null as string | null,
     currentDate: todayISO(),
@@ -49,6 +51,8 @@ export const usePlannerStore = defineStore("planner", {
       this.tags = snapshot.tags;
       this.links = snapshot.links;
       this.attachments = snapshot.attachments;
+      this.trackers = snapshot.trackers ?? [];
+      this.trackerMarks = snapshot.trackerMarks ?? [];
       this.changeVersion = snapshotChangeVersion(snapshot) ?? this.changeVersion;
     },
     async refresh() {
@@ -268,6 +272,36 @@ export const usePlannerStore = defineStore("planner", {
       await deleteAttachmentRequest(id);
       this.attachments = this.attachments.map((attachment) => attachment.id === id ? { ...attachment, deletedAt: new Date().toISOString() } : attachment);
     },
+    async createTracker(name: string, activeFromMonth: string) {
+      const now = new Date().toISOString();
+      const id = generateLocalId("tracker");
+      const operationId = generateLocalId("op");
+      const tracker: Tracker = { id, name, activeFromMonth, retiredFromMonth: null, createdAt: now, updatedAt: now };
+      this.trackers.push(tracker);
+      const saved = await this.writeOperation<Tracker>({ operationId, entityType: "tracker", entityId: id, method: "POST", path: "/api/planner/trackers", body: { id, operationId, name, activeFromMonth }, state: "pending", retryable: true, createdAt: now, updatedAt: now });
+      if (saved) this.trackers = this.trackers.map((candidate) => candidate.id === id ? saved : candidate);
+      return saved ?? tracker;
+    },
+    async updateTracker(id: string, patch: Partial<Pick<Tracker, "name" | "retiredFromMonth">>) {
+      const current = this.trackers.find((tracker) => tracker.id === id);
+      if (!current) throw new Error("Tracker not found");
+      const now = new Date().toISOString();
+      const optimistic = { ...current, ...patch, updatedAt: now };
+      this.trackers = this.trackers.map((tracker) => tracker.id === id ? optimistic : tracker);
+      const operationId = generateLocalId("op");
+      const saved = await this.writeOperation<Tracker>({ operationId, entityType: "tracker", entityId: id, method: "PATCH", path: `/api/planner/trackers/${id}`, body: { ...patch, operationId }, base: baseForPatch(current, patch), state: "pending", retryable: true, createdAt: now, updatedAt: now });
+      if (saved) this.trackers = this.trackers.map((tracker) => tracker.id === id ? saved : tracker);
+      return saved ?? optimistic;
+    },
+    async setTrackerMark(trackerId: string, date: string, completed: boolean) {
+      const now = new Date().toISOString();
+      const existing = this.trackerMarks.find((mark) => mark.trackerId === trackerId && mark.date === date);
+      this.trackerMarks = completed
+        ? [...this.trackerMarks.filter((mark) => mark.trackerId !== trackerId || mark.date !== date), { trackerId, date, completedAt: now, updatedAt: now }]
+        : this.trackerMarks.filter((mark) => mark.trackerId !== trackerId || mark.date !== date);
+      const operationId = generateLocalId("op");
+      await this.writeOperation({ operationId, entityType: "tracker-mark", entityId: `tracker-mark:${trackerId}:${date}`, method: "PATCH", path: `/api/planner/trackers/${trackerId}/marks/${date}`, body: { operationId, trackerId, date, completed }, base: { completed: Boolean(existing) }, state: "pending", retryable: true, createdAt: now, updatedAt: now });
+    },
     async writeOperation<T>(operation: PendingOperation) {
       const isJsdom = typeof navigator !== "undefined" && navigator.userAgent.includes("jsdom");
       if (isJsdom && !hasDurableOutbox()) return await this.writeOperationDirect<T>(operation);
@@ -321,6 +355,9 @@ export const usePlannerStore = defineStore("planner", {
       if (operation.entityType === "tag" && operation.method === "DELETE") return await plannerApi.deleteTag(operation.entityId) as T;
       if (operation.entityType === "link" && operation.method === "POST") return await plannerApi.createLink(body as Pick<TaskLink, "taskId" | "url"> & Partial<TaskLink>) as T;
       if (operation.entityType === "link" && operation.method === "DELETE") return await plannerApi.deleteLink(operation.entityId) as T;
+      if (operation.entityType === "tracker" && operation.method === "POST") return await plannerApi.createTracker(body as Pick<Tracker, "name" | "activeFromMonth">) as T;
+      if (operation.entityType === "tracker" && operation.method === "PATCH") return await plannerApi.updateTracker(operation.entityId, body as Partial<Pick<Tracker, "name" | "retiredFromMonth">>) as T;
+      if (operation.entityType === "tracker-mark" && operation.method === "PATCH") return await plannerApi.setTrackerMark(String(body.trackerId), String(body.date), Boolean(body.completed)) as T;
       return undefined as T;
     },
     async refreshPendingStatus() {
@@ -363,6 +400,10 @@ export const usePlannerStore = defineStore("planner", {
         this.applyPendingTagOperation(operation);
       } else if (operation.entityType === "link") {
         this.applyPendingLinkOperation(operation);
+      } else if (operation.entityType === "tracker") {
+        this.applyPendingTrackerOperation(operation);
+      } else if (operation.entityType === "tracker-mark") {
+        this.applyPendingTrackerMarkOperation(operation);
       }
     },
     applyPendingTaskOperation(operation: PendingOperation) {
@@ -433,6 +474,22 @@ export const usePlannerStore = defineStore("planner", {
       if (operation.method === "DELETE" && existing) {
         this.links = this.links.map((link) => link.id === operation.entityId ? { ...link, deletedAt: operation.updatedAt } : link);
       }
+    },
+    applyPendingTrackerOperation(operation: PendingOperation) {
+      const existing = this.trackers.find((tracker) => tracker.id === operation.entityId);
+      if (operation.method === "POST") {
+        const tracker = trackerFromPendingOperation(operation, existing);
+        this.trackers = existing ? this.trackers.map((candidate) => candidate.id === tracker.id ? tracker : candidate) : [...this.trackers, tracker];
+      } else if (operation.method === "PATCH" && existing) {
+        this.trackers = this.trackers.map((tracker) => tracker.id === operation.entityId ? { ...tracker, ...bodyWithoutOperationId(operation.body), updatedAt: operation.updatedAt } as Tracker : tracker);
+      }
+    },
+    applyPendingTrackerMarkOperation(operation: PendingOperation) {
+      if (operation.method !== "PATCH") return;
+      const trackerId = stringValue(operation.body.trackerId, "");
+      const date = stringValue(operation.body.date, "");
+      this.trackerMarks = this.trackerMarks.filter((mark) => mark.trackerId !== trackerId || mark.date !== date);
+      if (operation.body.completed === true) this.trackerMarks.push({ trackerId, date, completedAt: operation.updatedAt, updatedAt: operation.updatedAt });
     },
     async syncPending() {
       const operations = await pendingOperations();
@@ -619,6 +676,18 @@ function linkFromPendingOperation(operation: PendingOperation, existing?: TaskLi
     label: nullableStringValue(body.label, existing?.label ?? null),
     createdAt: existing?.createdAt ?? operation.createdAt,
     deletedAt: nullableStringValue(body.deletedAt, existing?.deletedAt ?? null)
+  };
+}
+
+function trackerFromPendingOperation(operation: PendingOperation, existing?: Tracker): Tracker {
+  const body = operation.body;
+  return {
+    id: operation.entityId,
+    name: stringValue(body.name, existing?.name ?? "Untitled tracker"),
+    activeFromMonth: stringValue(body.activeFromMonth, existing?.activeFromMonth ?? operation.createdAt.slice(0, 7)),
+    retiredFromMonth: nullableStringValue(body.retiredFromMonth, existing?.retiredFromMonth ?? null),
+    createdAt: existing?.createdAt ?? operation.createdAt,
+    updatedAt: operation.updatedAt
   };
 }
 

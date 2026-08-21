@@ -1,9 +1,9 @@
-import { linkInputSchema, nextDueDate, normalizeRecurrence, recurrenceEndsBeforeDueDate, subtaskInputSchema, subtaskPatchSchema, taskInputSchema, taskPatchSchema, tagInputSchema, todayISO, type Recurrence, type Subtask, type Task, type Tag, type TaskLink } from "@its-personal/shared";
+import { linkInputSchema, nextDueDate, normalizeRecurrence, recurrenceEndsBeforeDueDate, subtaskInputSchema, subtaskPatchSchema, taskInputSchema, taskPatchSchema, tagInputSchema, todayISO, trackerInputSchema, trackerMarkSchema, trackerPatchSchema, type Recurrence, type Subtask, type Task, type Tag, type TaskLink, type Tracker } from "@its-personal/shared";
 import { Router, type Response } from "express";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import type { Db } from "../db/connection.js";
-import { getProcessedOperation, insertProcessedOperation, listAttachments, listLinks, listSubtasks, listTags, listTasks, softDelete, softDeleteSubtasksForTask, upsertLink, upsertSubtask, upsertTag, upsertTask } from "../db/repositories.js";
+import { getProcessedOperation, insertProcessedOperation, listAttachments, listLinks, listSubtasks, listTags, listTasks, listTrackerMarks, listTrackers, setTrackerMark, softDelete, softDeleteSubtasksForTask, upsertLink, upsertSubtask, upsertTag, upsertTask, upsertTracker } from "../db/repositories.js";
 import type { PlannerChanges } from "../plannerChanges.js";
 
 const subtaskReorderSchema = z.object({
@@ -32,7 +32,7 @@ export function plannerRouter(db: Db, timezone = "UTC", changes?: PlannerChanges
   }
 
   router.get("/snapshot", (_req, res) => {
-    res.json({ tasks: listTasks(db), subtasks: listSubtasks(db), tags: listTags(db), links: listLinks(db), attachments: listAttachments(db), today: todayISO(new Date(), timezone), timezone, changeVersion: changes?.current() ?? 0 });
+    res.json({ tasks: listTasks(db), subtasks: listSubtasks(db), tags: listTags(db), links: listLinks(db), attachments: listAttachments(db), trackers: listTrackers(db), trackerMarks: listTrackerMarks(db), today: todayISO(new Date(), timezone), timezone, changeVersion: changes?.current() ?? 0 });
   });
 
   router.get("/changes", (_req, res) => {
@@ -333,5 +333,82 @@ export function plannerRouter(db: Db, timezone = "UTC", changes?: PlannerChanges
     res.status(204).end();
   });
 
+  router.post("/trackers", (req, res) => {
+    const operationId = typeof req.body?.operationId === "string" ? req.body.operationId : undefined;
+    if (replayOperation(operationId, res)) return;
+    const parsed = trackerInputSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid tracker input", issues: parsed.error.issues });
+      return;
+    }
+    const now = new Date().toISOString();
+    if (parsed.data.retiredFromMonth && parsed.data.retiredFromMonth < parsed.data.activeFromMonth) {
+      res.status(400).json({ error: "Retirement month cannot precede the active month" });
+      return;
+    }
+    const tracker: Tracker = { id: parsed.data.id ?? nanoid(), name: parsed.data.name, activeFromMonth: parsed.data.activeFromMonth, retiredFromMonth: parsed.data.retiredFromMonth ?? null, createdAt: now, updatedAt: now };
+    const saved = upsertTracker(db, tracker);
+    changes?.bump();
+    rememberOperation(operationId, 201, saved);
+    res.status(201).json(saved);
+  });
+
+  router.patch("/trackers/:id", (req, res) => {
+    const operationId = typeof req.body?.operationId === "string" ? req.body.operationId : undefined;
+    if (replayOperation(operationId, res)) return;
+    const current = listTrackers(db).find((tracker) => tracker.id === req.params.id);
+    if (!current) {
+      res.status(404).json({ error: "Tracker not found" });
+      return;
+    }
+    const parsed = trackerPatchSchema.safeParse(req.body);
+    if (!parsed.success || parsed.data.retiredFromMonth && parsed.data.retiredFromMonth < current.activeFromMonth) {
+      res.status(400).json({ error: "Invalid tracker patch", issues: parsed.success ? [] : parsed.error.issues });
+      return;
+    }
+    if (parsed.data.retiredFromMonth && listTrackerMarks(db).some((mark) => mark.trackerId === current.id && mark.date.slice(0, 7) >= parsed.data.retiredFromMonth!)) {
+      res.status(409).json({ error: "Clear marks from the retirement month onward first" });
+      return;
+    }
+    const saved = upsertTracker(db, { ...current, name: parsed.data.name ?? current.name, retiredFromMonth: parsed.data.retiredFromMonth ?? current.retiredFromMonth, updatedAt: new Date().toISOString() });
+    changes?.bump();
+    rememberOperation(operationId, 200, saved);
+    res.json(saved);
+  });
+
+  router.patch("/trackers/:id/marks/:date", (req, res) => {
+    const operationId = typeof req.body?.operationId === "string" ? req.body.operationId : undefined;
+    if (replayOperation(operationId, res)) return;
+    const current = listTrackers(db).find((tracker) => tracker.id === req.params.id);
+    if (!current) {
+      res.status(404).json({ error: "Tracker not found" });
+      return;
+    }
+    const parsed = trackerMarkSchema.safeParse(req.body);
+    const date = req.params.date;
+    const validDate = isISODate(date);
+    const month = date.slice(0, 7);
+    if (!parsed.success || !validDate) {
+      res.status(400).json({ error: "Invalid tracker mark" });
+      return;
+    }
+    if (month < current.activeFromMonth || current.retiredFromMonth !== null && month >= current.retiredFromMonth) {
+      res.status(409).json({ error: "Date is outside the tracker's active range" });
+      return;
+    }
+    const now = new Date().toISOString();
+    setTrackerMark(db, current.id, date, parsed.data.completed, now);
+    const result = { trackerId: current.id, date, completed: parsed.data.completed, completedAt: parsed.data.completed ? now : null, updatedAt: now };
+    changes?.bump();
+    rememberOperation(operationId, 200, result);
+    res.json(result);
+  });
+
   return router;
+}
+
+function isISODate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }

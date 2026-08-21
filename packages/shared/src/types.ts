@@ -106,9 +106,27 @@ export interface PlannerSnapshot {
   tags: Tag[];
   links: TaskLink[];
   attachments: Attachment[];
+  trackers?: Tracker[];
+  trackerMarks?: TrackerMark[];
   today?: string;
   timezone?: string;
   changeVersion?: number;
+}
+
+export interface Tracker {
+  id: string;
+  name: string;
+  activeFromMonth: string;
+  retiredFromMonth: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrackerMark {
+  trackerId: string;
+  date: string;
+  completedAt: string;
+  updatedAt: string;
 }
 
 export interface FieldValue<T = unknown> {

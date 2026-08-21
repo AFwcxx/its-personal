@@ -6,6 +6,7 @@ import ManageTagsView from "./views/ManageTagsView.vue";
 import NotesView from "./views/NotesView.vue";
 import PlannerView from "./views/PlannerView.vue";
 import ScheduleView from "./views/ScheduleView.vue";
+import TrackerView from "./views/TrackerView.vue";
 import UnlockView from "./views/UnlockView.vue";
 
 export const router = createRouter({
@@ -17,6 +18,7 @@ export const router = createRouter({
     { path: "/planner", component: PlannerView },
     { path: "/all", component: AllTasksView },
     { path: "/schedule", component: ScheduleView },
+    { path: "/tracker", component: TrackerView },
     { path: "/archive", component: ArchiveView },
     { path: "/tags", component: ManageTagsView }
   ]

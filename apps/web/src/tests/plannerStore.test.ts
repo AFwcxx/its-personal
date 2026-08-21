@@ -160,6 +160,25 @@ describe("planner store subtask ordering", () => {
     expect(plannerApi.updateTask).not.toHaveBeenCalled();
   });
 
+  it("projects an offline tracker clear over a stale cached mark", () => {
+    const planner = usePlannerStore();
+    planner.trackerMarks = [{ trackerId: "exercise", date: "2026-05-21", completedAt: "2026-05-21T00:00:00.000Z", updatedAt: "2026-05-21T00:00:00.000Z" }];
+
+    planner.applyPendingTrackerMarkOperation({
+      operationId: "op-clear",
+      entityType: "tracker-mark",
+      entityId: "tracker-mark:exercise:2026-05-21",
+      method: "PATCH",
+      path: "/api/planner/trackers/exercise/marks/2026-05-21",
+      body: { trackerId: "exercise", date: "2026-05-21", completed: false },
+      state: "pending",
+      createdAt: "2026-05-21T01:00:00.000Z",
+      updatedAt: "2026-05-21T01:00:00.000Z"
+    });
+
+    expect(planner.trackerMarks).toEqual([]);
+  });
+
   it("refuses to complete a task while an active subtask is still open", async () => {
     const planner = usePlannerStore();
     planner.tasks = [task({ id: "parent" })];

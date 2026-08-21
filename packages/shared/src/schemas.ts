@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const monthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 const recurrenceEndSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("eternity") }),
   z.object({ type: z.literal("date"), date: dateSchema })
@@ -100,4 +101,23 @@ export const linkInputSchema = z.object({
   taskId: z.string().min(1),
   url: z.string().url(),
   label: z.string().nullable().optional()
+});
+
+export const trackerInputSchema = z.object({
+  id: z.string().min(1).optional(),
+  operationId: z.string().min(1).optional(),
+  name: z.string().trim().min(1).max(80),
+  activeFromMonth: monthSchema,
+  retiredFromMonth: monthSchema.nullable().optional()
+});
+
+export const trackerPatchSchema = z.object({
+  operationId: z.string().min(1).optional(),
+  name: z.string().trim().min(1).max(80).optional(),
+  retiredFromMonth: monthSchema.optional()
+});
+
+export const trackerMarkSchema = z.object({
+  operationId: z.string().min(1).optional(),
+  completed: z.boolean()
 });
