@@ -160,6 +160,26 @@
   margin-top: 1rem;
   max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+
+.tracker-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tracker-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tracker-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.tracker-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
 }
 
 .tracker-table {

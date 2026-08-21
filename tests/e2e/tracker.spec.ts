@@ -46,9 +46,10 @@ test("tracker table scrolls without moving its row labels", async ({ page }) => 
       const before = label.getBoundingClientRect().left;
       scroll.scrollLeft = scroll.scrollWidth;
       const after = label.getBoundingClientRect().left;
-      return { before, after, scrollable: scroll.scrollWidth > scroll.clientWidth, documentFits: document.documentElement.scrollWidth === document.documentElement.clientWidth };
+      return { before, after, scrollable: scroll.scrollWidth > scroll.clientWidth, overflowY: getComputedStyle(scroll).overflowY, documentFits: document.documentElement.scrollWidth === document.documentElement.clientWidth };
     });
     expect(result.scrollable).toBe(true);
+    expect(result.overflowY).toBe("hidden");
     expect(result.documentFits).toBe(true);
     expect(Math.abs(result.after - result.before)).toBeLessThan(1);
   }
