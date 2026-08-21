@@ -102,6 +102,10 @@ test("planner mobile layout fits the viewport", async ({ page }) => {
   await mobileNavButton.click();
   const navigationDialog = page.getByRole("dialog", { name: "Navigation" });
   await expect(navigationDialog).toBeVisible();
+  expect(await navigationDialog.locator(".mobile-nav").evaluate((nav) => {
+    const navWidth = nav.getBoundingClientRect().width;
+    return [...nav.querySelectorAll("button")].every((button) => Math.abs(button.getBoundingClientRect().width - navWidth) < 1);
+  })).toBe(true);
   await expect(navigationDialog.getByRole("button", { name: "Notes" })).toHaveClass(/active/);
   await navigationDialog.getByRole("button", { name: "Planner" }).click();
   await expect(navigationDialog).toBeHidden();
