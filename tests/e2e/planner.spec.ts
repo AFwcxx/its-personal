@@ -8,6 +8,7 @@ test("unlock page renders", async ({ page }) => {
 });
 
 test("planner mobile layout fits the viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => {
     sessionStorage.clear();
     (window as unknown as { __forceMemoryOutbox: boolean }).__forceMemoryOutbox = true;
@@ -22,6 +23,11 @@ test("planner mobile layout fits the viewport", async ({ page }) => {
       return originalFetch(input, init);
     };
   });
+  await page.route("**/api/config", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ appTitle: "Its Personal", authMode: "password" })
+  }));
   await page.route("**/api/auth/unlock", (route) => route.fulfill({
     status: 200,
     contentType: "application/json",
@@ -31,6 +37,21 @@ test("planner mobile layout fits the viewport", async ({ page }) => {
     status: 200,
     contentType: "application/json",
     body: JSON.stringify({ idleTimeoutSeconds: 10800 })
+  }));
+  await page.route("**/api/planner/changes", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ version: 0 })
+  }));
+  await page.route("**/api/notes/changes", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ version: 0 })
+  }));
+  await page.route("**/api/notes/snapshot", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({ notes: [], tags: [], changeVersion: 0 })
   }));
   await page.route("**/api/planner/snapshot", (route) => route.fulfill({
     status: 200,
@@ -72,6 +93,18 @@ test("planner mobile layout fits the viewport", async ({ page }) => {
     await page.getByPlaceholder("Password").fill("secret");
     await page.getByRole("button", { name: "Unlock" }).click();
   }
+  await expect(page.getByRole("heading", { name: "Notes" })).toBeVisible();
+
+  const mobileNavButton = page.getByRole("button", { name: "Open navigation" });
+  await expect(mobileNavButton).toBeVisible();
+  expect((await page.locator(".sidebar").boundingBox())?.height).toBeLessThanOrEqual(80);
+
+  await mobileNavButton.click();
+  const navigationDialog = page.getByRole("dialog", { name: "Navigation" });
+  await expect(navigationDialog).toBeVisible();
+  await expect(navigationDialog.getByRole("button", { name: "Notes" })).toHaveClass(/active/);
+  await navigationDialog.getByRole("button", { name: "Planner" }).click();
+  await expect(navigationDialog).toBeHidden();
   await expect(page.getByRole("heading", { name: "Planner" })).toBeVisible();
 
   const overflow = await page.evaluate(() => ({
@@ -90,6 +123,10 @@ test("planner mobile layout fits the viewport", async ({ page }) => {
 
   expect(overflow.documentWidth).toBe(overflow.viewportWidth);
   expect(overflow.visibleOverflowingElements).toEqual([]);
+
+  await page.setViewportSize({ width: 1200, height: 900 });
+  await expect(mobileNavButton).toBeHidden();
+  await expect(page.locator(".desktop-nav")).toBeVisible();
 });
 
 test("task detail backdrop covers the full left side and closes the menu", async ({ page }) => {

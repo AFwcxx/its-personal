@@ -31,6 +31,10 @@
   gap: 0.5rem;
 }
 
+.sidebar .mobile-nav-button {
+  display: none;
+}
+
 .sidebar nav {
   display: grid;
   gap: 0.5rem;
@@ -1610,6 +1614,7 @@
 }
 
 .sidebar .p-button.active,
+.mobile-nav .p-button.active,
 .tabs .p-button.active,
 .calendar .p-button.active {
   background: var(--active) !important;
@@ -1809,6 +1814,19 @@
   margin-top: 1rem;
 }
 
+.mobile-nav {
+  display: grid;
+  margin-top: 0;
+}
+
+.mobile-nav .p-button {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  justify-content: flex-start;
+  min-height: 44px;
+  width: 100%;
+}
+
 .subtask-edit-actions {
   justify-content: space-between;
 }
@@ -1911,24 +1929,28 @@
   .sidebar h1 {
     font-size: 1.5rem;
     margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .sidebar-header {
-    justify-content: center;
-    position: relative;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
   }
 
   .sidebar-header-actions {
     display: flex;
-    position: absolute;
-    right: 0;
   }
 
-  .sidebar nav {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    overflow: visible;
-    padding-bottom: 0;
+  .sidebar .mobile-nav-button {
+    display: inline-flex;
+  }
+
+  .sidebar .desktop-nav {
+    display: none;
   }
 
   .sidebar .p-button {

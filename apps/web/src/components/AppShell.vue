@@ -32,6 +32,7 @@ const syncStatusLabel = computed(() => {
 });
 const detailLeaving = ref(false);
 const hardRefreshInProgress = ref(false);
+const mobileNavVisible = ref(false);
 const syncRecoveryDialogVisible = ref(false);
 const discardFailedSyncDialogVisible = ref(false);
 const updateServiceWorker = registerSW({ immediate: true });
@@ -108,6 +109,14 @@ function closeTaskDetail() {
   <div class="app-shell" :class="{ 'has-detail': hasDetail || detailLeaving }">
     <aside class="sidebar">
       <div class="sidebar-header">
+        <Button
+          class="mobile-nav-button"
+          aria-label="Open navigation"
+          icon="pi pi-bars"
+          rounded
+          text
+          @click="mobileNavVisible = true"
+        />
         <h1>{{ appTitle }}</h1>
         <div class="sidebar-header-actions">
           <Button
@@ -131,7 +140,7 @@ function closeTaskDetail() {
         <i class="pi pi-exclamation-triangle" aria-hidden="true" />
         <span>{{ syncStatusLabel }}</span>
       </button>
-      <nav>
+      <nav class="desktop-nav">
         <RouterLink v-for="item in navItems" :key="item.to" v-slot="{ navigate, isActive }" :to="item.to" custom>
           <Button :class="{ active: isActive }" :label="item.label" text @click="navigate" />
         </RouterLink>
@@ -163,6 +172,18 @@ function closeTaskDetail() {
       <TaskDetailPanel v-if="hasDetail" />
     </Transition>
     <SubtaskCreateDialog />
+    <Dialog
+      v-model:visible="mobileNavVisible"
+      modal
+      header="Navigation"
+      :style="{ width: 'min(420px, 92vw)' }"
+    >
+      <nav class="dialog-actions mobile-nav">
+        <RouterLink v-for="item in navItems" :key="item.to" v-slot="{ navigate, isActive }" :to="item.to" custom>
+          <Button :class="{ active: isActive }" :label="item.label" text @click="navigate(); mobileNavVisible = false" />
+        </RouterLink>
+      </nav>
+    </Dialog>
     <Dialog
       v-model:visible="syncRecoveryDialogVisible"
       modal
