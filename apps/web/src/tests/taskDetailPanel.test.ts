@@ -159,6 +159,97 @@ describe("TaskDetailPanel recurrence", () => {
     expect(planner.selectedTaskId).toBeNull();
   });
 
+  it.each([
+    ["today", "2026-05-21"],
+    ["overdue", "2026-05-20"]
+  ])("sets tomorrow and saves a %s task without confirmation", async (_label, taskDueDate) => {
+    const planner = usePlannerStore();
+    planner.currentDate = "2026-05-21";
+    planner.tasks = [{ ...baseTask, dueDate: taskDueDate }];
+    planner.selectedTaskId = baseTask.id;
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    await wrapper.findAll("button").find((button) => button.text() === "Set tmrw + save")!.trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain("Set due date to tomorrow and save?");
+    expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, { title: "Today", dueDate: "2026-05-22", recurrenceDate: null, notes: "" });
+    expect(planner.selectedTaskId).toBeNull();
+  });
+
+  it("confirms before moving a future task to tomorrow", async () => {
+    const planner = usePlannerStore();
+    planner.currentDate = "2026-05-21";
+    planner.tasks = [{ ...baseTask, dueDate: "2026-05-23" }];
+    planner.selectedTaskId = baseTask.id;
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], emits: ["click"], template: "<button type='button' @click='$emit(\"click\")'><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    const tomorrowButton = wrapper.findAll("button").find((button) => button.text() === "Set tmrw + save")!;
+    await tomorrowButton.trigger("click");
+
+    expect(wrapper.text()).toContain("Set due date to tomorrow and save?");
+    expect(plannerApi.updateTask).not.toHaveBeenCalled();
+
+    await wrapper.findAll("button").find((button) => button.text() === "Cancel")!.trigger("click");
+    expect(plannerApi.updateTask).not.toHaveBeenCalled();
+    expect(planner.selectedTaskId).toBe(baseTask.id);
+
+    await tomorrowButton.trigger("click");
+    await wrapper.findAll("button").find((button) => button.text() === "Confirm")!.trigger("click");
+    await flushPromises();
+
+    expect(plannerApi.updateTask).toHaveBeenCalledWith(baseTask.id, { title: "Today", dueDate: "2026-05-22", recurrenceDate: null, notes: "" });
+    expect(planner.selectedTaskId).toBeNull();
+  });
+
+  it("hides the tomorrow action when recurrence locks the due date", () => {
+    const planner = usePlannerStore();
+    planner.tasks = [{ ...baseTask, recurrence: { type: "weekly", ends: { type: "date", date: "2026-06-01" } } }];
+    planner.selectedTaskId = baseTask.id;
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], template: "<input :value='modelValue' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    expect(wrapper.text()).not.toContain("Set tmrw + save");
+  });
+
   it("queues note edits immediately for pending tasks so offline notes survive refresh", async () => {
     const planner = usePlannerStore();
     planner.tasks = [baseTask];

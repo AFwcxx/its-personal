@@ -6,7 +6,7 @@ import InputText from "primevue/inputtext";
 import MultiSelect from "primevue/multiselect";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
-import type { Attachment, Recurrence, RecurrenceEnd, TaskLink } from "@its-personal/shared";
+import { addDays, type Attachment, type Recurrence, type RecurrenceEnd, type TaskLink } from "@its-personal/shared";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { File, FileArchive, FileAudio, FileCode, FileImage, FileSpreadsheet, FileText, FileVideo, Globe, Trash2, X } from "lucide-vue-next";
 import { loadAttachmentUrl, openAttachment, uploadAttachment } from "../services/api.js";
@@ -22,6 +22,7 @@ const linkUrl = ref("");
 const customIntervalDays = ref(1);
 const recurrenceEnds = ref<RecurrenceEnd>({ type: "eternity" });
 const taskPendingRemoval = ref(false);
+const tomorrowSavePending = ref(false);
 const uploadingAttachment = ref(false);
 const attachmentPreviewUrls = ref<Record<string, string>>({});
 const pendingItemRemoval = ref<{ type: "link"; item: TaskLink } | { type: "attachment"; item: Attachment } | null>(null);
@@ -142,6 +143,21 @@ async function save() {
     notes: notes.value
   });
   planner.selectedTaskId = null;
+}
+
+function requestTomorrowSave() {
+  if (!task.value) return;
+  if (task.value.dueDate > planner.today) {
+    tomorrowSavePending.value = true;
+    return;
+  }
+  void saveTomorrow();
+}
+
+async function saveTomorrow() {
+  tomorrowSavePending.value = false;
+  dueDate.value = addDays(planner.today, 1);
+  await save();
 }
 
 async function assignTags(tagIds: string[]) {
@@ -351,7 +367,15 @@ function openSubtaskDialog() {
           @change="updateRecurrenceEndDate(($event.target as HTMLInputElement).value)"
         />
       </label>
-      <Button class="recurrence-save-button" label="Save" @click="save" />
+      <div class="detail-save-actions">
+        <Button label="Save" @click="save" />
+        <Button
+          v-if="task.recurrence.type === 'none' || recurrenceEnds.type !== 'date'"
+          class="detail-tomorrow-save-button"
+          label="Set tmrw + save"
+          @click="requestTomorrowSave"
+        />
+      </div>
       <label>Add tag
         <MultiSelect
           class="tag-multiselect"
@@ -408,6 +432,13 @@ function openSubtaskDialog() {
       </ul>
       <Button class="detail-delete-button" label="Delete task" severity="danger" @click="taskPendingRemoval = true" />
     </div>
+    <Dialog :visible="tomorrowSavePending" modal header="Confirm due date" :style="{ width: 'min(420px, 92vw)' }" @update:visible="tomorrowSavePending = $event">
+      <p>Set due date to tomorrow and save?</p>
+      <div class="dialog-actions">
+        <Button label="Cancel" severity="secondary" text @click="tomorrowSavePending = false" />
+        <Button label="Confirm" @click="saveTomorrow" />
+      </div>
+    </Dialog>
     <Dialog :visible="pendingItemRemoval !== null" modal :header="pendingItemRemoval?.type === 'link' ? 'Delete link' : 'Delete attachment'" :style="{ width: 'min(420px, 92vw)' }" @update:visible="pendingItemRemoval = $event ? pendingItemRemoval : null">
       <p v-if="pendingItemRemoval?.type === 'link'">Delete this link: &ldquo;{{ pendingItemRemoval.item.url }}&rdquo;?</p>
       <p v-else-if="pendingItemRemoval?.type === 'attachment'">Delete this attachment: &ldquo;{{ pendingItemRemoval.item.originalName }}&rdquo;?</p>
