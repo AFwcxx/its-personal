@@ -228,6 +228,35 @@ describe("TaskDetailPanel recurrence", () => {
     expect(planner.selectedTaskId).toBeNull();
   });
 
+  it("hides the tomorrow action until an edited due date is restored", async () => {
+    const planner = usePlannerStore();
+    planner.tasks = [baseTask];
+    planner.selectedTaskId = baseTask.id;
+
+    const wrapper = mount(TaskDetailPanel, {
+      global: {
+        stubs: {
+          Button: { props: ["label"], template: "<button><slot />{{ label }}</button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          FileUpload: { template: "<div />" },
+          InputText: { props: ["modelValue"], emits: ["update:modelValue"], template: "<input :value='modelValue' @input='$emit(\"update:modelValue\", $event.target.value)' />" },
+          MultiSelect: { props: ["modelValue"], template: "<div />" },
+          Select: { name: "Select", inheritAttrs: false, props: ["modelValue"], emits: ["update:modelValue"], template: "<div />" },
+          Textarea: { props: ["modelValue"], template: "<textarea :value='modelValue' />" }
+        }
+      }
+    });
+
+    const dueDateInput = wrapper.find("input");
+    expect(wrapper.text()).toContain("Set tmrw + save");
+
+    await dueDateInput.setValue("2026-05-22");
+    expect(wrapper.text()).not.toContain("Set tmrw + save");
+
+    await dueDateInput.setValue(baseTask.dueDate);
+    expect(wrapper.text()).toContain("Set tmrw + save");
+  });
+
   it("hides the tomorrow action when recurrence locks the due date", () => {
     const planner = usePlannerStore();
     planner.tasks = [{ ...baseTask, recurrence: { type: "weekly", ends: { type: "date", date: "2026-06-01" } } }];

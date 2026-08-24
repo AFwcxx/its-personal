@@ -370,7 +370,7 @@ function openSubtaskDialog() {
       <div class="detail-save-actions">
         <Button label="Save" @click="save" />
         <Button
-          v-if="task.recurrence.type === 'none' || recurrenceEnds.type !== 'date'"
+          v-if="dueDate === task.dueDate && (task.recurrence.type === 'none' || recurrenceEnds.type !== 'date')"
           class="detail-tomorrow-save-button"
           label="Set tmrw + save"
           @click="requestTomorrowSave"
