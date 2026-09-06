@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAIN_NAVIGATION_IDS } from "./types.js";
 
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const monthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
@@ -121,3 +122,7 @@ export const trackerMarkSchema = z.object({
   operationId: z.string().min(1).optional(),
   completed: z.boolean()
 });
+
+export const mainNavigationOrderSchema = z.array(z.enum(MAIN_NAVIGATION_IDS))
+  .length(MAIN_NAVIGATION_IDS.length)
+  .refine((ids) => new Set(ids).size === ids.length, "Navigation items must be unique");

@@ -4,7 +4,6 @@ import ColorPicker from "primevue/colorpicker";
 import Dialog from "primevue/dialog";
 import InputText from "primevue/inputtext";
 import { computed, onMounted, ref } from "vue";
-import AppShell from "../components/AppShell.vue";
 import { useNotesStore } from "../stores/notes.js";
 import { usePlannerStore } from "../stores/planner.js";
 
@@ -67,8 +66,7 @@ function pickerColor(value: string | null) {
 </script>
 
 <template>
-  <AppShell>
-    <h2>Manage Tags</h2>
+  <section>
     <div class="tag-create-form">
       <InputText v-model="name" placeholder="New tag" @keydown.enter.prevent="createTag" />
       <ColorPicker v-model="color" input-id="new-tag-color" aria-label="New tag color" />
@@ -91,5 +89,5 @@ function pickerColor(value: string | null) {
         <Button label="Confirm" severity="danger" @click="confirmRemove" />
       </div>
     </Dialog>
-  </AppShell>
+  </section>
 </template>

@@ -1,3 +1,6 @@
+export const MAIN_NAVIGATION_IDS = ["planner", "notes", "schedule", "tracker", "all", "archive", "settings"] as const;
+export type MainNavigationId = typeof MAIN_NAVIGATION_IDS[number];
+
 export type RecurrenceEnd =
   | { type: "eternity" }
   | { type: "date"; date: string };

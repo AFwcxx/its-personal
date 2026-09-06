@@ -9,18 +9,10 @@ import { usePlannerStore } from "../stores/planner.js";
 import { useSessionStore } from "../stores/session.js";
 import SubtaskCreateDialog from "./SubtaskCreateDialog.vue";
 import TaskDetailPanel from "./TaskDetailPanel.vue";
-
-const navItems = [
-  { to: "/notes", label: "Notes" },
-  { to: "/planner", label: "Planner" },
-  { to: "/schedule", label: "Schedule" },
-  { to: "/tracker", label: "Tracker" },
-  { to: "/all", label: "All Tasks" },
-  { to: "/archive", label: "Archive" },
-  { to: "/tags", label: "Tags" }
-];
+import { useSettingsStore } from "../stores/settings.js";
 
 const planner = usePlannerStore();
+const settings = useSettingsStore();
 const session = useSessionStore();
 const router = useRouter();
 const hasDetail = computed(() => planner.selectedTask !== null);
@@ -38,6 +30,7 @@ const discardFailedSyncDialogVisible = ref(false);
 const updateServiceWorker = registerSW({ immediate: true });
 
 onMounted(() => {
+  void settings.load();
   session.startActivityTracking();
   void planner.refreshPendingStatus();
   window.addEventListener("online", () => void planner.refresh());
@@ -141,7 +134,7 @@ function closeTaskDetail() {
         <span>{{ syncStatusLabel }}</span>
       </button>
       <nav class="desktop-nav">
-        <RouterLink v-for="item in navItems" :key="item.to" v-slot="{ navigate, isActive }" :to="item.to" custom>
+        <RouterLink v-for="item in settings.orderedNavigationItems" :key="item.to" v-slot="{ navigate, isActive }" :to="item.to" custom>
           <Button :class="{ active: isActive }" :label="item.label" text @click="navigate" />
         </RouterLink>
       </nav>
@@ -179,7 +172,7 @@ function closeTaskDetail() {
       :style="{ width: 'min(420px, 92vw)' }"
     >
       <nav class="dialog-actions mobile-nav">
-        <RouterLink v-for="item in navItems" :key="item.to" v-slot="{ navigate, isActive }" :to="item.to" custom>
+        <RouterLink v-for="item in settings.orderedNavigationItems" :key="item.to" v-slot="{ navigate, isActive }" :to="item.to" custom>
           <Button :class="{ active: isActive }" :label="item.label" text @click="navigate(); mobileNavVisible = false" />
         </RouterLink>
       </nav>

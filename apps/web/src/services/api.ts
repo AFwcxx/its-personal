@@ -1,4 +1,4 @@
-import type { Attachment, Note, NotesSnapshot, PlannerSnapshot, Subtask, Tag, Task, TaskLink, Tracker } from "@its-personal/shared";
+import type { Attachment, MainNavigationId, Note, NotesSnapshot, PlannerSnapshot, Subtask, Tag, Task, TaskLink, Tracker } from "@its-personal/shared";
 import { useSessionStore } from "../stores/session.js";
 
 export async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -82,6 +82,11 @@ export const notesApi = {
   createNote: (body: Partial<Note> & Pick<Note, "title" | "content" | "contentStyle" | "items"> & WriteMeta) => apiJson<Note>("/api/notes", { method: "POST", body: JSON.stringify(body) }),
   updateNote: (id: string, body: Partial<Note>) => apiJson<Note>(`/api/notes/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   deleteNote: (id: string, body: { operationId?: string } = {}) => authenticatedFetch(`/api/notes/${id}`, { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify(body) })
+};
+
+export const settingsApi = {
+  loadMainNavigation: () => apiJson<{ orderedIds: MainNavigationId[] }>("/api/settings/main-navigation"),
+  saveMainNavigation: (orderedIds: MainNavigationId[]) => apiJson<{ orderedIds: MainNavigationId[] }>("/api/settings/main-navigation", { method: "PUT", body: JSON.stringify({ orderedIds }) })
 };
 
 export async function uploadAttachment(taskId: string, file: File): Promise<Attachment> {

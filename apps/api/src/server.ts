@@ -12,6 +12,7 @@ import { configRouter } from "./routes/config.js";
 import { healthRouter } from "./routes/health.js";
 import { notesRouter } from "./routes/notes.js";
 import { plannerRouter } from "./routes/planner.js";
+import { settingsRouter } from "./routes/settings.js";
 
 export function createServer(config: AppConfig, db: Db) {
   const app = express();
@@ -26,6 +27,7 @@ export function createServer(config: AppConfig, db: Db) {
   app.use("/api/auth", authRouter(config, db));
   app.use("/api/planner", authRequired(config, db), plannerRouter(db, config.APP_TIMEZONE, plannerChanges));
   app.use("/api/notes", authRequired(config, db), notesRouter(db, notesChanges));
+  app.use("/api/settings", authRequired(config, db), settingsRouter(db));
   app.use("/api/attachments", authRequired(config, db), attachmentsRouter(config, db, plannerChanges));
   app.get("/manifest.webmanifest", (_req, res) => {
     res.json({

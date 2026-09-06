@@ -139,6 +139,11 @@ export function migrate(db: Db): void {
       FOREIGN KEY(tracker_id) REFERENCES trackers(id)
     );
     CREATE INDEX IF NOT EXISTS idx_tracker_marks_date ON tracker_marks(date);
+
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value_json TEXT NOT NULL
+    );
   `);
   const taskColumns = db.prepare("PRAGMA table_info(tasks)").all() as { name: string }[];
   if (!taskColumns.some((column) => column.name === "subtasks_collapsed")) {

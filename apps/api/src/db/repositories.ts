@@ -258,6 +258,15 @@ export function setTrackerMark(db: Db, trackerId: string, date: string, complete
   `).run(trackerId, date, now, now);
 }
 
+export function getAppSetting(db: Db, key: string): string | null {
+  const row = db.prepare("SELECT value_json FROM app_settings WHERE key = ?").get(key) as { value_json: string } | undefined;
+  return row?.value_json ?? null;
+}
+
+export function setAppSetting(db: Db, key: string, value: string): void {
+  db.prepare("INSERT INTO app_settings (key, value_json) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json").run(key, value);
+}
+
 export function insertSession(db: Db, session: SessionRow): SessionRow {
   db.prepare(`
     INSERT INTO sessions (id, device_id, password_fingerprint, created_at, last_seen_at, invalidated_at)

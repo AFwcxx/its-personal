@@ -6,6 +6,7 @@ import ManageTagsView from "./views/ManageTagsView.vue";
 import NotesView from "./views/NotesView.vue";
 import PlannerView from "./views/PlannerView.vue";
 import ScheduleView from "./views/ScheduleView.vue";
+import SettingsView from "./views/SettingsView.vue";
 import TrackerView from "./views/TrackerView.vue";
 import UnlockView from "./views/UnlockView.vue";
 
@@ -20,7 +21,16 @@ export const router = createRouter({
     { path: "/schedule", component: ScheduleView },
     { path: "/tracker", component: TrackerView },
     { path: "/archive", component: ArchiveView },
-    { path: "/tags", component: ManageTagsView }
+    {
+      path: "/settings",
+      component: SettingsView,
+      children: [
+        { path: "", redirect: "/settings/tags" },
+        { path: "tags", component: ManageTagsView },
+        { path: "main-navi", component: () => import("./views/MainNavigationView.vue") }
+      ]
+    },
+    { path: "/tags", redirect: "/settings/tags" }
   ]
 });
 

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Task } from "@its-personal/shared";
 import AppShell from "../components/AppShell.vue";
 import { usePlannerStore } from "../stores/planner.js";
+import { useSettingsStore } from "../stores/settings.js";
 
 vi.mock("virtual:pwa-register", () => ({
   registerSW: vi.fn(() => vi.fn())
@@ -100,5 +101,31 @@ describe("AppShell task detail backdrop", () => {
     await vi.advanceTimersByTimeAsync(60_000);
 
     expect(planner.refreshCurrentDate).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses one configured order for desktop and mobile navigation", async () => {
+    const planner = usePlannerStore();
+    planner.refreshPendingStatus = vi.fn();
+    planner.refreshIfChanged = vi.fn();
+    const settings = useSettingsStore();
+    settings.loadState = "loaded";
+    settings.mainNavigationOrder = ["settings", "planner", "notes", "schedule", "tracker", "all", "archive"];
+
+    const wrapper = mount(AppShell, {
+      global: {
+        stubs: {
+          Button: { props: ["label", "icon"], template: "<button type='button' @click='$emit(\"click\")'>{{ label }}<slot /></button>" },
+          Dialog: { props: ["visible"], template: "<section v-if='visible'><slot /></section>" },
+          SubtaskCreateDialog: true,
+          TaskDetailPanel: true
+        }
+      }
+    });
+
+    const labels = (selector: string) => wrapper.find(selector).findAll("button").map((button) => button.text());
+    expect(labels(".desktop-nav")).toEqual(["Settings", "Planner", "Notes", "Schedule", "Tracker", "All Tasks", "Archive"]);
+
+    await wrapper.find(".mobile-nav-button").trigger("click");
+    expect(labels(".mobile-nav")).toEqual(["Settings", "Planner", "Notes", "Schedule", "Tracker", "All Tasks", "Archive"]);
   });
 });
